@@ -1,0 +1,22 @@
+
+structs name : PascalCase
+struct members : snake_case
+
+struct HelloWorld {
+       int the_whole_wide_world;
+       int is_what_i_am_on_about;
+}
+
+all macros and constants : ALL_CAPS_WITH_UNDERSCORES
+
+#define WIDTH 100
+#define ASSERT(...)
+
+functions : snake_case
+parameters : snake_case
+
+void prepare_renderer(const char* vertex_path)
+
+in general
+no camelCase !!
+Only PascalCase is for struct types, rest is lowercase snake_case.
