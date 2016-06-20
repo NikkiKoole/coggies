@@ -15,11 +15,10 @@ WARNINGS = $(SUPERSTRICT)
 
 
 all:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX -lSDL2_mixer -lglew -framework OpenGL src/main.c src/random.c src/memory.c src/renderer.c
+	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX -lSDL2_mixer -g -lglew -framework OpenGL src/main.c src/random.c src/memory.c src/renderer.c
 
 linux:
 	gcc -g -I/usr/local/include/  -lGL $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX  -std=gnu99 -lSDL2_mixer -lGLEW  src/main.c src/random.c src/memory.c src/renderer.c
-
 
 pi:
 	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -std=gnu99 -DRPI -lSDL2_mixer -L/opt/vc/lib -lGLESv2 src/main.c src/random.c src/memory.c src/renderer.c

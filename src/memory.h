@@ -36,27 +36,39 @@ typedef struct {
 
 
 typedef struct {
-    int x;
-    int y;
-    int z;
-    int frame;
+    u16 x;
+    u16 y;
+    u16 z;
+    u16 frame;
 } Wall;
 
 typedef struct {
-    int x;
-    int y;
-    int z;
-    int frame;
-    int dx;
-    int dy;
+    u16 x;
+    u16 y;
+    u16 z;
+    u16 frame;
+    s16 dx;
+    s16 dy;
     float palette_index;
 } Actor;
 
 typedef struct {
     MemoryArena arena;
-    Wall walls[2048];
-    Actor actors[2048];
+    Wall walls[16384];
+    u32 wall_count;
+    Actor actors[16384]; // this should be 'changed' into a Pool implementation, still a flat array offcourse but with some extra helper funcitons
+    u32 actor_count;
 } GameState;
+
+
+void actor_remove(GameState *state, u32 index);
+/* void actor_swap(GameState state, u32 index1, u32 index2); */
+void actor_add(GameState *state);
+
+// These helper function (for Pool impl.)
+// removeActor(index)
+// swapActors(indexA, indexB)
+// addActor()
 
 
 #define PUSH_STRUCT(arena, type) (type *) push_size_(arena, sizeof(type))

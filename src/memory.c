@@ -1,5 +1,25 @@
 #include "memory.h"
 
+void actor_remove(GameState *state, u32 index) {
+    if (state->actor_count > 0) {
+        state->actors[index] = (Actor) {0,0,0,0,0,0,0.0f}; // kill the data in here, just to be sure.
+
+        // now swap
+        Actor temp = state->actors[state->actor_count];
+        state->actors[state->actor_count] = state->actors[index];
+        state->actors[index] = temp;
+        state->actor_count--;
+    }
+
+}
+
+void actor_add(GameState *state) {
+    state->actor_count++;
+
+}
+
+
+
 void reserve_memory(Memory *m) {
     void *base_address = (void *)GIGABYTES(1);
     m->permanent_size = MEGABYTES(16);
