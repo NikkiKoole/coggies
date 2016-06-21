@@ -1,4 +1,6 @@
 * Currently doing
+  I made some text drawing routines, clean em up.
+  I also think the whole positioning of everything is flipped, but I am not sure, investigate...
 * todo
 - [-] get sdl2 up and running
   - [ ] win32
@@ -32,9 +34,6 @@
   - [X] memory sheme
   - [X] filesystem watcher
 - [-] build a renderer for my needs
-  - [ ] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
-    I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
-    the bitmap itself is an tga
   - [ ] pan & zoom functionality.
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
@@ -45,6 +44,9 @@
     - [ ] upper body
     - [ ] lower body
   - [ ] spritesheet texture atlasses.
+  - [X] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
+    I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
+    the bitmap itself is an tga
   - [X] make a more general purspose batch way of drawing
     for now I am limited in the batch size, I dont really want that, I want to be able to just try and draw 100_000 actors, even if its slow.
   - [X] have possibly more buffers per group, I believe (but test this) that 2000 elements in a buffer is a good size.
@@ -65,6 +67,7 @@
 - http://renderhjs.net/shoebox/ for generating texture atlasses
   sadly I cannot really get that AIR thing working on *nux, damn adobe
   keep my eyes open for an alternativools
+- http://www.angelcode.com/products/bmfont/ for generating bitmap fonts
 
 * done
 - [X] get some json loading/parsing in (DONT NEED JSON ANYMORE)
@@ -77,7 +80,7 @@
 - [X] have some barebones opengl(es) way of rendering stuff
   - [X] get gl working in sdl2
   - [X] use opengl (3.2) for the desktops
-  - [X] use opengles (2) for mobile
+  - [X] use opengles (2.0) for mobile
 - [X] JPS PLus pathfinder is broken
   the simplest broken thing was in the cardinal preprocess tests
   if (node->isJumpNode) {  // new situation

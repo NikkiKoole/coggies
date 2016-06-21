@@ -9,6 +9,8 @@
 #include <math.h>
 
 
+
+
 extern RenderState *renderer;
 extern GameState *game;
 
@@ -98,10 +100,10 @@ internal void resource_sprite_atlas(const char *path) {
     make_sprite_atlas(resource(path, buffer));
 
 }
-internal void resource_font(const char *path) {
+internal void resource_font(BM_Font *font, const char *path) {
     // lets try and parse a fnt file.
     char buffer[256];
-    make_font(resource(path, buffer));
+    make_font(font, resource(path, buffer));
 }
 
 internal void resource_texture(GLuint *tex, const char *path) {
@@ -125,9 +127,11 @@ internal void resource_wav(Mix_Chunk **chunk, const char *path) {
 }
 internal void load_resources(void) {
     resource_sprite_atlas("out.sho");
-    resource_font("menlobm.fnt");
-    resource_texture(&renderer->assets.tex1, "Untitled3.tga");
-    resource_texture(&renderer->assets.tex2, "palette2.tga");
+    resource_font(&renderer->assets.menlo, "menlo.fnt");
+    resource_texture(&renderer->assets.menlo_texture, "menlo.tga");
+
+    resource_texture(&renderer->assets.sprite_texture, "Untitled3.tga");
+    resource_texture(&renderer->assets.palette_texture, "palette2.tga");
 
 #ifdef GL3
     resource_shader(&renderer->assets.shader1, "gl330.vert", "gl330.frag");
@@ -166,12 +170,67 @@ internal void set_actor_batch_sizes() {
     }
 }
 
-internal void draw_ui() {
-    //draw_text(fg, bg, text);//
-    //draw_line();//
-    //draw_button("some label");
+internal void set_glyph_batch_sizes() {
+    u32 used_batches = ceil(game->glyph_count / 2048.0f);
+    renderer->used_glyph_batches = used_batches;
 
+    if (used_batches == 1) {
+        renderer->glyphs[0].count = game->glyph_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches-1; i++) {
+            renderer->glyphs[i].count = 2048;
+        }
+        renderer->glyphs[used_batches-1].count = game->glyph_count % 2048;
+    } else {
+        renderer->used_glyph_batches = 0;
+    }
 }
+
+
+
+internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
+    u32 base = game->glyph_count;
+    Glyph * g =  &game->glyphs[base + offset];
+    g->x = x;
+    g->y = y;
+    g->sx = sx;
+    g->sy = sy;
+    g->w = w;
+    g->h = h;
+}
+
+internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
+    UNUSED(str);UNUSED(x);UNUSED(y);UNUSED(font);
+
+    u32 currentY = y;
+    u32 currentX = x;
+
+    u32 drawn = 0;
+    for (u32 i = 0; i < strlen(str); i++) {
+        if (str[i] == 10) { // newline
+            currentY += font->line_height;
+            currentX = x;
+            continue;
+        }
+        if (str[i] == 9) { // tab
+            currentX += font->chars[32].xadvance * 4;
+            continue;
+        }
+        if (str[i] == 32) { // space
+            currentX += font->chars[32].xadvance;
+            continue;
+        }
+
+        //printf("(%d, %d) %d\n", currentX, currentY, str[i]);
+        currentX += font->chars[(u8)(str[i])].xadvance;
+        BM_Glyph glyph = font->chars[(u8)(str[i])];
+
+        draw_glyph(drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
+        drawn++;
+    }
+    return drawn;
+}
+
 
 
 int main(int argc, char **argv) {
@@ -207,8 +266,6 @@ int main(int argc, char **argv) {
     load_resources();
     renderer->walls.count = 2000;
 
-
-
     u32 j =0;
     for (u32 x = 0; x< 15; x++) {
         for (u32 y = 0; y < 10; y++) {
@@ -222,11 +279,9 @@ int main(int argc, char **argv) {
         }
     }
 
-
     game->actor_count = 150;//2048 * 8 ;b
     ASSERT(game->actor_count <= 16384);
     set_actor_batch_sizes();
-
 
     for (u32 i = 0; i< game->actor_count; i++) {
         game->actors[i].x = rand_int(renderer->view.width);
@@ -239,7 +294,18 @@ int main(int argc, char **argv) {
         game->actors[i].palette_index = rand_float();
     }
 
+
+
+    game->glyph_count = 0;
+    char text[] = "0,0,Hello\nABC\tStuffABC";
+    game->glyph_count += draw_text(text, 0, 0, &renderer->assets.menlo);
+    char text2[] = "\nHello\nABC\tStuffABC";
+    game->glyph_count += draw_text(text2, 200, 100, &renderer->assets.menlo);
+    set_glyph_batch_sizes();
+
+
     prepare_renderer();
+
 
     //Mix_PlayMusic(State->music1, -1);
     Mix_PlayChannel(-1, renderer->assets.wav1, 0);
@@ -302,7 +368,6 @@ int main(int argc, char **argv) {
             }
         }
 
-        //usleep(500000);
         for (u32 i = 0; i < game->actor_count; i++) {
             if (game->actors[i].x <= 0 || game->actors[i].x >= renderer->view.width) {
                 if (game->actors[i].x < 0) {

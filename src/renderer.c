@@ -13,7 +13,6 @@
 
   initArchitecture()
   initActors()
-  is this needed, I hope not, I hope I can just initialize huge arrays all to 0?
 
   drawArchitecture()
   drawActors()
@@ -55,6 +54,8 @@ typedef struct {
     u8 bpp;
     u8 *pixels;
 } TGA_File;
+
+
 
 #define CHECK()                                                                                        \
     {                                                                                                  \
@@ -327,7 +328,8 @@ void make_sprite_atlas(const char *path) {
 
 
 
-void make_font(const char *path) {
+void make_font(BM_Font *font, const char *path) {
+    UNUSED(font);
     printf("%s\n", path);
     if (exists(path)) {
         //ok the bmf file will be in binary, thats a lot easier actually for me.
@@ -353,6 +355,8 @@ void make_font(const char *path) {
             u32 block_size;
             u8 trash;
 
+            u16 lineHeight;
+
             fread(&blocktype_id, sizeof(u8), 1, f);
             fread(&block_size, sizeof(u32), 1, f);
             for (u32 i = 0; i < block_size; i++) {
@@ -361,7 +365,8 @@ void make_font(const char *path) {
 
             fread(&blocktype_id, sizeof(u8), 1, f);
             fread(&block_size, sizeof(u32), 1, f);
-            for (u32 i = 0; i < block_size; i++) {
+            fread(&lineHeight, sizeof(u16), 1, f);
+            for (u32 i = 2; i < block_size; i++) { //starts from 2 because the first 2 bytes was the lineHeight
                 fread(&trash, sizeof(u8), 1, f);
             }
 
@@ -390,19 +395,33 @@ void make_font(const char *path) {
                 fread(&xadvance, sizeof(s16), 1, f);
                 fread(&page, sizeof(u8), 1, f);
                 fread(&channel, sizeof(u8), 1, f);
-                //printf("id:%d, x:%d, y:%d, width:%d, height:%d, xoff:%d, yoff:%d, xadv:%d, page:%d, chnl:%d  \n", id, x, y,width,height,xoffset,yoffset,xadvance,page,channel);
+                ASSERT(page == 0 && "Only fonts that fit on 1 texture page are allowed.");
+                font->chars[id].id = id;
+                font->chars[id].x = x;
+                font->chars[id].y = y;
+                font->chars[id].width = width;
+                font->chars[id].height = height;
+                font->chars[id].xoffset = xoffset;
+                font->chars[id].yoffset = yoffset;
+                font->chars[id].xadvance = xadvance;
+                //printf("x:%d, y:%d, xoffset:%d, yoffset:%d, width:%d, height:%d\n", x,y,xoffset,yoffset,width,height);
             }
+            font->line_height = lineHeight;
             printf("%d chars found in fnt file %s.\n",num_chars, path);
+            printf("LINEHEIGHT: %d\n", lineHeight);
 
         } else {
+
             printf("%s is not a valid binary BMFont file.\n", path);
         }
         fclose(f);
+        printf("ABC %d %d %d \n", font->chars['A'].id, font->chars['B'].id, font->chars['C'].id);
+
+
     } else {
         printf("couldnt find %s\n",path);
     }
 }
-
 
 void make_texture(GLuint *tex, const char *path) {
     // second texture
@@ -614,7 +633,6 @@ void prepare_renderer(void) {
 
     for (int actor_batch_index = 0; actor_batch_index < 8; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        printf("batch count: %d \n",batch->count);
         // actors
         for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
             //batch->vertices[i] = 0;
@@ -636,8 +654,40 @@ void prepare_renderer(void) {
         makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
 #endif
 
+    }
 
 
+
+
+    // prepage buffers for FONT drawing
+     // TODO
+    // mayeb in the prepare step the buffers will always all be initialized
+    // that way I think its easier to during runtime, create and delete actors
+
+    {
+        for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
+            DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
+            // actors
+            for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
+                //batch->vertices[i] = 0;
+            }
+
+            for (u32 i = 0; i < 2048 * 6; i += 6) {
+                int j = (i / 6) * 4;
+                batch->indices[i + 0] = j + 0;
+                batch->indices[i + 1] = j + 1;
+                batch->indices[i + 2] = j + 2;
+                batch->indices[i + 3] = j + 0;
+                batch->indices[i + 4] = j + 2;
+                batch->indices[i + 5] = j + 3;
+            }
+#ifdef GLES
+            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+#endif
+#ifdef GL3
+            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+#endif
+        }
     }
 
 
@@ -673,7 +723,7 @@ void render(SDL_Window *window) {
     glActiveTexture(GL_TEXTURE0);
     CHECK();
 
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.tex1);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite_texture);
     CHECK();
 
 
@@ -681,11 +731,10 @@ void render(SDL_Window *window) {
     CHECK();
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.tex2);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette_texture);
     glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
 
     CHECK();
-
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
@@ -774,6 +823,99 @@ void render(SDL_Window *window) {
     glDrawElements(GL_TRIANGLES, renderer->walls.count * 6, GL_UNSIGNED_SHORT, 0);
     glBindVertexArray(0);
 #endif
+
+
+    // Draw FONTS
+    {
+            // Bind Textures using texture units
+        glActiveTexture(GL_TEXTURE0);
+        CHECK();
+
+        glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo_texture);
+        CHECK();
+
+
+        glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture1"), 0);
+        CHECK();
+
+        glActiveTexture(GL_TEXTURE1);
+        glBindTexture(GL_TEXTURE_2D, renderer->assets.palette_texture);
+        glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
+
+        CHECK();
+
+
+        for (int glyph_batch_index = 0; glyph_batch_index < renderer->used_glyph_batches; glyph_batch_index++) {
+
+            DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
+            int count = batch->count;
+#ifdef GL3
+            glBindVertexArray(batch->VAO);
+#endif
+
+            for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
+                int prepare_index = i / VALUES_PER_ELEM;
+                prepare_index += (glyph_batch_index * 2048);
+                Glyph data = game->glyphs[prepare_index];
+                r32 scale = 1;
+                float guyDepth = 0.0f;
+                float x = -1.0f + (((float) (data.x) / (float)renderer->view.width) * 2.0f);
+                float y = -1.0f + (((float) (renderer->view.height-data.y) / (float)renderer->view.height) * 2.0f);
+                float paletteIndex = 0.4f;//rand_float();
+
+                Rect2 uvs = get_uvs(128.0f,  (float)data.sx,  (float)data.sy,  (float)data.w,  (float)data.h);
+                Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y,  (float)data.w,  (float)data.h, scale, scale, 0.0, 0.0);
+                /* // bottomright */
+                batch->vertices[i + 0] = verts.br.x;
+                batch->vertices[i + 1] = verts.br.y;
+                batch->vertices[i + 2] = guyDepth;
+                batch->vertices[i + 3] = uvs.br.x;
+                batch->vertices[i + 4] = uvs.br.y;
+                batch->vertices[i + 5] = paletteIndex;
+                //topright
+                batch->vertices[i + 6] = verts.br.x;
+                batch->vertices[i + 7] = verts.tl.y;
+                batch->vertices[i + 8] = guyDepth;
+                batch->vertices[i + 9] = uvs.br.x;
+                batch->vertices[i + 10] = uvs.tl.y;
+                batch->vertices[i + 11] = paletteIndex;
+                // top left
+                batch->vertices[i + 12] = verts.tl.x;
+                batch->vertices[i + 13] = verts.tl.y;
+                batch->vertices[i + 14] = guyDepth;
+                batch->vertices[i + 15] = uvs.tl.x;
+                batch->vertices[i + 16] = uvs.tl.y;
+                batch->vertices[i + 17] = paletteIndex;
+                // bottomleft
+                batch->vertices[i + 18] = verts.tl.x;
+                batch->vertices[i + 19] = verts.br.y;
+                batch->vertices[i + 20] = guyDepth;
+                batch->vertices[i + 21] = uvs.tl.x;
+                batch->vertices[i + 22] = uvs.br.y;
+                batch->vertices[i + 23] = paletteIndex;
+
+            }
+#ifdef GLES
+            bindBuffer(&batch->VBO, &batch->EBO, &renderer->shader1);
+            check();
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+            glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+            glDisableVertexAttribArray(0);
+#endif
+#ifdef GL3
+            glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
+            //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+            glDrawElements(GL_TRIANGLES, batch->count * 6 , GL_UNSIGNED_SHORT, 0);
+            glBindVertexArray(0);
+#endif
+        CHECK();
+
+        }
+
+
+    }
+
 
 
     CHECK();

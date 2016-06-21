@@ -34,7 +34,6 @@ typedef struct {
     MemoryArena scratch_arena;
 } TransState;
 
-
 typedef struct {
     u16 x;
     u16 y;
@@ -53,11 +52,22 @@ typedef struct {
 } Actor;
 
 typedef struct {
+    u16 x;
+    u16 y;
+    u16 sx;
+    u16 sy;
+    u16 w;
+    u16 h;
+} Glyph;
+
+typedef struct {
     MemoryArena arena;
     Wall walls[16384];
     u32 wall_count;
     Actor actors[16384]; // this should be 'changed' into a Pool implementation, still a flat array offcourse but with some extra helper funcitons
     u32 actor_count;
+    Glyph glyphs[16384];
+    u32 glyph_count;
 } GameState;
 
 

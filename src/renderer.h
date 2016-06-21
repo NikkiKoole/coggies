@@ -8,13 +8,34 @@
 #include "SDL_mixer.h"
 
 
+typedef struct {
+    u32 id;
+    u16 x;
+    u16 y;
+    u16 width;
+    u16 height;
+    u16 xoffset;
+    u16 yoffset;
+    u16 xadvance;
+} BM_Glyph;
+
+typedef struct {
+    // perhaps I should keep the texture in here too
+    BM_Glyph chars[256];
+    u16 line_height;
+} BM_Font;
+
+
 typedef struct Assets {
-    GLuint tex1;
-    GLuint tex2;
+    GLuint sprite_texture;
+    GLuint palette_texture;
     GLuint shader1;
     Mix_Music *music1;
     Mix_Chunk *wav1;
+    BM_Font menlo;
+    GLuint menlo_texture;
 } Assets;
+
 
 typedef struct ViewPort {
     u16 width;
@@ -51,15 +72,20 @@ typedef struct RenderState {
     DrawBuffer walls;
     DrawBuffer actors[8];
     int used_actor_batches;
+    DrawBuffer glyphs[1];
+    int used_glyph_batches;
+
 } RenderState;
 
 
 
 void render(SDL_Window *window);
-void make_texture(GLuint *tex, const char *path);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(void);
-void make_font(const char *path);
+
+
+void make_texture(GLuint *tex, const char *path);
+void make_font(BM_Font *font, const char *path);
 void make_sprite_atlas(const char *path);
 #endif
