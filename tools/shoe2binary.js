@@ -158,19 +158,19 @@ var length = Object.keys(frames).length;
 var buf = new Buffer(3+1+16+2+2+4+(length*36) );
 var counter = 0;
 
-counter = writeU8(u8('S'), buf, counter);                     // SHO header
-counter = writeU8(u8('H'), buf, counter);                     // SHO header
-counter = writeU8(u8('O'), buf, counter);                     // SHO header
-counter = writeU8(1, buf, counter);                           // format version
-counter = writePaddedString(meta.image, 16, buf, counter);    // image file name
-counter = writeU16(meta.size.w, buf, counter);                // image width
-counter = writeU16(meta.size.h, buf, counter);                // image height
-counter = writeU32(length*36, buf, counter);                  // block size
+counter = writeU8(u8('S'), buf, counter);                     // u8      SHO header
+counter = writeU8(u8('H'), buf, counter);                     // u8      SHO header
+counter = writeU8(u8('O'), buf, counter);                     // u8      SHO header
+counter = writeU8(1, buf, counter);                           // u8      format version
+counter = writePaddedString(meta.image, 16, buf, counter);    // u8 * 16 image texture name
+counter = writeU16(meta.size.w, buf, counter);                // u16     image width
+counter = writeU16(meta.size.h, buf, counter);                // u16     image height
+counter = writeU32(length*36, buf, counter);                  // u32     block size
 
 for (var frame in frames) {
-    counter = writePaddedString(frame, 16, buf, counter); //16
+    counter = writePaddedString(frame, 16, buf, counter);     // u8 * 16 frame name
     var data = frames[frame];
-    counter = writeU16(data.frame.x, buf, counter);
+    counter = writeU16(data.frame.x, buf, counter);           // u16     frame x
     counter = writeU16(data.frame.y, buf, counter);
     counter = writeU16(data.frame.w, buf, counter);
     counter = writeU16(data.frame.h, buf, counter);

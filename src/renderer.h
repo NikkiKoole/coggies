@@ -26,18 +26,32 @@ typedef struct {
 } BM_Font;
 
 
-typedef struct Assets {
-    GLuint sprite_texture;
-    GLuint palette_texture;
+
+// TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
+
+typedef struct {
+    GLuint id;
+    u16 width;
+    u16 height;
+} Texture;
+
+typedef struct {
+    Texture sprite;
+    Texture palette;
+    Texture menlo;
+
+    /* GLuint sprite_id; */
+    /* GLuint palette_id; */
+    /* GLuint menlo_id; */
+
     GLuint shader1;
     Mix_Music *music1;
     Mix_Chunk *wav1;
-    BM_Font menlo;
-    GLuint menlo_texture;
+    BM_Font menlo_font;
 } Assets;
 
 
-typedef struct ViewPort {
+typedef struct {
     u16 width;
     u16 height;
 } ViewPort;
@@ -85,7 +99,7 @@ void initialize_GL(void);
 void prepare_renderer(void);
 
 
-void make_texture(GLuint *tex, const char *path);
+void make_texture(Texture *t, const char *path);
 void make_font(BM_Font *font, const char *path);
 void make_sprite_atlas(const char *path);
 #endif

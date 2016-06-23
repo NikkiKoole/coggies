@@ -1,7 +1,74 @@
 * Currently doing
-  I made some text drawing routines, clean em up.
-  I also think the whole positioning of everything is flipped, but I am not sure, investigate...
+
+                                   |
+                                   |
+                                   |
+                                   |
+                                  y|
+                               0,0,0-------- x
+                                    \
+                                     \ z
+
+  I think the whole positioning of everything is flipped, but I am not sure, investigate...
+  Yes the actors are flipped over Y, text is too, walls arent :/
+  I think it would be wise to let the Actor/Wall and Glyph (as the structs in memory.h) all have world positions immeadiatly
+  (So no more x=1, y=1 z=1 for a wall block at tile position 1,1,1, just multiiply it with the block sizes already)
+  (For blocks however it could be usefull to keep the tilepositions around (for path finding purposes down the line I think))
+
+  The way the block are oriented shows why the walls werent flipped over Y.
+  I do want them to be consistently (wrong) like the others.
+  So I have to calculate the screenY outside the render loops too (So i can flip it in there.)
+  maybe walls and actors will get a screenY property (the x is usable already..)
+
+  (like the Glyph has already)
+  (btw there will be y & z, that will still need to be made into a screenY)
+  then I can generalise them a bit more.
+  also I want to get rid of the large vertices for loops for every kind if possible.
+
+
+  I reckon I will want two passes
+  One where I assume the screen will be of *some* dismensions and 0,0 is at the top left corner.
+  This is how I want to feed the position data
+
+  Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
+  You can imagine initializeing the pan value, so the world is centered at start.
+
+  Since I dont really feel like computing screen positions in my game code.
+  I will keep the data being x,y,z
+
+
 * todo
+- [-] build a renderer for my needs
+  - [-] make world position, screen position more stable and the same for everything
+    - now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
+  - [ ] pan & zoom functionality.
+  - [ ] visible surface detection
+    for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
+    keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
+  - [ ] frame based animation using ±4 body parts
+    - [ ] head
+    - [ ] mouth
+    - [ ] upper body
+    - [ ] lower body
+  - [ ] spritesheet texture atlasses.
+  - [X] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
+    I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
+    the bitmap itself is an tga
+  - [X] make a more general purspose batch way of drawing
+    for now I am limited in the batch size, I dont really want that, I want to be able to just try and draw 100_000 actors, even if its slow.
+  - [X] have possibly more buffers per group, I believe (but test this) that 2000 elements in a buffer is a good size.
+    for actors that have 4 parts that means +-500 actors is about the max size of 1 buffer.
+    actor group
+    architecture group
+    text group ?
+    fx group ?
+  - [X] sort on Y and Z
+    z is automagically by using a z buffer, y will need o be done client side.
+    just using qsort for it, maybe that can one day be replaced with my own, but why bother.
+  - [X] many dynamic actors with depth
+  - [X] make a way you can add or remove actors
+  - [X] pallet swapping for multiple looks of actors
+  - [X] many static architecture object (walls, floors) that have a depth
 - [-] get sdl2 up and running
   - [ ] win32
   - [ ] android
@@ -33,43 +100,9 @@
   - [X] scp commands
   - [X] memory sheme
   - [X] filesystem watcher
-- [-] build a renderer for my needs
-  - [ ] pan & zoom functionality.
-  - [ ] visible surface detection
-    for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
-    keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
-  - [ ] frame based animation using ±4 body parts
-    - [ ] head
-    - [ ] mouth
-    - [ ] upper body
-    - [ ] lower body
-  - [ ] spritesheet texture atlasses.
-  - [X] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
-    I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
-    the bitmap itself is an tga
-  - [X] make a more general purspose batch way of drawing
-    for now I am limited in the batch size, I dont really want that, I want to be able to just try and draw 100_000 actors, even if its slow.
-  - [X] have possibly more buffers per group, I believe (but test this) that 2000 elements in a buffer is a good size.
-    for actors that have 4 parts that means +-500 actors is about the max size of 1 buffer.
-    actor group
-    architecture group
-    text group ?
-    fx group ?
-  - [X] sort on Y and Z
-    z is automagically by using a z buffer, y will need o be done client side.
-    just using qsort for it, maybe that can one day be replaced with my own, but why bother.
-  - [X] many dynamic actors with depth
-  - [X] make a way you can add or remove actors
-  - [X] pallet swapping for multiple looks of actors
-  - [X] many static architecture object (walls, floors) that have a depth
-
-* tools
-- http://renderhjs.net/shoebox/ for generating texture atlasses
-  sadly I cannot really get that AIR thing working on *nux, damn adobe
-  keep my eyes open for an alternativools
-- http://www.angelcode.com/products/bmfont/ for generating bitmap fonts
 
 * done
+- [X] made a fps counter on screen
 - [X] get some json loading/parsing in (DONT NEED JSON ANYMORE)
   needed for texture atlasses generated by shoebox
   alternatively I could rewrite the outputted json into some custom fileformat thats exaclty right for my c structs, maybe move the json parsing into an external app
@@ -110,3 +143,9 @@
     ../configure --disable-music-mod --disable-music-midi
     make -j 4
     make install
+
+* tools
+- http://renderhjs.net/shoebox/ for generating texture atlasses
+  sadly I cannot really get that AIR thing working on *nux, damn adobe
+  keep my eyes open for an alternativools
+- http://www.angelcode.com/products/bmfont/ for generating bitmap fonts

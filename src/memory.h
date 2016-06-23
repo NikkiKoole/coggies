@@ -64,22 +64,18 @@ typedef struct {
     MemoryArena arena;
     Wall walls[16384];
     u32 wall_count;
-    Actor actors[16384]; // this should be 'changed' into a Pool implementation, still a flat array offcourse but with some extra helper funcitons
+    Actor actors[16384];
     u32 actor_count;
     Glyph glyphs[16384];
     u32 glyph_count;
+
+    u32 world_width;
+    u32 world_depth;
+    u32 world_height;
 } GameState;
 
-
 void actor_remove(GameState *state, u32 index);
-/* void actor_swap(GameState state, u32 index1, u32 index2); */
 void actor_add(GameState *state);
-
-// These helper function (for Pool impl.)
-// removeActor(index)
-// swapActors(indexA, indexB)
-// addActor()
-
 
 #define PUSH_STRUCT(arena, type) (type *) push_size_(arena, sizeof(type))
 #define PUSH_ARRAY(arena, count, type) (type *) push_size_(arena, (count) * sizeof(type))

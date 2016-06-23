@@ -106,9 +106,9 @@ internal void resource_font(BM_Font *font, const char *path) {
     make_font(font, resource(path, buffer));
 }
 
-internal void resource_texture(GLuint *tex, const char *path) {
+internal void resource_texture(Texture *t, const char *path) {
     char buffer[256];
-    make_texture(tex, resource(path, buffer));
+    make_texture(t, resource(path, buffer));
 }
 internal void resource_shader(GLuint *shader, const char *vertPath, const char *fragPath) {
     char buffer[256];
@@ -127,11 +127,11 @@ internal void resource_wav(Mix_Chunk **chunk, const char *path) {
 }
 internal void load_resources(void) {
     resource_sprite_atlas("out.sho");
-    resource_font(&renderer->assets.menlo, "menlo.fnt");
-    resource_texture(&renderer->assets.menlo_texture, "menlo.tga");
+    resource_font(&renderer->assets.menlo_font, "menlo.fnt");
 
-    resource_texture(&renderer->assets.sprite_texture, "Untitled3.tga");
-    resource_texture(&renderer->assets.palette_texture, "palette2.tga");
+    resource_texture(&renderer->assets.menlo, "menlo.tga");
+    resource_texture(&renderer->assets.sprite, "Untitled3.tga");
+    resource_texture(&renderer->assets.palette, "palette2.tga");
 
 #ifdef GL3
     resource_shader(&renderer->assets.shader1, "gl330.vert", "gl330.frag");
@@ -153,6 +153,9 @@ internal void quit(void) {
 internal void update_frame(void *param) {
     render((SDL_Window *)param);
 }
+
+
+// TODO generalise these two into a reusable function
 
 internal void set_actor_batch_sizes() {
     u32 used_batches = ceil(game->actor_count / 2048.0f);
@@ -252,7 +255,6 @@ int main(int argc, char **argv) {
                      (u8 *)memory->scratch + sizeof(TransState));
 
     memory->is_initialized = true;
-    printf("Memory is initialized\n");
 
 
     UNUSED(argc);
@@ -264,29 +266,39 @@ int main(int argc, char **argv) {
     initialize_SDL();
     initialize_GL();
     load_resources();
-    renderer->walls.count = 2000;
+
+    game->world_width = 70;
+    game->world_height = 9;
+    game->world_depth = 3;
+
+    renderer->walls.count = (game->world_width * game->world_height * game->world_depth);
+
+    ASSERT(renderer->walls.count <= 2048 && "Make buffers larger for world blocks");
 
     u32 j =0;
-    for (u32 x = 0; x< 15; x++) {
-        for (u32 y = 0; y < 10; y++) {
-            for (u32 z = 0; z <  5; z++) {
-                game->walls[j].x = x;
-                game->walls[j].y = y;
-                game->walls[j].z = z;
+    for (u32 x = 0; x< game->world_width ; x++) {
+        for (u32 y = 0; y < game->world_height; y++) {
+            for (u32 z = 0; z <  game->world_depth; z++) {
+                game->walls[j].x = x*24;
+                game->walls[j].y = y*96;
+                game->walls[j].z = z*24;
                 game->walls[j].frame = 0;
+                //printf("set: %d) %d, %d, %d\n", j, x, y, z);
                 j++;
             }
         }
     }
+    printf("walls set: %d.\n", j);
 
-    game->actor_count = 150;//2048 * 8 ;b
+    game->actor_count = 150;
     ASSERT(game->actor_count <= 16384);
     set_actor_batch_sizes();
+
 
     for (u32 i = 0; i< game->actor_count; i++) {
         game->actors[i].x = rand_int(renderer->view.width);
         game->actors[i].y = rand_int(renderer->view.height);
-        game->actors[i].z =  0;//rand_int(50); ; // todo make it 3d
+        game->actors[i].z =  0;
         game->actors[i].frame = rand_int(3);
         int speed = 1 + rand_int(5);
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
@@ -296,12 +308,7 @@ int main(int argc, char **argv) {
 
 
 
-    game->glyph_count = 0;
-    char text[] = "0,0,Hello\nABC\tStuffABC";
-    game->glyph_count += draw_text(text, 0, 0, &renderer->assets.menlo);
-    char text2[] = "\nHello\nABC\tStuffABC";
-    game->glyph_count += draw_text(text2, 200, 100, &renderer->assets.menlo);
-    set_glyph_batch_sizes();
+
 
 
     prepare_renderer();
@@ -320,15 +327,29 @@ int main(int argc, char **argv) {
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
+    char frameCount[64];
+    char actorCount[64];
+
 
     while (! wants_to_quit) {
+        snprintf(actorCount, 64, "actors: %d", game->actor_count);
+
+         game->glyph_count = 0;
+         game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
+         game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
+         //char text2[] = "\nHello\nABC\tStuffABC";
+         //game->glyph_count += draw_text(text2, 200, 100, &renderer->assets.menlo_font);
+         set_glyph_batch_sizes();
+
+        u64 time = SDL_GetPerformanceCounter();
+
+
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {
                  wants_to_quit = true;
             }
             if (keys[SDL_SCANCODE_INSERT]) {
-                //printf("Want to add a new actor!\n");
                 for (j = 0; j < 250; j++) {
                     if (game->actor_count < (2048 * 8) - 250) {
                         actor_add(game);
@@ -346,7 +367,6 @@ int main(int argc, char **argv) {
                         printf("Wont be adding actors reached max already\n");
                     }
                 }
-                printf("actor count: %d \n", game->actor_count);
 
             }
             if (keys[SDL_SCANCODE_DELETE]) {
@@ -355,8 +375,6 @@ int main(int argc, char **argv) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
                     set_actor_batch_sizes();
                 }
-                printf("actor count: %d \n", game->actor_count);
-
             }
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -397,7 +415,12 @@ int main(int argc, char **argv) {
             game->actors[i].z = 0;                     // todo make it 3d
         }
 #ifndef IOS //IOS is being rendered with the animation callback instead.
+
+
         render(renderer->window);
+        time = SDL_GetPerformanceCounter() - time;
+        snprintf (frameCount, 64, "frame: %.2f",  ((float)time/(float)(SDL_GetPerformanceFrequency()) )*1000.0f );
+
 #endif
     }
     quit();

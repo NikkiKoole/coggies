@@ -408,23 +408,25 @@ void make_font(BM_Font *font, const char *path) {
             }
             font->line_height = lineHeight;
             printf("%d chars found in fnt file %s.\n",num_chars, path);
-            printf("LINEHEIGHT: %d\n", lineHeight);
 
         } else {
 
             printf("%s is not a valid binary BMFont file.\n", path);
         }
         fclose(f);
-        printf("ABC %d %d %d \n", font->chars['A'].id, font->chars['B'].id, font->chars['C'].id);
-
-
     } else {
         printf("couldnt find %s\n",path);
     }
 }
 
-void make_texture(GLuint *tex, const char *path) {
+
+internal b32 is_power_of_2(u32 x) {
+   return x && !(x & (x - 1));
+ }
+
+void make_texture(Texture *t, const char *path) {
     // second texture
+    GLuint *tex = &t->id;
     glGenTextures(1, tex);
     glBindTexture(GL_TEXTURE_2D, *tex); // All upcoming GL_TEXTURE_2D operations now have effect on our texture object
     // Set our texture parameters
@@ -437,7 +439,10 @@ void make_texture(GLuint *tex, const char *path) {
     GLenum colorType = image.bpp == 24 ? GL_RGB : GL_RGBA;
 
     glTexImage2D(GL_TEXTURE_2D, 0, colorType, image.width, image.height, 0, colorType, GL_UNSIGNED_BYTE, image.pixels);
-
+    t->width = image.width;
+    t->height = image.height;
+    ASSERT(t->width == t->height);
+    ASSERT(is_power_of_2(t->width));
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
@@ -530,19 +535,18 @@ void prepare_renderer(void) {
 
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    qsort(game->walls, 2048, sizeof(game->walls[0]), cmpfunc);
+    qsort(game->walls, renderer->walls.count, sizeof(game->walls[0]), cmpfunc);
 
-    int world_width = 15;
-    int world_height = 10;
-    int world_depth = 5;
 
+
+    // TODO this is valuable info (the block dimenisons, where should it live?)
     int block_width = 24;
     int block_depth = 12;
     int block_height = 96;
 
-    int real_world_width = world_width * block_width;
-    int real_world_depth = world_depth * block_depth;
-    int real_world_height = world_height * block_height;
+    int real_world_width = game->world_width * block_width;
+    int real_world_depth = game->world_depth * block_depth;
+    int real_world_height = game->world_height * block_height;
 
     int offset_x_blocks = (renderer->view.width - real_world_width) / 2;
     int offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
@@ -552,26 +556,29 @@ void prepare_renderer(void) {
 
     // THE (Y)POSITIONS ARE STILL BUSTED, but good enough to move forward for now.
 
+    int texture_size = renderer->assets.sprite.width;
 
     for (u32 i = 0; i < renderer->walls.count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
         int prepare_index = i / VALUES_PER_ELEM;
         Wall data = game->walls[prepare_index];
+        //        printf("%d) %d, %d, %d\n", prepare_index, data.x, data.y, data.z);
+        //data.x = 0;data.y=0;data.z=0;
         float scale = 1;
         float wallX = 0.0f;
 
-
-        float tempX = data.x * block_width;
-        float tempY = (real_world_height - (data.y*block_height)) + (data.z*block_depth);
+        float tempX = data.x;// * block_width;
+        float tempY = real_world_height - (data.y) + (data.z)/2;
         tempX  += offset_x_blocks;
-        tempY += offset_y_blocks-88;   // HERE's the issue get rid of 96/88 etc I think, but it needs some thinking
+        tempY += offset_y_blocks-(96-12);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
+
         float x = (tempX /screenWidth)*2 - 1.0;
         float y = (tempY/screenHeight)*2 - 1.0;
 
-        float wallDepth = 0.25f ;
+        float wallDepth = -0.25f ;
         float wallY = 12.0f;
         float wallHeight = 108.0f;
-        float paletteIndex = (data.y / 50.0f);
-        Rect2 uvs = get_uvs(512, wallX, wallY, 24, wallHeight);
+        float paletteIndex = (data.y / 350.0f);
+        Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
         Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 96.0f/108.0f);
 
         // bottomright
@@ -629,7 +636,6 @@ void prepare_renderer(void) {
     // TODO
     // mayeb in the prepare step the buffers will always all be initialized
     // that way I think its easier to during runtime, create and delete actors
-
 
     for (int actor_batch_index = 0; actor_batch_index < 8; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
@@ -689,9 +695,6 @@ void prepare_renderer(void) {
 #endif
         }
     }
-
-
-
 }
 
 
@@ -723,7 +726,7 @@ void render(SDL_Window *window) {
     glActiveTexture(GL_TEXTURE0);
     CHECK();
 
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
     CHECK();
 
 
@@ -731,7 +734,7 @@ void render(SDL_Window *window) {
     CHECK();
 
     glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette_texture);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
     glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
 
     CHECK();
@@ -744,20 +747,26 @@ void render(SDL_Window *window) {
 #ifdef GL3
         glBindVertexArray(batch->VAO);
 #endif
+        u32 screenWidth = renderer->view.width;
+        u32 screenHeight = renderer->view.height;
 
-
+        int texture_size = renderer->assets.sprite.width;
         for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
             r32 scale = 1; //(float)randInt(3);
             r32 guyFrame = 48.0 + data.frame * 24.0f;
-            float guyDepth = 0.0f;//(data.z / 50.0f); ;//0.5f + (rand_float()*0.5f) -0.25f;//  / /-1.0f;//data.z / 50.0f; //0.0f;//-0.8 + randFloat()*0.8f; // walls are at -0.5
-            float x = -1.0f + (((float)data.x / (float)renderer->view.width) * 2.0f);
-            float y = -1.0f + (((float)data.y / (float)renderer->view.height) * 2.0f);
+            float guyDepth =  0;   ;//(data.z / 50.0f); ;//0.5f + (rand_float()*0.5f) -0.25f;//  / /-1.0f;//data.z / 50.0f; //0.0f;//-0.8 + randFloat()*0.8f; // walls are at -0.5
+
+            float x = ((float)data.x /screenWidth)*2 - 1.0;
+            float y = ((float)data.y /screenHeight)*2 - 1.0;
+
+            y = y * -1;
+
             float paletteIndex = data.palette_index; //rand_float();
 
-            Rect2 uvs = get_uvs(512.0f, guyFrame, 24.0f, 24.0f, 96.0f);
+            Rect2 uvs = get_uvs(texture_size, guyFrame, 24.0f, 24.0f, 96.0f);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0);
             // bottomright
             batch->vertices[i + 0] = verts.br.x;
@@ -831,7 +840,7 @@ void render(SDL_Window *window) {
         glActiveTexture(GL_TEXTURE0);
         CHECK();
 
-        glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo_texture);
+        glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
         CHECK();
 
 
@@ -839,11 +848,12 @@ void render(SDL_Window *window) {
         CHECK();
 
         glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, renderer->assets.palette_texture);
+        glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
         glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
 
         CHECK();
 
+        int texture_size = renderer->assets.menlo.width;
 
         for (int glyph_batch_index = 0; glyph_batch_index < renderer->used_glyph_batches; glyph_batch_index++) {
 
@@ -858,12 +868,12 @@ void render(SDL_Window *window) {
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
-                float guyDepth = 0.0f;
+                float guyDepth = -1.0f;
                 float x = -1.0f + (((float) (data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float) (renderer->view.height-data.y) / (float)renderer->view.height) * 2.0f);
                 float paletteIndex = 0.4f;//rand_float();
 
-                Rect2 uvs = get_uvs(128.0f,  (float)data.sx,  (float)data.sy,  (float)data.w,  (float)data.h);
+                Rect2 uvs = get_uvs(texture_size,  (float)data.sx,  (float)data.sy,  (float)data.w,  (float)data.h);
                 Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y,  (float)data.w,  (float)data.h, scale, scale, 0.0, 0.0);
                 /* // bottomright */
                 batch->vertices[i + 0] = verts.br.x;

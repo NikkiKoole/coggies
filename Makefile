@@ -6,7 +6,7 @@ STRICT = -Werror -Wall
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
 		   -Wparentheses -Winit-self -Wswitch-enum -Wstrict-aliasing=2  \
-		    -Wpointer-arith -Wcast-align \
+		   -Wpointer-arith -Wcast-align \
 		   -Wwrite-strings  -Wold-style-definition -Wmissing-prototypes \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
