@@ -47,7 +47,7 @@ typedef struct {
     u16 z;
     u16 frame;
     s16 dx;
-    s16 dy;
+    s16 dz;
     float palette_index;
 } Actor;
 

@@ -526,7 +526,7 @@ internal int cmpfunc(const void * a, const void * b)
     // TODO this one is correct I think, but I dont understand it anymore ;)
     const Wall *a2 = (const Wall *) a;
     const Wall *b2 = (const Wall *) b;
-    return ( (b2->z + b2->y) - (a2->z + a2->y));
+    return ( ( b2->y) - ( a2->y));
 }
 
 void prepare_renderer(void) {
@@ -552,12 +552,12 @@ void prepare_renderer(void) {
         int prepare_index = i / VALUES_PER_ELEM;
         Wall data = game->walls[prepare_index];
         float scale = 1;
-        float wallX = 0.0f;
+        float wallX = data.frame * 24;
 
         float tempX = data.x;// * block_width;
         float tempY = real_world_height - (data.y) + (data.z);
         tempX  += offset_x_blocks;
-        tempY += offset_y_blocks-(96-12);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
+        tempY += offset_y_blocks-(96);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
 
         float x = (tempX /screenWidth)*2 - 1.0;
         float y = (tempY/screenHeight)*2 - 1.0;
@@ -569,7 +569,8 @@ void prepare_renderer(void) {
         float wallHeight = 108.0f;
         float paletteIndex = (data.y / 350.0f);
         Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
-        Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 96.0f/108.0f);
+        //96.0f/108.0f
+        Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
 
         // bottomright
         renderer->walls.vertices[i + 0] = verts.br.x;
@@ -751,16 +752,19 @@ void render(SDL_Window *window) {
             Actor data = game->actors[prepare_index];
             r32 scale = 1;
             r32 guyFrame = 48.0 + data.frame * 24.0f;
-            //float guyDepth = 0.25f - 0.0001f;//((float)game->world_depth / (float)data.z);//   -1.0f;
-            float guyDepth = ((float)data.z/(float)real_world_depth);
-            float tempX = data.x;// * block_width;
-            float tempY = real_world_height - (data.y) - (data.z);
+
+            // TODO this -0.2f is to ghet actors drawn on top of walls/floors that are of the same depth, understand this number better
+            //printf ("%f \n", (float)12 / (float)real_world_depth);
+            float offset_toget_actor_ontop_of_floor = (float)12 / (float)real_world_depth;
+            float guyDepth = ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+            float tempX = data.x;
+            float tempY = real_world_height - (data.y) + (data.z);
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
 
             // TODO this value (as with this value with the walls) has todo with the pivotY point in get_verts
             // curreently the result is correct but the code between walls and actors is too different.
-            tempY -= (48 + 12);
+            tempY -= (96);
 
             float x = ((float)tempX /screenWidth)*2 - 1.0;
             float y = ((float)tempY /screenHeight)*2 - 1.0;
@@ -768,6 +772,7 @@ void render(SDL_Window *window) {
             float paletteIndex = data.palette_index; //rand_float();
 
             Rect2 uvs = get_uvs(texture_size, guyFrame, 24.0f, 24.0f, 96.0f);
+            //84.0f/96.0f
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0f);
 
 

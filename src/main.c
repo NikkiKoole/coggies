@@ -278,9 +278,9 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 70;
-    game->world_height = 9;
-    game->world_depth = 3;
+    game->world_width = 40;
+    game->world_height = 1;
+    game->world_depth = 10;
 
     game->block_width = 24;
     game->block_depth = 12;
@@ -299,13 +299,15 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 0;
+                game->walls[j].frame = 1;//rand_int(20) > 1 ? 1 : 0;
                 j++;
             }
         }
     }
 
-    game->actor_count = 150;
+#define ACTOR_BATCH 250
+
+    game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
     set_actor_batch_sizes();
 
@@ -313,11 +315,11 @@ int main(int argc, char **argv) {
     for (u32 i = 0; i< game->actor_count; i++) {
         game->actors[i].x = rand_int(game->world_width) * game->block_width;;
         game->actors[i].y = rand_int(game->world_height) * game->block_height;
-        game->actors[i].z = rand_int(game->world_depth) * game->block_depth;
-        game->actors[i].frame = rand_int(3);
+        game->actors[i].z =  0;//rand_int(game->world_depth) * game->block_depth ;
+        game->actors[i].frame = rand_int(4);
         int speed = 0;
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+        game->actors[i].dz = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].palette_index = rand_float();
     }
 
@@ -354,17 +356,17 @@ int main(int argc, char **argv) {
                  wants_to_quit = true;
             }
             if (keys[SDL_SCANCODE_INSERT]) {
-                for (j = 0; j < 250; j++) {
-                    if (game->actor_count < (2048 * 8) - 250) {
+                for (j = 0; j < ACTOR_BATCH; j++) {
+                    if (game->actor_count < (2048 * 8) - ACTOR_BATCH) {
                         actor_add(game);
                         u32 i = game->actor_count;
-                        game->actors[i].x = rand_int(renderer->view.width);
-                        game->actors[i].y = rand_int(renderer->view.height);
-                        //game->actors[i].z =  0;//rand_int(50); ; // todo make it 3d
-                        game->actors[i].frame = rand_int(3);
-                        int speed = 1 + rand_int(5);
+                        game->actors[i].x = rand_int(game->world_width) * game->block_width;;
+                        game->actors[i].y = rand_int(game->world_height) * game->block_height;
+                        game->actors[i].z =  rand_int(game->world_depth) * game->block_depth ;
+                        game->actors[i].frame = rand_int(4);
+                        int speed = 1;// + rand_int(5);
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-                        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+                        game->actors[i].dz = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].palette_index = rand_float();
                         set_actor_batch_sizes();
                     } else {
@@ -384,7 +386,7 @@ int main(int argc, char **argv) {
             }
             if (keys[SDL_SCANCODE_DELETE]) {
                 //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
-                for (j = 0; j < 250; j++) {
+                for (j = 0; j < ACTOR_BATCH; j++) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
                     set_actor_batch_sizes();
                 }
@@ -400,41 +402,39 @@ int main(int argc, char **argv) {
         }
 
         for (u32 i = 0; i < game->actor_count; i++) {
-            if (game->actors[i].x <= 0 || game->actors[i].x >= renderer->view.width) {
+            if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
                 if (game->actors[i].x < 0) {
                     game->actors[i].x = 0;
                 }
-                if (game->actors[i].x > renderer->view.width) {
-                    game->actors[i].x = renderer->view.width;
+                if (game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
+                    game->actors[i].x = ((game->world_width-1) * game->block_width);
                 }
 
                 game->actors[i].dx *= -1;
             }
-            game->actors[i].x += game->actors[i].dx; //rand_int(State->view.width);
+            game->actors[i].x += game->actors[i].dx;
 
-            if (game->actors[i].y <= 0 || game->actors[i].y >= renderer->view.height) {
-                if (game->actors[i].y < 0) {
-                    game->actors[i].y = 0;
+            if (game->actors[i].z <= 0 || game->actors[i].z >= ((game->world_depth-1) * game->block_depth)) {
+                if (game->actors[i].z < 0) {
+                    game->actors[i].z = 0;
                 }
-                if (game->actors[i].y > renderer->view.height) {
-                    game->actors[i].y = renderer->view.height;
+                if (game->actors[i].z > ((game->world_depth-1) * game->block_depth)) {
+                    game->actors[i].z = ((game->world_depth-1) * game->block_depth);
                 }
 
-                game->actors[i].dy *= -1;
+                game->actors[i].dz *= -1;
 
 
             }
-            game->actors[i].y += game->actors[i].dy; //rand_int(State->view.yheight);
-            //game->actors[i].z = 0;                     // todo make it 3d
+            game->actors[i].z += game->actors[i].dz;
         }
+
 #ifndef IOS //IOS is being rendered with the animation callback instead.
-
-
         render(renderer->window);
         time = SDL_GetPerformanceCounter() - time;
         snprintf (frameCount, 64, "frame: %.2f",  ((float)time/(float)(SDL_GetPerformanceFrequency()) )*1000.0f );
-
 #endif
+
     }
     quit();
     return 1;
