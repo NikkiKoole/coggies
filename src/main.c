@@ -299,7 +299,7 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = y;//rand_int(20) > 1 ? 1 : 0;
+                game->walls[j].frame = rand_int(20) > 1 ? 3 : 0;
                 j++;
             }
         }
@@ -384,6 +384,16 @@ int main(int argc, char **argv) {
                 prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
 
             }
+            if (keys[SDL_SCANCODE_UP]) {
+                game->y_view_offset-=5;
+                prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+            }
+            if (keys[SDL_SCANCODE_DOWN]) {
+                game->y_view_offset+=5;
+                prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+
+            }
+
             if (keys[SDL_SCANCODE_DELETE]) {
                 //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
                 for (j = 0; j < ACTOR_BATCH; j++) {
