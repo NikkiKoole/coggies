@@ -523,13 +523,13 @@ void initialize_GL(void) {
 
 internal int cmpfunc(const void * a, const void * b)
 {
+    // TODO this one is correct I think, but I dont understand it anymore ;)
     const Wall *a2 = (const Wall *) a;
     const Wall *b2 = (const Wall *) b;
-    return ( (b2->z*1000 + b2->y)- (a2->z*1000 + a2->y));
+    return ( (b2->z + b2->y) - (a2->z + a2->y));
 }
 
 void prepare_renderer(void) {
-
 
     ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
 
@@ -537,44 +537,34 @@ void prepare_renderer(void) {
 
     qsort(game->walls, renderer->walls.count, sizeof(game->walls[0]), cmpfunc);
 
-
-
-    // TODO this is valuable info (the block dimenisons, where should it live?)
-    int block_width = 24;
-    int block_depth = 12;
-    int block_height = 96;
-
-    int real_world_width = game->world_width * block_width;
-    int real_world_depth = game->world_depth * block_depth;
-    int real_world_height = game->world_height * block_height;
-
-    int offset_x_blocks = (renderer->view.width - real_world_width) / 2;
-    int offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
-
+    int real_world_height = game->world_height * game->block_height;
+    int real_world_depth = game->world_depth * (game->block_depth);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
 
-    // THE (Y)POSITIONS ARE STILL BUSTED, but good enough to move forward for now.
-
+    int offset_x_blocks = game->x_view_offset;
+    int offset_y_blocks = game->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
+
     for (u32 i = 0; i < renderer->walls.count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
+
         int prepare_index = i / VALUES_PER_ELEM;
         Wall data = game->walls[prepare_index];
-        //        printf("%d) %d, %d, %d\n", prepare_index, data.x, data.y, data.z);
-        //data.x = 0;data.y=0;data.z=0;
         float scale = 1;
         float wallX = 0.0f;
 
         float tempX = data.x;// * block_width;
-        float tempY = real_world_height - (data.y) + (data.z)/2;
+        float tempY = real_world_height - (data.y) + (data.z);
         tempX  += offset_x_blocks;
         tempY += offset_y_blocks-(96-12);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
 
         float x = (tempX /screenWidth)*2 - 1.0;
         float y = (tempY/screenHeight)*2 - 1.0;
 
-        float wallDepth = -0.25f ;
+        //float wallDepth = 0.25f ;
+        float wallDepth = ((float)data.z/(float)real_world_depth);
+        //printf("%f %d %d\n",wallDepth, data.z, real_world_depth);
         float wallY = 12.0f;
         float wallHeight = 108.0f;
         float paletteIndex = (data.y / 350.0f);
@@ -750,24 +740,37 @@ void render(SDL_Window *window) {
         u32 screenWidth = renderer->view.width;
         u32 screenHeight = renderer->view.height;
 
+
         int texture_size = renderer->assets.sprite.width;
+        int real_world_height = game->world_height * game->block_height;
+        int real_world_depth = game->world_depth * game->block_depth;
+
         for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
-            r32 scale = 1; //(float)randInt(3);
+            r32 scale = 1;
             r32 guyFrame = 48.0 + data.frame * 24.0f;
-            float guyDepth =  0;   ;//(data.z / 50.0f); ;//0.5f + (rand_float()*0.5f) -0.25f;//  / /-1.0f;//data.z / 50.0f; //0.0f;//-0.8 + randFloat()*0.8f; // walls are at -0.5
+            //float guyDepth = 0.25f - 0.0001f;//((float)game->world_depth / (float)data.z);//   -1.0f;
+            float guyDepth = ((float)data.z/(float)real_world_depth);
+            float tempX = data.x;// * block_width;
+            float tempY = real_world_height - (data.y) - (data.z);
+            tempX += game->x_view_offset;
+            tempY += game->y_view_offset;
 
-            float x = ((float)data.x /screenWidth)*2 - 1.0;
-            float y = ((float)data.y /screenHeight)*2 - 1.0;
+            // TODO this value (as with this value with the walls) has todo with the pivotY point in get_verts
+            // curreently the result is correct but the code between walls and actors is too different.
+            tempY -= (48 + 12);
 
-            y = y * -1;
+            float x = ((float)tempX /screenWidth)*2 - 1.0;
+            float y = ((float)tempY /screenHeight)*2 - 1.0;
 
             float paletteIndex = data.palette_index; //rand_float();
 
             Rect2 uvs = get_uvs(texture_size, guyFrame, 24.0f, 24.0f, 96.0f);
-            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0);
+            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0f);
+
+
             // bottomright
             batch->vertices[i + 0] = verts.br.x;
             batch->vertices[i + 1] = verts.br.y;

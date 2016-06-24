@@ -68,10 +68,18 @@ typedef struct {
     u32 actor_count;
     Glyph glyphs[16384];
     u32 glyph_count;
-
+    ///
+    u32 x_view_offset;
+    u32 y_view_offset;
+    /////
     u32 world_width;
     u32 world_depth;
     u32 world_height;
+    u32 block_width;
+    u32 block_depth;
+    u32 block_height;
+    ////
+
 } GameState;
 
 void actor_remove(GameState *state, u32 index);

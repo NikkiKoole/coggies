@@ -234,6 +234,17 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
     return drawn;
 }
 
+internal void center_view() {
+    int real_world_width = game->world_width * game->block_width;
+    int real_world_depth = game->world_depth * game->block_depth;
+    int real_world_height = game->world_height * game->block_height;
+
+    int offset_x_blocks = (renderer->view.width - real_world_width) / 2;
+    int offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
+
+    game->x_view_offset = offset_x_blocks;
+    game->y_view_offset = offset_y_blocks;
+}
 
 
 int main(int argc, char **argv) {
@@ -271,6 +282,12 @@ int main(int argc, char **argv) {
     game->world_height = 9;
     game->world_depth = 3;
 
+    game->block_width = 24;
+    game->block_depth = 12;
+    game->block_height = 96;
+
+    center_view();
+
     renderer->walls.count = (game->world_width * game->world_height * game->world_depth);
 
     ASSERT(renderer->walls.count <= 2048 && "Make buffers larger for world blocks");
@@ -279,16 +296,14 @@ int main(int argc, char **argv) {
     for (u32 x = 0; x< game->world_width ; x++) {
         for (u32 y = 0; y < game->world_height; y++) {
             for (u32 z = 0; z <  game->world_depth; z++) {
-                game->walls[j].x = x*24;
-                game->walls[j].y = y*96;
-                game->walls[j].z = z*24;
+                game->walls[j].x = x * game->block_width;
+                game->walls[j].y = y * game->block_height;
+                game->walls[j].z = z * game->block_depth;
                 game->walls[j].frame = 0;
-                //printf("set: %d) %d, %d, %d\n", j, x, y, z);
                 j++;
             }
         }
     }
-    printf("walls set: %d.\n", j);
 
     game->actor_count = 150;
     ASSERT(game->actor_count <= 16384);
@@ -296,27 +311,19 @@ int main(int argc, char **argv) {
 
 
     for (u32 i = 0; i< game->actor_count; i++) {
-        game->actors[i].x = rand_int(renderer->view.width);
-        game->actors[i].y = rand_int(renderer->view.height);
-        game->actors[i].z =  0;
+        game->actors[i].x = rand_int(game->world_width) * game->block_width;;
+        game->actors[i].y = rand_int(game->world_height) * game->block_height;
+        game->actors[i].z = rand_int(game->world_depth) * game->block_depth;
         game->actors[i].frame = rand_int(3);
-        int speed = 1 + rand_int(5);
+        int speed = 0;
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].palette_index = rand_float();
     }
 
-
-
-
-
-
     prepare_renderer();
 
-
-    //Mix_PlayMusic(State->music1, -1);
     Mix_PlayChannel(-1, renderer->assets.wav1, 0);
-
 
     b32 wants_to_quit = false;
     SDL_Event e;
@@ -334,15 +341,12 @@ int main(int argc, char **argv) {
     while (! wants_to_quit) {
         snprintf(actorCount, 64, "actors: %d", game->actor_count);
 
-         game->glyph_count = 0;
-         game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
-         game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
-         //char text2[] = "\nHello\nABC\tStuffABC";
-         //game->glyph_count += draw_text(text2, 200, 100, &renderer->assets.menlo_font);
-         set_glyph_batch_sizes();
+        game->glyph_count = 0;
+        game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
+        game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
+        set_glyph_batch_sizes();
 
         u64 time = SDL_GetPerformanceCounter();
-
 
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
@@ -356,7 +360,7 @@ int main(int argc, char **argv) {
                         u32 i = game->actor_count;
                         game->actors[i].x = rand_int(renderer->view.width);
                         game->actors[i].y = rand_int(renderer->view.height);
-                        game->actors[i].z =  0;//rand_int(50); ; // todo make it 3d
+                        //game->actors[i].z =  0;//rand_int(50); ; // todo make it 3d
                         game->actors[i].frame = rand_int(3);
                         int speed = 1 + rand_int(5);
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
@@ -367,6 +371,15 @@ int main(int argc, char **argv) {
                         printf("Wont be adding actors reached max already\n");
                     }
                 }
+
+            }
+            if (keys[SDL_SCANCODE_LEFT]) {
+                game->x_view_offset-=5;
+                prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+            }
+            if (keys[SDL_SCANCODE_RIGHT]) {
+                game->x_view_offset+=5;
+                prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
 
             }
             if (keys[SDL_SCANCODE_DELETE]) {
@@ -412,7 +425,7 @@ int main(int argc, char **argv) {
 
             }
             game->actors[i].y += game->actors[i].dy; //rand_int(State->view.yheight);
-            game->actors[i].z = 0;                     // todo make it 3d
+            //game->actors[i].z = 0;                     // todo make it 3d
         }
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 

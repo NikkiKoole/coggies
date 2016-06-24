@@ -36,12 +36,12 @@
   Since I dont really feel like computing screen positions in my game code.
   I will keep the data being x,y,z
 
+  Ok got some stuff going now, I do still need to fix the depths, and the sorting.
 
 * todo
 - [-] build a renderer for my needs
-  - [-] make world position, screen position more stable and the same for everything
-    - now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
-  - [ ] pan & zoom functionality.
+  - [ ] make world position, screen position more stable and the same for everything
+    now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
     keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
@@ -51,6 +51,9 @@
     - [ ] upper body
     - [ ] lower body
   - [ ] spritesheet texture atlasses.
+  - [-] pan & zoom functionality.
+    - [X] pan
+    - [ ] zoom
   - [X] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
     I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
     the bitmap itself is an tga
