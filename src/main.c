@@ -279,7 +279,7 @@ int main(int argc, char **argv) {
     load_resources();
 
     game->world_width = 40;
-    game->world_height = 1;
+    game->world_height = 3;
     game->world_depth = 10;
 
     game->block_width = 24;
@@ -299,13 +299,13 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 1;//rand_int(20) > 1 ? 1 : 0;
+                game->walls[j].frame = y;//rand_int(20) > 1 ? 1 : 0;
                 j++;
             }
         }
     }
 
-#define ACTOR_BATCH 250
+#define ACTOR_BATCH 2
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);

@@ -751,10 +751,11 @@ void render(SDL_Window *window) {
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
             r32 scale = 1;
-            r32 guyFrame = 48.0 + data.frame * 24.0f;
+            r32 guyFrame = (4*24)+ data.frame * 24.0f;
 
             // TODO this -0.2f is to ghet actors drawn on top of walls/floors that are of the same depth, understand this number better
             //printf ("%f \n", (float)12 / (float)real_world_depth);
+
             float offset_toget_actor_ontop_of_floor = (float)12 / (float)real_world_depth;
             float guyDepth = ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
             float tempX = data.x;
