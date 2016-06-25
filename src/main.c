@@ -305,7 +305,7 @@ int main(int argc, char **argv) {
         }
     }
 
-#define ACTOR_BATCH 20
+#define ACTOR_BATCH 200
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);

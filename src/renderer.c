@@ -527,7 +527,7 @@ internal int cmpfunc(const void * a, const void * b)
 
     const Wall *a2 = (const Wall *) a;
     const Wall *b2 = (const Wall *) b;
-    return ( ( a2->z) - ( b2->z));
+    return ( ( a2->y) - ( b2->y));
 }
 
 void prepare_renderer(void) {
@@ -536,7 +536,7 @@ void prepare_renderer(void) {
 
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    qsort(game->walls, renderer->walls.count, sizeof(game->walls[0]), cmpfunc);
+    //qsort(game->walls, renderer->walls.count, sizeof(game->walls[0]), cmpfunc);
 
     int real_world_height = game->world_height * game->block_height;
     int real_world_depth = game->world_depth * (game->block_depth);
