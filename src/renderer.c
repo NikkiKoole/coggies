@@ -523,10 +523,11 @@ void initialize_GL(void) {
 
 internal int cmpfunc(const void * a, const void * b)
 {
-    // TODO this one is correct I think, but I dont understand it anymore ;)
+    // TODO  I dont understand it anymore ;)
+
     const Wall *a2 = (const Wall *) a;
     const Wall *b2 = (const Wall *) b;
-    return ( ( b2->y) - ( a2->y));
+    return ( ( a2->z) - ( b2->z));
 }
 
 void prepare_renderer(void) {
@@ -555,15 +556,15 @@ void prepare_renderer(void) {
         float wallX = data.frame * 24;
 
         float tempX = data.x;// * block_width;
-        float tempY = real_world_height - (data.y) + (data.z);
+        float tempY = real_world_height + (data.y) - (data.z);
         tempX  += offset_x_blocks;
         tempY += offset_y_blocks-(96);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
 
-        float x = (tempX /screenWidth)*2 - 1.0;
-        float y = (tempY/screenHeight)*2 - 1.0;
+        float x = (tempX / screenWidth)*2 - 1.0;
+        float y = (tempY / screenHeight)*2 - 1.0;
 
         //float wallDepth = 0.25f ;
-        float wallDepth = ((float)data.z/(float)real_world_depth);
+        float wallDepth = -1*((float)data.z/(float)real_world_depth);
         //printf("%f %d %d\n",wallDepth, data.z, real_world_depth);
         float wallY = 12.0f;
         float wallHeight = 108.0f;
@@ -697,6 +698,8 @@ void render(SDL_Window *window) {
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
+    //glDepthFunc(GL_GREATER);
+
 
     CHECK();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -757,9 +760,10 @@ void render(SDL_Window *window) {
             //printf ("%f \n", (float)12 / (float)real_world_depth);
 
             float offset_toget_actor_ontop_of_floor = (float)12 / (float)real_world_depth;
-            float guyDepth = ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+            float guyDepth =-1* ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+
             float tempX = data.x;
-            float tempY = real_world_height - (data.y) + (data.z);
+            float tempY = real_world_height + (data.y) - (data.z);
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
 
@@ -877,7 +881,7 @@ void render(SDL_Window *window) {
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
-                float guyDepth = -1.0f;
+                float guyDepth = 1.0f;
                 float x = -1.0f + (((float) (data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float) (renderer->view.height-data.y) / (float)renderer->view.height) * 2.0f);
                 float paletteIndex = 0.4f;//rand_float();
