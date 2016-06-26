@@ -1,45 +1,11 @@
 * Currently doing
-
-                                   |
-                                   |
-                                   |
-                                   |
-                                  y|
-                               0,0,0-------- x
-                                    \
-                                     \ z
-
-  I think the whole positioning of everything is flipped, but I am not sure, investigate...
-  Yes the actors are flipped over Y, text is too, walls arent :/
-  I think it would be wise to let the Actor/Wall and Glyph (as the structs in memory.h) all have world positions immeadiatly
-  (So no more x=1, y=1 z=1 for a wall block at tile position 1,1,1, just multiiply it with the block sizes already)
-  (For blocks however it could be usefull to keep the tilepositions around (for path finding purposes down the line I think))
-
-  The way the block are oriented shows why the walls werent flipped over Y.
-  I do want them to be consistently (wrong) like the others.
-  So I have to calculate the screenY outside the render loops too (So i can flip it in there.)
-  maybe walls and actors will get a screenY property (the x is usable already..)
-
-  (like the Glyph has already)
-  (btw there will be y & z, that will still need to be made into a screenY)
-  then I can generalise them a bit more.
-  also I want to get rid of the large vertices for loops for every kind if possible.
-
-
-  I reckon I will want two passes
-  One where I assume the screen will be of *some* dismensions and 0,0 is at the top left corner.
-  This is how I want to feed the position data
-
-  Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
-  You can imagine initializeing the pan value, so the world is centered at start.
-
-  Since I dont really feel like computing screen positions in my game code.
-  I will keep the data being x,y,z
-
-  Ok got some stuff going now, I do still need to fix the depths, and the sorting.
-
+  Load some real buildings and display them.
 * todo
 - [-] build a renderer for my needs
+  - [ ] benchmark manually zsorting every world item and just using x/y VS the current x/y/z + depth-buffer approach:
+    I've the feeling the zsorting without using a depth  buffer actually will be better(faster) in my case. And it might make more items/larger buffers possible
+    since I dont have to move the Z in the VBO's and the depthbuffer func doenst need to run.
+    it will mean a lot of rewriting though for now I just want to move forward and not care about this.
   - [ ] make world position, screen position more stable and the same for everything
     now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
   - [ ] visible surface detection
@@ -105,6 +71,37 @@
   - [X] filesystem watcher
 
 * done
+- [X] position items in 3d world
+  Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
+  You can imagine initializeing the pan value, so the world is centered at start.
+                                   |
+                                   |
+                                   |
+                                   |
+
+                                  y|
+                               0,0,0-------- x
+                                    \
+                                     \ z
+  I think the whole positioning of everything is flipped, but I am not sure, investigate...
+  Yes the actors are flipped over Y, text is too, walls arent :/
+  I think it would be wise to let the Actor/Wall and Glyph (as the structs in memory.h) all have world positions immeadiatly
+  (So no more x=1, y=1 z=1 for a wall block at tile position 1,1,1, just multiiply it with the block sizes already)
+  (For blocks however it could be usefull to keep the tilepositions around (for path finding purposes down the line I think))
+  The way the block are oriented shows why the walls werent flipped over Y.
+  I do want them to be consistently (wrong) like the others.
+  So I have to calculate the screenY outside the render loops too (So i can flip it in there.)
+  maybe walls and actors will get a screenY property (the x is usable already..)
+  (like the Glyph has already)
+  (btw there will be y & z, that will still need to be made into a screenY)
+  then I can generalise them a bit more.
+  also I want to get rid of the large vertices for loops for every kind if possible.
+  I reckon I will want two passes
+  One where I assume the screen will be of *some* dismensions and 0,0 is at the top left corner.
+  This is how I want to feed the position data
+  Since I dont really feel like computing screen positions in my game code.
+  I will keep the data being x,y,z
+  Ok got some stuff going now, I do still need to fix the depths, and the sorting.
 - [X] made a fps counter on screen
 - [X] get some json loading/parsing in (DONT NEED JSON ANYMORE)
   needed for texture atlasses generated by shoebox
@@ -129,7 +126,7 @@
 - [X] make some sorting (need memory scheme for algorithm) to sort wall parts on their Y position.
   just using qsort seemed to be sweet.
 
-*** Compiling SDL2_Mixer
+* Compiling SDL2_Mixer
 **** ios
   Download the source zip.
   Unzip in a new directory.

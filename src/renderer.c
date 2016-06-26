@@ -533,10 +533,7 @@ internal int cmpfunc(const void * a, const void * b)
 void prepare_renderer(void) {
 
     ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
-
     glViewport(0, 0, renderer->view.width, renderer->view.height);
-
-    //qsort(game->walls, renderer->walls.count, sizeof(game->walls[0]), cmpfunc);
 
     int real_world_height = game->world_height * game->block_height;
     int real_world_depth = game->world_depth * (game->block_depth);
@@ -558,7 +555,7 @@ void prepare_renderer(void) {
         float tempX = data.x;// * block_width;
         float tempY = real_world_height + (data.y) - (data.z);
         tempX  += offset_x_blocks;
-        tempY += offset_y_blocks-(96);   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
+        tempY += offset_y_blocks -96;   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
 
         float x = (tempX / screenWidth)*2 - 1.0;
         float y = (tempY / screenHeight)*2 - 1.0;
@@ -759,20 +756,17 @@ void render(SDL_Window *window) {
             // TODO this -0.2f is to ghet actors drawn on top of walls/floors that are of the same depth, understand this number better
             //printf ("%f \n", (float)12 / (float)real_world_depth);
 
-            float offset_toget_actor_ontop_of_floor = (float)12 / (float)real_world_depth;
+            float offset_toget_actor_ontop_of_floor = (float)12.0f / real_world_depth;
             float guyDepth =-1* ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
 
             float tempX = data.x;
-            float tempY = real_world_height + (data.y) - (data.z);
+            float tempY = (float)real_world_height + (data.y) - (data.z);
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
-
-            // TODO this value (as with this value with the walls) has todo with the pivotY point in get_verts
-            // curreently the result is correct but the code between walls and actors is too different.
             tempY -= (96);
 
-            float x = ((float)tempX /screenWidth)*2 - 1.0;
-            float y = ((float)tempY /screenHeight)*2 - 1.0;
+            float x = ((float)tempX /(float)screenWidth)*2.0f - 1.0f;
+            double y = ((float)tempY /(float)screenHeight)*2.0f - 1.0f;
 
             float paletteIndex = data.palette_index; //rand_float();
 

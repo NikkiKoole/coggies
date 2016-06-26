@@ -69,8 +69,8 @@ typedef struct {
     Glyph glyphs[16384];
     u32 glyph_count;
     ///
-    u32 x_view_offset;
-    u32 y_view_offset;
+    s32 x_view_offset;
+    s32 y_view_offset;
     /////
     u32 world_width;
     u32 world_depth;

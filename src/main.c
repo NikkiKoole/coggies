@@ -239,11 +239,12 @@ internal void center_view() {
     int real_world_depth = game->world_depth * game->block_depth;
     int real_world_height = game->world_height * game->block_height;
 
-    int offset_x_blocks = (renderer->view.width - real_world_width) / 2;
-    int offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
+    s32 offset_x_blocks = (renderer->view.width - real_world_width) / 2;
+    s32 offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
 
     game->x_view_offset = offset_x_blocks;
     game->y_view_offset = offset_y_blocks;
+    printf("height: %d, depth: %d, yoffset: %d\n",real_world_height, real_world_depth, offset_y_blocks);
 }
 
 
@@ -278,9 +279,9 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 40;
-    game->world_height = 3;
-    game->world_depth = 10;
+    game->world_width = 10;
+    game->world_height = 1;
+    game->world_depth = 4;
 
     game->block_width = 24;
     game->block_depth = 12;
@@ -299,7 +300,7 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = rand_int(20) > 1 ? 3 : 0;
+                game->walls[j].frame = 3;//0;//y % 3;
                 j++;
             }
         }
@@ -387,10 +388,13 @@ int main(int argc, char **argv) {
             if (keys[SDL_SCANCODE_UP]) {
                 game->y_view_offset-=5;
                 prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                printf("y offset: %d\n", game->y_view_offset);
+
             }
             if (keys[SDL_SCANCODE_DOWN]) {
                 game->y_view_offset+=5;
                 prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                printf("y offset: %d\n", game->y_view_offset);
 
             }
 
