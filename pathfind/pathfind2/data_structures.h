@@ -11,16 +11,16 @@
         (List)->Sentinel = Sentinel;                        \
         (List)->Sentinel->Next = Sentinel;    }             \
 
-#define NEW_SLIST_FREE(List, Arena, Type)    {                   \
+#define NEW_SLIST_FREE(List, Arena, Type)    {              \
         Type *Sentinel = (Type *) PUSH_STRUCT(Arena, Type); \
         (List)->Sentinel = Sentinel;                        \
         (List)->Free = (Type *) PUSH_STRUCT(Arena, Type);   \
         (List)->Free->Next = (List)->Sentinel;              \
         (List)->Sentinel->Next = Sentinel;    }             \
 
-#define FREE_SLIST(List, Type) {                \
-        Type *First = (List)->Sentinel->Next;   \
-        (List)->Free->Next = First;             \
+#define FREE_SLIST(List, Type) {                    \
+        Type *First = (List)->Sentinel->Next;       \
+        (List)->Free->Next = First;                 \
         (List)->Sentinel->Next = (List)->Sentinel;  \
     }                                               \
 
@@ -32,19 +32,19 @@
     List->Sentinel->Next = List->Sentinel->Next->Next;  \
 
 
-#define NEW_DLIST(List, Arena, Type) {                  \
-    Type *Sentinel = (Type *) PUSH_STRUCT(Arena, Type); \
-    (List)->Sentinel = Sentinel;                         \
-    (List)->Sentinel->Next = Sentinel;                    \
-    (List)->Sentinel->Prev = Sentinel;}                   \
+#define NEW_DLIST(List, Arena, Type) {                      \
+        Type *Sentinel = (Type *) PUSH_STRUCT(Arena, Type); \
+        (List)->Sentinel = Sentinel;                        \
+        (List)->Sentinel->Next = Sentinel;                  \
+        (List)->Sentinel->Prev = Sentinel;}                 \
 
-#define NEW_DLIST_FREE(List, Arena, Type)                    \
-    (List)->Sentinel = (Type *) PUSH_STRUCT(Arena, Type);            \
-    (List)->Sentinel->Next = (List)->Sentinel;                       \
-    (List)->Sentinel->Prev = (List)->Sentinel;                       \
-    (List)->Free = (Type *) PUSH_STRUCT(Arena, Type);                \
-    (List)->Free->Next = (List)->Sentinel;                           \
-    (List)->Free->Prev = (List)->Sentinel;                           \
+#define NEW_DLIST_FREE(List, Arena, Type)                   \
+    (List)->Sentinel = (Type *) PUSH_STRUCT(Arena, Type);   \
+    (List)->Sentinel->Next = (List)->Sentinel;              \
+    (List)->Sentinel->Prev = (List)->Sentinel;              \
+    (List)->Free = (Type *) PUSH_STRUCT(Arena, Type);       \
+    (List)->Free->Next = (List)->Sentinel;                  \
+    (List)->Free->Prev = (List)->Sentinel;                  \
 
 #define DLIST_ADDLAST(List, Node)               \
     Node->Next = List->Sentinel;                \
@@ -59,12 +59,12 @@
     Node->Prev->Next = Node;                    \
 
 
-#define FREE_DLIST(List) {                          \
-    List->Sentinel->Prev->Next = List->Free->Next; \
-    List->Free->Next = List->Sentinel->Next;        \
-    List->Sentinel->Next = List->Sentinel;          \
-    List->Sentinel->Prev = List->Sentinel;    \
-}
+#define FREE_DLIST(List) {                              \
+        List->Sentinel->Prev->Next = List->Free->Next;  \
+        List->Free->Next = List->Sentinel->Next;        \
+        List->Sentinel->Next = List->Sentinel;          \
+        List->Sentinel->Prev = List->Sentinel;          \
+    }                                                   \
 
 
 
@@ -124,7 +124,7 @@
             Heap->data[index] = Heap->data[parent];         \
         }                                                   \
         Heap->data[index] = Value;                          \
-    };
+    };                                                      \
 
 #define HEAP_PEEKFIRST(h) (*(h)->data)
 

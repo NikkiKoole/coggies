@@ -552,22 +552,19 @@ void prepare_renderer(void) {
         float scale = 1;
         float wallX = data.frame * 24;
 
-        float tempX = data.x;// * block_width;
-        float tempY = real_world_height + (data.y) - (data.z);
+        float tempX = data.x;
+        float tempY =  (data.y) - (data.z)/2;
         tempX  += offset_x_blocks;
-        tempY += offset_y_blocks -96;   // ok you need to do -96 because thast the height, and 12 less because the pivot is 12 px of the bottom
+        tempY += offset_y_blocks;
 
         float x = (tempX / screenWidth)*2 - 1.0;
         float y = (tempY / screenHeight)*2 - 1.0;
 
-        //float wallDepth = 0.25f ;
         float wallDepth = -1*((float)data.z/(float)real_world_depth);
-        //printf("%f %d %d\n",wallDepth, data.z, real_world_depth);
         float wallY = 12.0f;
         float wallHeight = 108.0f;
-        float paletteIndex = (data.y / 350.0f);
+        float paletteIndex = rand_float();//(data.y / 350.0f);
         Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
-        //96.0f/108.0f
         Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
 
         // bottomright
@@ -751,19 +748,16 @@ void render(SDL_Window *window) {
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
             r32 scale = 1;
-            r32 guyFrame = (4*24)+ data.frame * 24.0f;
+            r32 guyFrame = (12*24)+ data.frame * 24.0f;
 
-            // TODO this -0.2f is to ghet actors drawn on top of walls/floors that are of the same depth, understand this number better
-            //printf ("%f \n", (float)12 / (float)real_world_depth);
-
+            // this offset is to get actors drawn on top of walls/floors that are of the same depth
             float offset_toget_actor_ontop_of_floor = (float)12.0f / real_world_depth;
             float guyDepth =-1* ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
 
             float tempX = data.x;
-            float tempY = (float)real_world_height + (data.y) - (data.z);
+            float tempY =  (data.y) - (data.z)/2;
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
-            tempY -= (96);
 
             float x = ((float)tempX /(float)screenWidth)*2.0f - 1.0f;
             double y = ((float)tempY /(float)screenHeight)*2.0f - 1.0f;
@@ -771,7 +765,6 @@ void render(SDL_Window *window) {
             float paletteIndex = data.palette_index; //rand_float();
 
             Rect2 uvs = get_uvs(texture_size, guyFrame, 24.0f, 24.0f, 96.0f);
-            //84.0f/96.0f
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0f);
 
 

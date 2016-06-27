@@ -235,16 +235,17 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
 }
 
 internal void center_view() {
+    // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
+
     int real_world_width = game->world_width * game->block_width;
-    int real_world_depth = game->world_depth * game->block_depth;
+    int real_world_depth = game->world_depth * game->block_depth/2;
     int real_world_height = game->world_height * game->block_height;
 
     s32 offset_x_blocks = (renderer->view.width - real_world_width) / 2;
     s32 offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
 
     game->x_view_offset = offset_x_blocks;
-    game->y_view_offset = offset_y_blocks;
-    printf("height: %d, depth: %d, yoffset: %d\n",real_world_height, real_world_depth, offset_y_blocks);
+    game->y_view_offset = real_world_depth + offset_y_blocks;
 }
 
 
@@ -273,24 +274,24 @@ int main(int argc, char **argv) {
     UNUSED(argv);
 
     renderer->view.width = 1920; //1800;
-    renderer->view.height = 960;
+    renderer->view.height = 900;
 
     initialize_SDL();
     initialize_GL();
     load_resources();
 
-    game->world_width = 10;
+    game->world_width = 50;
     game->world_height = 1;
-    game->world_depth = 4;
+    game->world_depth = 40;
 
     game->block_width = 24;
-    game->block_depth = 12;
+    game->block_depth = 24;
     game->block_height = 96;
 
     center_view();
 
     renderer->walls.count = (game->world_width * game->world_height * game->world_depth);
-
+    printf("%d\n",renderer->walls.count);
     ASSERT(renderer->walls.count <= 2048 && "Make buffers larger for world blocks");
 
     u32 j =0;
@@ -300,7 +301,7 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 3;//0;//y % 3;
+                game->walls[j].frame = 3+rand_int(9);//3+rand_int(3) ;
                 j++;
             }
         }
@@ -377,11 +378,11 @@ int main(int argc, char **argv) {
 
             }
             if (keys[SDL_SCANCODE_LEFT]) {
-                game->x_view_offset-=5;
+                game->x_view_offset-=20;
                 prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_RIGHT]) {
-                game->x_view_offset+=5;
+                game->x_view_offset+=20;
                 prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
 
             }
