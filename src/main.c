@@ -155,7 +155,22 @@ internal void update_frame(void *param) {
 }
 
 
-// TODO generalise these two into a reusable function
+// TODO generalise these three into a reusable function
+internal void set_wall_batch_sizes() {
+    u32 used_batches = ceil(game->wall_count / 2048.0f);
+    renderer->used_wall_batches = used_batches;
+
+    if (used_batches == 1) {
+        renderer->walls[0].count = game->wall_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches-1; i++) {
+            renderer->walls[i].count = 2048;
+        }
+        renderer->walls[used_batches-1].count = game->wall_count % 2048;
+    } else {
+        renderer->used_wall_batches = 0;
+    }
+}
 
 internal void set_actor_batch_sizes() {
     u32 used_batches = ceil(game->actor_count / 2048.0f);
@@ -280,9 +295,9 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 50;
+    game->world_width = 100;
     game->world_height = 1;
-    game->world_depth = 40;
+    game->world_depth = 80;
 
     game->block_width = 24;
     game->block_depth = 24;
@@ -290,9 +305,10 @@ int main(int argc, char **argv) {
 
     center_view();
 
-    renderer->walls.count = (game->world_width * game->world_height * game->world_depth);
-    printf("%d\n",renderer->walls.count);
-    ASSERT(renderer->walls.count <= 2048 && "Make buffers larger for world blocks");
+
+    game->wall_count = (game->world_width * game->world_height * game->world_depth);
+    printf("%d\n",game->wall_count);
+    ASSERT(game->wall_count <= (2048*8));
 
     u32 j =0;
     for (u32 x = 0; x< game->world_width ; x++) {
@@ -301,11 +317,13 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 3+rand_int(9);//3+rand_int(3) ;
+                game->walls[j].frame = 7;//3+rand_int(9);//3+rand_int(3) ;
                 j++;
             }
         }
     }
+    set_wall_batch_sizes();
+
 
 #define ACTOR_BATCH 200
 
@@ -340,14 +358,17 @@ int main(int argc, char **argv) {
     const u8 *keys = SDL_GetKeyboardState(NULL);
     char frameCount[64];
     char actorCount[64];
-
+    char wallCount[64];
 
     while (! wants_to_quit) {
         snprintf(actorCount, 64, "actors: %d", game->actor_count);
+        snprintf(wallCount, 64, "walls: %d", game->wall_count);
 
         game->glyph_count = 0;
         game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
         game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
+        game->glyph_count += draw_text(wallCount, 0, 48, &renderer->assets.menlo_font);
+
         set_glyph_batch_sizes();
 
         u64 time = SDL_GetPerformanceCounter();
@@ -366,7 +387,7 @@ int main(int argc, char **argv) {
                         game->actors[i].y = rand_int(game->world_height) * game->block_height;
                         game->actors[i].z =  rand_int(game->world_depth) * game->block_depth ;
                         game->actors[i].frame = rand_int(4);
-                        int speed = 1;// + rand_int(5);
+                        float speed = 1;
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].dz = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].palette_index = rand_float();
@@ -410,6 +431,8 @@ int main(int argc, char **argv) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
                     renderer->view.width = e.window.data1;
                     renderer->view.height = e.window.data2;
+                    center_view();
+
                     prepare_renderer();
                     //glViewport(0, 0, renderer->Width, renderer->Height);
                 }

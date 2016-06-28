@@ -71,19 +71,13 @@ typedef struct DrawBuffer {
 } DrawBuffer;
 
 
-// there is a maximum of 16384 walls that can be drawn
-// since there is a maximum of 2048 walls per draw buffer
-// that means I need 8 buffers to draw 16384 walls.  (thats roughly 27 Mb) thats ok.
-
-// before mapping the walls into the bufers I need to filter out all invisible ones though
-
-
 typedef struct RenderState {
     ViewPort view;
     SDL_Window *window;
     SDL_GLContext *context;
     Assets assets;
-    DrawBuffer walls;
+    DrawBuffer walls[8];
+    int used_wall_batches;
     DrawBuffer actors[8];
     int used_actor_batches;
     DrawBuffer glyphs[1];

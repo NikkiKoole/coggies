@@ -1,16 +1,19 @@
 * Currently doing
   Load some real buildings and display them.
+  I do want to also start looking into visible surface detection , for just the wallparts
+  the wall buffers are very big too now, so you can draw many floors, large width, large depth
+
 * todo
 - [-] build a renderer for my needs
+  - [ ] visible surface detection
+    for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
+    keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
   - [ ] benchmark manually zsorting every world item and just using x/y VS the current x/y/z + depth-buffer approach:
     I've the feeling the zsorting without using a depth  buffer actually will be better(faster) in my case. And it might make more items/larger buffers possible
     since I dont have to move the Z in the VBO's and the depthbuffer func doenst need to run.
     it will mean a lot of rewriting though for now I just want to move forward and not care about this.
   - [ ] make world position, screen position more stable and the same for everything
     now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
-  - [ ] visible surface detection
-    for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
-    keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
   - [ ] frame based animation using ±4 body parts
     - [ ] head
     - [ ] mouth

@@ -532,7 +532,7 @@ internal int cmpfunc(const void * a, const void * b)
 
 void prepare_renderer(void) {
 
-    ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
+    //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
     int real_world_height = game->world_height * game->block_height;
@@ -545,79 +545,85 @@ void prepare_renderer(void) {
     int texture_size = renderer->assets.sprite.width;
 
 
-    for (u32 i = 0; i < renderer->walls.count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
 
-        int prepare_index = i / VALUES_PER_ELEM;
-        Wall data = game->walls[prepare_index];
-        float scale = 1;
-        float wallX = data.frame * 24;
+    for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
+        DrawBuffer *batch = &renderer->walls[wall_batch_index];
+        u32 count = batch->count;//game->actor_count;
 
-        float tempX = data.x;
-        float tempY =  (data.y) - (data.z)/2;
-        tempX  += offset_x_blocks;
-        tempY += offset_y_blocks;
+        for (u32 i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
 
-        float x = (tempX / screenWidth)*2 - 1.0;
-        float y = (tempY / screenHeight)*2 - 1.0;
+            int prepare_index = i / VALUES_PER_ELEM;
+            prepare_index += (wall_batch_index * 2048);
+            Wall data = game->walls[prepare_index];
+            float scale = 1;
+            float wallX = data.frame * 24;
 
-        float wallDepth = -1*((float)data.z/(float)real_world_depth);
-        float wallY = 12.0f;
-        float wallHeight = 108.0f;
-        float paletteIndex = rand_float();//(data.y / 350.0f);
-        Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
-        Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
+            float tempX = data.x;
+            float tempY =  (data.y) - (data.z)/2;
+            tempX  += offset_x_blocks;
+            tempY += offset_y_blocks;
 
-        // bottomright
-        renderer->walls.vertices[i + 0] = verts.br.x;
-        renderer->walls.vertices[i + 1] = verts.br.y;
-        renderer->walls.vertices[i + 2] = wallDepth;
-        renderer->walls.vertices[i + 3] = uvs.br.x;
-        renderer->walls.vertices[i + 4] = uvs.br.y;
-        renderer->walls.vertices[i + 5] = paletteIndex;
-        //topright
-        renderer->walls.vertices[i + 6] = verts.br.x;
-        renderer->walls.vertices[i + 7] = verts.tl.y;
-        renderer->walls.vertices[i + 8] = wallDepth;
-        renderer->walls.vertices[i + 9] = uvs.br.x;
-        renderer->walls.vertices[i + 10] = uvs.tl.y;
-        renderer->walls.vertices[i + 11] = paletteIndex;
-        // top left
-        renderer->walls.vertices[i + 12] = verts.tl.x;
-        renderer->walls.vertices[i + 13] = verts.tl.y;
-        renderer->walls.vertices[i + 14] = wallDepth;
-        renderer->walls.vertices[i + 15] = uvs.tl.x;
-        renderer->walls.vertices[i + 16] = uvs.tl.y;
-        renderer->walls.vertices[i + 17] = paletteIndex;
-        // bottomleft
-        renderer->walls.vertices[i + 18] = verts.tl.x;
-        renderer->walls.vertices[i + 19] = verts.br.y;
-        renderer->walls.vertices[i + 20] = wallDepth;
-        renderer->walls.vertices[i + 21] = uvs.tl.x;
-        renderer->walls.vertices[i + 22] = uvs.br.y;
-        renderer->walls.vertices[i + 23] = paletteIndex;
-    }
+            float x = (tempX / screenWidth)*2 - 1.0;
+            float y = (tempY / screenHeight)*2 - 1.0;
+
+            float wallDepth = -1*((float)data.z/(float)real_world_depth);
+            float wallY = 12.0f;
+            float wallHeight = 108.0f;
+            float paletteIndex = rand_float();//(data.y / 350.0f);
+            Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
+            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
+
+            // bottomright
+            batch->vertices[i + 0] = verts.br.x;
+            batch->vertices[i + 1] = verts.br.y;
+            batch->vertices[i + 2] = wallDepth;
+            batch->vertices[i + 3] = uvs.br.x;
+            batch->vertices[i + 4] = uvs.br.y;
+            batch->vertices[i + 5] = paletteIndex;
+            //topright
+            batch->vertices[i + 6] = verts.br.x;
+            batch->vertices[i + 7] = verts.tl.y;
+            batch->vertices[i + 8] = wallDepth;
+            batch->vertices[i + 9] = uvs.br.x;
+            batch->vertices[i + 10] = uvs.tl.y;
+            batch->vertices[i + 11] = paletteIndex;
+            // top left
+            batch->vertices[i + 12] = verts.tl.x;
+            batch->vertices[i + 13] = verts.tl.y;
+            batch->vertices[i + 14] = wallDepth;
+            batch->vertices[i + 15] = uvs.tl.x;
+            batch->vertices[i + 16] = uvs.tl.y;
+            batch->vertices[i + 17] = paletteIndex;
+            // bottomleft
+            batch->vertices[i + 18] = verts.tl.x;
+            batch->vertices[i + 19] = verts.br.y;
+            batch->vertices[i + 20] = wallDepth;
+            batch->vertices[i + 21] = uvs.tl.x;
+            batch->vertices[i + 22] = uvs.br.y;
+            batch->vertices[i + 23] = paletteIndex;
+        }
 
 
 
 
-    ASSERT(renderer->walls.count * 6 < 2048 * 6);
-    for (u32 i = 0; i < renderer->walls.count * 6; i += 6) {
-        int j = (i / 6) * 4;
-        renderer->walls.indices[i + 0] = j + 0;
-        renderer->walls.indices[i + 1] = j + 1;
-        renderer->walls.indices[i + 2] = j + 2;
-        renderer->walls.indices[i + 3] = j + 0;
-        renderer->walls.indices[i + 4] = j + 2;
-        renderer->walls.indices[i + 5] = j + 3;
-    }
+        //ASSERT(batch->count * 6 < 2048 * 6);
+        for (u32 i = 0; i < batch->count * 6; i += 6) {
+            int j = (i / 6) * 4;
+            batch->indices[i + 0] = j + 0;
+            batch->indices[i + 1] = j + 1;
+            batch->indices[i + 2] = j + 2;
+            batch->indices[i + 3] = j + 0;
+            batch->indices[i + 4] = j + 2;
+            batch->indices[i + 5] = j + 3;
+        }
 
 #ifdef GLES
-    makeBufferRPI(renderer->walls.vertices, renderer->walls.indices, renderer->walls.count, &renderer->walls.VBO, &renderer->walls.EBO, GL_STATIC_DRAW);
+        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW);
 #endif
 #ifdef GL3
-    makeBuffer(renderer->walls.vertices, renderer->walls.indices, renderer->walls.count, &renderer->walls.VAO, &renderer->walls.VBO, &renderer->walls.EBO, GL_STATIC_DRAW);
+        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW);
 #endif
-
+    }
 
     // TODO
     // mayeb in the prepare step the buffers will always all be initialized
@@ -818,21 +824,25 @@ void render(SDL_Window *window) {
     }
 
 
+    for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
 
-
-//Draw walls
+        DrawBuffer *batch = &renderer->walls[wall_batch_index];
+        int count = batch->count;//game->wall_count;
+        //Draw walls
 #ifdef GLES
-    bindBuffer(&renderer->walls.VBO, &renderer->walls.EBO, &renderer->shader1);
-    glDrawElements(GL_TRIANGLES, renderer->walls.count * 6, GL_UNSIGNED_SHORT, 0);
-    glDisableVertexAttribArray(0);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->shader1);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glDisableVertexAttribArray(0);
 #endif
 
 #ifdef GL3
-    glBindVertexArray(renderer->walls.VAO);
-    glDrawElements(GL_TRIANGLES, renderer->walls.count * 6, GL_UNSIGNED_SHORT, 0);
-    glBindVertexArray(0);
+        glBindVertexArray(batch->VAO);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glBindVertexArray(0);
 #endif
 
+         CHECK();
+    }
 
     // Draw FONTS
     {
@@ -868,7 +878,7 @@ void render(SDL_Window *window) {
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
-                float guyDepth = 1.0f;
+                float guyDepth = -1.0f;
                 float x = -1.0f + (((float) (data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float) (renderer->view.height-data.y) / (float)renderer->view.height) * 2.0f);
                 float paletteIndex = 0.4f;//rand_float();
