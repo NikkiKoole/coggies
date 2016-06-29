@@ -1,8 +1,6 @@
 * Currently doing
   Load some real buildings and display them.
   I do want to also start looking into visible surface detection , for just the wallparts
-  the wall buffers are very big too now, so you can draw many floors, large width, large depth
-
 * todo
 - [-] build a renderer for my needs
   - [ ] visible surface detection
@@ -72,7 +70,15 @@
   - [X] scp commands
   - [X] memory sheme
   - [X] filesystem watcher
-
+- [ ] optimize
+  on the rpi I can only draw 1000 actors and 1000 walls, more then that I go under 60fps.
+  - I could improve it a little bit (I think) by making my VBO's smaller (zindex and palette index could go with some work)
+  - I could get rid of the Z's and do manual sorting instead of depth func testing.
+  - For the walls I could also get rid of the palette index, and just have all colors I want in the TGA file. (maybe I can do that for the actors too actually)
+  - There's also visible surface testing which can shave some draws off.
+  - the walls more specifically the floors they draw a tile sized 24x108 pixels of which the most is just tranparant, It could be done by drawing 24x12 pixels at someoffset
+  and thats about it at the time I think.
+  However, it might be a wiser idea to just get a rpi3 (or better) and dont care.
 * done
 - [X] position items in 3d world
   Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
