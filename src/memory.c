@@ -21,9 +21,9 @@ void actor_add(GameState *state) {
 
 
 void reserve_memory(Memory *m) {
-    void *base_address = (void *)GIGABYTES(1);
+    void *base_address = (void *)GIGABYTES(0);
     m->permanent_size = MEGABYTES(16);
-    m->scratch_size = GIGABYTES(1);
+    m->scratch_size = MEGABYTES(16);
 
     u64 total_storage_size = m->permanent_size + m->scratch_size;
     m->permanent = mmap(base_address, total_storage_size,

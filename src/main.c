@@ -11,6 +11,7 @@
 
 
 
+
 extern RenderState *renderer;
 extern GameState *game;
 
@@ -156,7 +157,7 @@ internal void update_frame(void *param) {
 
 
 // TODO generalise these three into a reusable function
-internal void set_wall_batch_sizes() {
+internal void set_wall_batch_sizes(void) {
     u32 used_batches = ceil(game->wall_count / 2048.0f);
     renderer->used_wall_batches = used_batches;
 
@@ -172,7 +173,7 @@ internal void set_wall_batch_sizes() {
     }
 }
 
-internal void set_actor_batch_sizes() {
+internal void set_actor_batch_sizes(void) {
     u32 used_batches = ceil(game->actor_count / 2048.0f);
     renderer->used_actor_batches = used_batches;
 
@@ -188,7 +189,7 @@ internal void set_actor_batch_sizes() {
     }
 }
 
-internal void set_glyph_batch_sizes() {
+internal void set_glyph_batch_sizes(void) {
     u32 used_batches = ceil(game->glyph_count / 2048.0f);
     renderer->used_glyph_batches = used_batches;
 
@@ -249,7 +250,7 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
     return drawn;
 }
 
-internal void center_view() {
+internal void center_view(void) {
     // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
 
     int real_world_width = game->world_width * game->block_width;
@@ -295,9 +296,9 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 100;
+    game->world_width = 10;
     game->world_height = 1;
-    game->world_depth = 80;
+    game->world_depth = 10;
 
     game->block_width = 24;
     game->block_depth = 24;
@@ -441,9 +442,9 @@ int main(int argc, char **argv) {
 
         for (u32 i = 0; i < game->actor_count; i++) {
             if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
-                if (game->actors[i].x < 0) {
-                    game->actors[i].x = 0;
-                }
+                //if (game->actors[i].x < 0) {
+                //    game->actors[i].x = 0;
+                //}
                 if (game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
                     game->actors[i].x = ((game->world_width-1) * game->block_width);
                 }
@@ -453,9 +454,9 @@ int main(int argc, char **argv) {
             game->actors[i].x += game->actors[i].dx;
 
             if (game->actors[i].z <= 0 || game->actors[i].z >= ((game->world_depth-1) * game->block_depth)) {
-                if (game->actors[i].z < 0) {
-                    game->actors[i].z = 0;
-                }
+                //if (game->actors[i].z < 0) {
+                //    game->actors[i].z = 0;
+                //}
                 if (game->actors[i].z > ((game->world_depth-1) * game->block_depth)) {
                     game->actors[i].z = ((game->world_depth-1) * game->block_depth);
                 }
@@ -470,7 +471,7 @@ int main(int argc, char **argv) {
 #ifndef IOS //IOS is being rendered with the animation callback instead.
         render(renderer->window);
         time = SDL_GetPerformanceCounter() - time;
-        snprintf (frameCount, 64, "frame: %.2f",  ((float)time/(float)(SDL_GetPerformanceFrequency()) )*1000.0f );
+        snprintf (frameCount, 64, "frame: %.2f",  ((float)time/(SDL_GetPerformanceFrequency()) )*1000.0f );
 #endif
 
     }

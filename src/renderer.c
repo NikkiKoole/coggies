@@ -77,15 +77,15 @@ internal Rect2 get_uvs(float size, int x, int y, int width, int height) {
 }
 
 internal Rect2 get_verts(float viewportWidth,
-                        float viewportHeight,
-                        float x,
-                        float y,
-                        float width,
-                        float height,
-                        float scaleX,
-                        float scaleY,
-                        float pivotX,
-                        float pivotY) {
+                         float viewportHeight,
+                         float x,
+                         float y,
+                         float width,
+                         float height,
+                         float scaleX,
+                         float scaleY,
+                         float pivotX,
+                         float pivotY) {
     Rect2 result;
     result.tl.x = x - ((pivotX * 2) * (width / viewportWidth) * scaleX);
     result.tl.y = y - ((2 - pivotY * 2) * (height / viewportHeight) * scaleY);
@@ -212,13 +212,10 @@ internal void makeBuffer(GLfloat vertices[], GLushort indices[], int size, GLuin
     glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(5 * sizeof(GLfloat)));
     glEnableVertexAttribArray(2);
 
-
-
     glBindVertexArray(0); // Unbind VAO
     CHECK();
 }
 #endif
-
 
 
 internal b32 exists(const char *fname) {
@@ -230,8 +227,7 @@ internal b32 exists(const char *fname) {
     return false;
 }
 
-internal const char *read_file(const char *path) {
-    char *buffer = 0;
+internal const char *read_file(const char *path, char* buffer ) {
     u32 length = 0;
     FILE *f = fopen(path, "rb");
     if (!f) {
@@ -241,7 +237,7 @@ internal const char *read_file(const char *path) {
         fseek(f, 0, SEEK_END);
         length = ftell(f);
         fseek(f, 0, SEEK_SET);
-        buffer = malloc(length + 1);
+        buffer = malloc(length + 1); // this buffer is freed outside this function...
         if (buffer) {
             fread(buffer, 1, length, f);
         }
@@ -249,13 +245,16 @@ internal const char *read_file(const char *path) {
     }
     if (buffer) {
         buffer[length] = 0;
+
         return buffer;
     }
     return "";
 }
 
 internal GLuint load_shader(const GLchar *path, GLenum type) {
-    const GLchar *code = read_file(path);
+    char *buffer = 0;
+    const GLchar *code = read_file(path, buffer);
+    free(buffer);
     GLint success;
     GLuint shader = glCreateShader(type);
     GLchar infoLog[512];
@@ -273,41 +272,40 @@ internal GLuint load_shader(const GLchar *path, GLenum type) {
         glDeleteShader(shader);
         return 0;
     }
+
     return shader;
 }
 
 void make_sprite_atlas(const char *path) {
     printf("%s\n", path);
-    if (exists(path)){
+    if (exists(path)) {
         FILE *f = fopen(path, "rb");
         u8 header[3];
-        if  (f == NULL) {
+        if (f == NULL) {
             printf("Couldnt open file %s \n", path);
         }
         fread(&header, sizeof(u8), 3, f);
-        if (header[0]=='S' && header[1]=='H' && header[2]=='O') {
+        if (header[0] == 'S' && header[1] == 'H' && header[2] == 'O') {
             u8 format;
             fread(&format, sizeof(u8), 1, f);
             if (format != 1) {
                 printf("wrong format, I only know how to parse version 1 of binary shoebox");
             }
             char image_name[16];
-            fread(&image_name, sizeof(u8)*16, 1, f);
-            //printf("%.*s\n", 16, image_name);
+            fread(&image_name, sizeof(u8) * 16, 1, f);
             u16 image_width;
             u16 image_height;
             fread(&image_width, sizeof(u16), 1, f);
             fread(&image_height, sizeof(u16), 1, f);
             u32 block_size;
             fread(&block_size, sizeof(u32), 1, f);
-            //printf("image width: %d, image height: %d \n", image_width, image_height);
-            //printf("amount of frames: %d \n", block_size/36);
-            for (u32 i = 0; i < block_size/36; i++) {
+
+            for (u32 i = 0; i < block_size / 36; i++) {
                 char name[16];
                 u16 frameX, frameY, frameW, frameH;
                 u16 sourceX, sourceY, sourceW, sourceH;
                 u16 ssW, ssH;
-                fread(&name, sizeof(u8)*16, 1, f);
+                fread(&name, sizeof(u8) * 16, 1, f);
                 fread(&frameX, sizeof(u16), 1, f);
                 fread(&frameY, sizeof(u16), 1, f);
                 fread(&frameW, sizeof(u16), 1, f);
@@ -323,7 +321,6 @@ void make_sprite_atlas(const char *path) {
             }
         }
     }
-
 }
 
 
@@ -341,7 +338,7 @@ void make_font(BM_Font *font, const char *path) {
         }
 
         fread(&header, sizeof(u8), 3, f);
-        if (header[0]=='B' && header[1]=='M' && header[2]=='F') {
+        if (header[0] == 'B' && header[1] == 'M' && header[2] == 'F') {
             // now lets check the format version (should be '3')
             u8 format;
             fread(&format, sizeof(u8), 1, f);
@@ -379,7 +376,7 @@ void make_font(BM_Font *font, const char *path) {
             fread(&blocktype_id, sizeof(u8), 1, f);
             fread(&block_size, sizeof(u32), 1, f);
 
-            u32 num_chars = block_size/20;
+            u32 num_chars = block_size / 20;
             for (u32 i = 0; i < num_chars; i++) {
                 u32 id;
                 u16 x, y, width, height;
@@ -407,22 +404,21 @@ void make_font(BM_Font *font, const char *path) {
                 //printf("x:%d, y:%d, xoffset:%d, yoffset:%d, width:%d, height:%d\n", x,y,xoffset,yoffset,width,height);
             }
             font->line_height = lineHeight;
-            printf("%d chars found in fnt file %s.\n",num_chars, path);
+            printf("%d chars found in fnt file %s.\n", num_chars, path);
 
         } else {
-
             printf("%s is not a valid binary BMFont file.\n", path);
         }
         fclose(f);
     } else {
-        printf("couldnt find %s\n",path);
+        printf("couldnt find %s\n", path);
     }
 }
 
 
 internal b32 is_power_of_2(u32 x) {
-   return x && !(x & (x - 1));
- }
+    return x && !(x & (x - 1));
+}
 
 void make_texture(Texture *t, const char *path) {
     // second texture
@@ -444,9 +440,10 @@ void make_texture(Texture *t, const char *path) {
     ASSERT(t->width == t->height);
     ASSERT(is_power_of_2(t->width));
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    glGenerateMipmap(GL_TEXTURE_2D);
+    //glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
     CHECK();
+    free(image.pixels); // this pixels were malloced inside load_TGA_file
 }
 
 
@@ -521,17 +518,15 @@ void initialize_GL(void) {
 }
 
 
-internal int cmpfunc(const void * a, const void * b)
-{
+internal int cmpfunc(const void *a, const void *b) {
     // TODO  I dont understand it anymore ;)
 
-    const Wall *a2 = (const Wall *) a;
-    const Wall *b2 = (const Wall *) b;
-    return ( ( a2->y) - ( b2->y));
+    const Wall *a2 = (const Wall *)a;
+    const Wall *b2 = (const Wall *)b;
+    return ((a2->y) - (b2->y));
 }
 
 void prepare_renderer(void) {
-
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
@@ -548,10 +543,9 @@ void prepare_renderer(void) {
 
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        u32 count = batch->count;//game->actor_count;
+        u32 count = batch->count; //game->actor_count;
 
         for (u32 i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
-
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (wall_batch_index * 2048);
             Wall data = game->walls[prepare_index];
@@ -559,17 +553,17 @@ void prepare_renderer(void) {
             float wallX = data.frame * 24;
 
             float tempX = data.x;
-            float tempY =  (data.y) - (data.z)/2;
-            tempX  += offset_x_blocks;
+            float tempY = (data.y) - (data.z) / 2;
+            tempX += offset_x_blocks;
             tempY += offset_y_blocks;
 
-            float x = (tempX / screenWidth)*2 - 1.0;
-            float y = (tempY / screenHeight)*2 - 1.0;
+            float x = (tempX / screenWidth) * 2 - 1.0;
+            float y = (tempY / screenHeight) * 2 - 1.0;
 
-            float wallDepth = -1*((float)data.z/(float)real_world_depth);
+            float wallDepth = -1 * ((float)data.z / (float)real_world_depth);
             float wallY = 12.0f;
             float wallHeight = 108.0f;
-            float paletteIndex = rand_float();//(data.y / 350.0f);
+            float paletteIndex = rand_float(); //(data.y / 350.0f);
             Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
 
@@ -651,14 +645,13 @@ void prepare_renderer(void) {
 #ifdef GL3
         makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
 #endif
-
     }
 
 
 
 
     // prepage buffers for FONT drawing
-     // TODO
+    // TODO
     // mayeb in the prepare step the buffers will always all be initialized
     // that way I think its easier to during runtime, create and delete actors
 
@@ -735,9 +728,9 @@ void render(SDL_Window *window) {
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        int count = batch->count;//game->actor_count;
+        int count = batch->count; //game->actor_count;
 
-        // actors
+// actors
 #ifdef GL3
         glBindVertexArray(batch->VAO);
 #endif
@@ -754,19 +747,19 @@ void render(SDL_Window *window) {
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
             r32 scale = 1;
-            r32 guyFrame = (12*24)+ data.frame * 24.0f;
+            r32 guyFrame = (12 * 24) + data.frame * 24.0f;
 
             // this offset is to get actors drawn on top of walls/floors that are of the same depth
             float offset_toget_actor_ontop_of_floor = (float)12.0f / real_world_depth;
-            float guyDepth =-1* ((float)data.z/(float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+            float guyDepth = -1 * ((float)data.z / (float)real_world_depth) - offset_toget_actor_ontop_of_floor;
 
             float tempX = data.x;
-            float tempY =  (data.y) - (data.z)/2;
+            float tempY = (data.y) - (data.z) / 2;
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
 
-            float x = ((float)tempX /(float)screenWidth)*2.0f - 1.0f;
-            double y = ((float)tempY /(float)screenHeight)*2.0f - 1.0f;
+            float x = ((float)tempX / (float)screenWidth) * 2.0f - 1.0f;
+            double y = ((float)tempY / (float)screenHeight) * 2.0f - 1.0f;
 
             float paletteIndex = data.palette_index; //rand_float();
 
@@ -805,8 +798,8 @@ void render(SDL_Window *window) {
         }
 
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->shader1);
-        check();
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
+        CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
@@ -815,22 +808,19 @@ void render(SDL_Window *window) {
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
         //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
-        glDrawElements(GL_TRIANGLES, batch->count * 6 , GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 #endif
         CHECK();
-
-
     }
 
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
-
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        int count = batch->count;//game->wall_count;
-        //Draw walls
+        int count = batch->count; //game->wall_count;
+                                  //Draw walls
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->shader1);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
 #endif
@@ -841,18 +831,17 @@ void render(SDL_Window *window) {
         glBindVertexArray(0);
 #endif
 
-         CHECK();
+        CHECK();
     }
 
     // Draw FONTS
     {
-            // Bind Textures using texture units
+        // Bind Textures using texture units
         glActiveTexture(GL_TEXTURE0);
         CHECK();
 
         glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
         CHECK();
-
 
         glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture1"), 0);
         CHECK();
@@ -866,7 +855,6 @@ void render(SDL_Window *window) {
         int texture_size = renderer->assets.menlo.width;
 
         for (int glyph_batch_index = 0; glyph_batch_index < renderer->used_glyph_batches; glyph_batch_index++) {
-
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
             int count = batch->count;
 #ifdef GL3
@@ -879,12 +867,12 @@ void render(SDL_Window *window) {
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
                 float guyDepth = -1.0f;
-                float x = -1.0f + (((float) (data.x) / (float)renderer->view.width) * 2.0f);
-                float y = -1.0f + (((float) (renderer->view.height-data.y) / (float)renderer->view.height) * 2.0f);
-                float paletteIndex = 0.4f;//rand_float();
+                float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
+                float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
+                float paletteIndex = 0.4f; //rand_float();
 
-                Rect2 uvs = get_uvs(texture_size,  (float)data.sx,  (float)data.sy,  (float)data.w,  (float)data.h);
-                Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y,  (float)data.w,  (float)data.h, scale, scale, 0.0, 0.0);
+                Rect2 uvs = get_uvs(texture_size, (float)data.sx, (float)data.sy, (float)data.w, (float)data.h);
+                Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
                 /* // bottomright */
                 batch->vertices[i + 0] = verts.br.x;
                 batch->vertices[i + 1] = verts.br.y;
@@ -913,11 +901,10 @@ void render(SDL_Window *window) {
                 batch->vertices[i + 21] = uvs.tl.x;
                 batch->vertices[i + 22] = uvs.br.y;
                 batch->vertices[i + 23] = paletteIndex;
-
             }
 #ifdef GLES
-            bindBuffer(&batch->VBO, &batch->EBO, &renderer->shader1);
-            check();
+            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
+            CHECK();
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
             glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
             glDisableVertexAttribArray(0);
@@ -926,14 +913,11 @@ void render(SDL_Window *window) {
             glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
-            glDrawElements(GL_TRIANGLES, batch->count * 6 , GL_UNSIGNED_SHORT, 0);
+            glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
             glBindVertexArray(0);
 #endif
-        CHECK();
-
+            CHECK();
         }
-
-
     }
 
 
