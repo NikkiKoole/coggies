@@ -160,8 +160,7 @@ internal b32 load_TGA_file(const char *path, TGA_File *image) {
 }
 
 #ifdef GLES
-internal void
-makeBufferRPI(GLfloat vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage) {
+internal void makeBufferRPI(GLfloat vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage) {
     glGenBuffers(1, VBO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * VALUES_PER_ELEM, vertices, usage);
@@ -172,8 +171,7 @@ makeBufferRPI(GLfloat vertices[], GLushort indices[], int size, GLuint *VBO, GLu
 }
 
 
-internal void
-bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
+internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     //setup and enable attrib pointer
     GLuint a_Position = glGetAttribLocation(*program, "a_Position");
@@ -563,6 +561,16 @@ void prepare_renderer(void) {
             float wallDepth = -1 * ((float)data.z / (float)real_world_depth);
             float wallY = 12.0f;
             float wallHeight = 108.0f;
+
+
+            // TODO THIS IS SOME OPTIMIZATION, TEST IT ON THE RPI
+            // Eventually I want to have some meta lookup for texture atlasses, then everything will be like this.
+            if (data.frame > 6 && data.frame < 10) { // wallpart is a floor, much smaller then a wall
+                wallY = 106.0f;
+                wallHeight = 14.0f;
+            }
+
+
             float paletteIndex = rand_float(); //(data.y / 350.0f);
             Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);

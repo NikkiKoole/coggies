@@ -296,9 +296,9 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 10;
-    game->world_height = 1;
-    game->world_depth = 10;
+    game->world_width = 80;
+    game->world_height = 5;
+    game->world_depth = 30;
 
     game->block_width = 24;
     game->block_depth = 24;
@@ -318,7 +318,7 @@ int main(int argc, char **argv) {
                 game->walls[j].x = x * game->block_width;
                 game->walls[j].y = y * game->block_height;
                 game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 7;//3+rand_int(9);//3+rand_int(3) ;
+                game->walls[j].frame = 3+rand_int(9);//3+rand_int(3) ;
                 j++;
             }
         }
