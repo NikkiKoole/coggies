@@ -47,7 +47,7 @@ typedef struct {
     u16 z;
     u16 frame;
     s16 dx;
-    s16 dz;
+    s16 dy;
     float palette_index;
 } Actor;
 
@@ -59,6 +59,13 @@ typedef struct {
     u16 w;
     u16 h;
 } Glyph;
+
+
+typedef struct {
+    u32 x;
+    u32 y;
+    u32 z_level;
+} WorldDims;
 
 typedef struct {
     MemoryArena arena;
@@ -72,12 +79,8 @@ typedef struct {
     s32 x_view_offset;
     s32 y_view_offset;
     /////
-    u32 world_width;
-    u32 world_depth;
-    u32 world_height;
-    u32 block_width;
-    u32 block_depth;
-    u32 block_height;
+    WorldDims dims;
+    WorldDims block_size;
     ////
 
 } GameState;

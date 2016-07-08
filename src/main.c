@@ -252,9 +252,9 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
 internal void center_view(void) {
     // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
 
-    int real_world_width = game->world_width * game->block_width;
-    int real_world_depth = game->world_depth * game->block_depth/2;
-    int real_world_height = game->world_height * game->block_height;
+    int real_world_width = game->dims.x * game->block_size.x;
+    int real_world_depth = game->dims.y * game->block_size.y/2;
+    int real_world_height = game->dims.z_level * game->block_size.z_level;
 
     s32 offset_x_blocks = (renderer->view.width - real_world_width) / 2;
     s32 offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
@@ -295,29 +295,31 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 40;
-    game->world_height = 5;
-    game->world_depth = 30;
+    game->dims = (WorldDims){40,30, 5};
+    game->block_size = (WorldDims){24,24,96};
+    //game->world_width = 40;
+    //game->world_height = 5;
+    //game->dims.y = 30;
 
-    game->block_width = 24;
-    game->block_depth = 24;
-    game->block_height = 96;
+    //game->block_width = 24;
+    game->block_size.y = 24;
+    game->block_size.z_level = 96;
 
     center_view();
 
 
-    game->wall_count = (game->world_width * game->world_height * game->world_depth);
+    game->wall_count = (game->dims.x * game->dims.z_level * game->dims.y);
     printf("%d\n",game->wall_count);
     ASSERT(game->wall_count <= (2048*8));
 
     u32 j =0;
-    for (u32 x = 0; x< game->world_width ; x++) {
-        for (u32 y = 0; y < game->world_height; y++) {
-            for (u32 z = 0; z <  game->world_depth; z++) {
-                game->walls[j].x = x * game->block_width;
-                game->walls[j].y = y * game->block_height;
-                game->walls[j].z = z * game->block_depth;
-                game->walls[j].frame = 3+rand_int(9);//3+rand_int(3) ;
+    for (u32 x = 0; x< game->dims.x ; x++) {
+        for (u32 y = 0; y < game->dims.z_level; y++) {
+            for (u32 z = 0; z <  game->dims.y; z++) {
+                game->walls[j].x = x * game->block_size.x;
+                game->walls[j].y = z * game->block_size.y;
+                game->walls[j].z = y * game->block_size.z_level;
+                game->walls[j].frame = 3+rand_int(9);
                 j++;
             }
         }
@@ -331,13 +333,13 @@ int main(int argc, char **argv) {
 
 
     for (u32 i = 0; i< game->actor_count; i++) {
-        game->actors[i].x = rand_int(game->world_width) * game->block_width;;
-        game->actors[i].y = rand_int(game->world_height) * game->block_height;
-        game->actors[i].z =  0;//rand_int(game->world_depth) * game->block_depth ;
+        game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
+        game->actors[i].y = 0;
+        game->actors[i].z = rand_int(game->dims.z_level) * game->block_size.z_level;
         game->actors[i].frame = rand_int(4);
         int speed = 0;
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-        game->actors[i].dz = rand_bool() ? -1 * speed : 1 * speed;
+        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].palette_index = rand_float();
     }
 
@@ -381,13 +383,13 @@ int main(int argc, char **argv) {
                     if (game->actor_count < (2048 * 8) - ACTOR_BATCH) {
                         actor_add(game);
                         u32 i = game->actor_count;
-                        game->actors[i].x = rand_int(game->world_width) * game->block_width;;
-                        game->actors[i].y = rand_int(game->world_height) * game->block_height;
-                        game->actors[i].z =  rand_int(game->world_depth) * game->block_depth ;
+                        game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
+                        game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
+                        game->actors[i].z =  rand_int(game->dims.z_level) * game->block_size.z_level;
                         game->actors[i].frame = rand_int(4);
                         float speed = 1;
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-                        game->actors[i].dz = rand_bool() ? -1 * speed : 1 * speed;
+                        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].palette_index = rand_float();
                         set_actor_batch_sizes();
                     } else {
@@ -438,31 +440,31 @@ int main(int argc, char **argv) {
         }
 
         for (u32 i = 0; i < game->actor_count; i++) {
-            if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
+            if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
                 //if (game->actors[i].x < 0) {
                 //    game->actors[i].x = 0;
                 //}
-                if (game->actors[i].x >= ((game->world_width-1) * game->block_width)) {
-                    game->actors[i].x = ((game->world_width-1) * game->block_width);
+                if (game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
+                    game->actors[i].x = ((game->dims.x-1) * game->block_size.x);
                 }
 
                 game->actors[i].dx *= -1;
             }
             game->actors[i].x += game->actors[i].dx;
 
-            if (game->actors[i].z <= 0 || game->actors[i].z >= ((game->world_depth-1) * game->block_depth)) {
+            if (game->actors[i].y <= 0 || game->actors[i].y >= ((game->dims.y-1) * game->block_size.y)) {
                 //if (game->actors[i].z < 0) {
                 //    game->actors[i].z = 0;
                 //}
-                if (game->actors[i].z > ((game->world_depth-1) * game->block_depth)) {
-                    game->actors[i].z = ((game->world_depth-1) * game->block_depth);
+                if (game->actors[i].y > ((game->dims.y-1) * game->block_size.y)) {
+                    game->actors[i].y = ((game->dims.y-1) * game->block_size.y);
                 }
 
-                game->actors[i].dz *= -1;
+                game->actors[i].dy *= -1;
 
 
             }
-            game->actors[i].z += game->actors[i].dz;
+            game->actors[i].y += game->actors[i].dy;
         }
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.

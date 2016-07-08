@@ -528,8 +528,8 @@ void prepare_renderer(void) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    int real_world_height = game->world_height * game->block_height;
-    int real_world_depth = game->world_depth * (game->block_depth);
+    int real_world_height = game->dims.z_level * game->block_size.z_level;
+    int real_world_depth = game->dims.y * (game->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
 
@@ -551,14 +551,14 @@ void prepare_renderer(void) {
             float wallX = data.frame * 24;
 
             float tempX = data.x;
-            float tempY = (data.y) - (data.z) / 2;
+            float tempY = (data.z) - (data.y) / 2;
             tempX += offset_x_blocks;
             tempY += offset_y_blocks;
 
             float x = (tempX / screenWidth) * 2 - 1.0;
             float y = (tempY / screenHeight) * 2 - 1.0;
 
-            float wallDepth = -1 * ((float)data.z / (float)real_world_depth);
+            float wallDepth = -1 * ((float)data.y / (float)real_world_depth);
             float wallY = 12.0f;
             float wallHeight = 108.0f;
 
@@ -739,8 +739,8 @@ void render(SDL_Window *window) {
 
 
         int texture_size = renderer->assets.sprite.width;
-        int real_world_height = game->world_height * game->block_height;
-        int real_world_depth = game->world_depth * game->block_depth;
+        int real_world_height = game->dims.z_level * game->block_size.z_level;
+        int real_world_depth = game->dims.y * game->block_size.y;
 
         for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
             int prepare_index = i / VALUES_PER_ELEM;
@@ -751,10 +751,10 @@ void render(SDL_Window *window) {
 
             // this offset is to get actors drawn on top of walls/floors that are of the same depth
             float offset_toget_actor_ontop_of_floor = (float)12.0f / real_world_depth;
-            float guyDepth = -1 * ((float)data.z / (float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+            float guyDepth = -1 * ((float)data.y / (float)real_world_depth) - offset_toget_actor_ontop_of_floor;
 
             float tempX = data.x;
-            float tempY = (data.y) - (data.z) / 2;
+            float tempY = (data.z) - (data.y) / 2;
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
 
