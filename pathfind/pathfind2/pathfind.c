@@ -1,7 +1,7 @@
 #include "pathfind.h"
 #include "data_structures.h"
 
-#include <unistd.h> //for usleep, only used in drawGrid wihcih should go away eventually
+#include <unistd.h> //for usleep, only used in drawGrid wich should go away eventually
 
 void DisplayPreProcessed(grid *g){
     printf("\033[2J");        /*  clear the screen  */
@@ -68,7 +68,7 @@ void DrawGrid(grid * g, jump_point p, path_list *path ) {
     if (p.X != -1) {
         drawMap[p.X][p.Y][p.Z] = 'J';
     }
-    //printf("The current count is: %d aisudhaisudha sdhiasudhaisudhauhsdiuasd", i);
+
     if (path) {
         path_node * done= path->Sentinel->Next;
         while (done->Next != path->Sentinel) {
@@ -108,7 +108,6 @@ void DrawGrid(grid * g, jump_point p, path_list *path ) {
     }
     }
     fflush(stdout);
-    //usleep((1000000/60)*1);
     printf(KNRM);
 
 }
@@ -459,7 +458,6 @@ path_list* FindPathAStar(grid_node *Start, grid_node *  End, grid * Grid, memory
         if (NODE_EQUALS(Node, End)) {
             printf("Found path you fool!\n");
             return BacktrackPath(Node, Arena);
-            //return Node;
         }
 
         gridGetNeighbors(Grid, NeighborList, Arena, Node, Diagonal);
@@ -1527,7 +1525,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, grid * Grid
         float givenCost;
         jump_point p = (jump_point){Node->X, Node->Y, Node->Z};
         path_list *path = NULL;
-        //printf("Hi There!\n");
+
         //DrawGrid(Grid, p, path);
 
         Node->closed = true;
@@ -1565,8 +1563,6 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, grid * Grid
                 if (dy > 0) {
                     SET_ALLOWED(travelling_south);
                 } else if (dy < 0) {
-                    //printf("travelling north\n");
-
                     SET_ALLOWED(travelling_north);
                 } else if (dx > 0) {
                     SET_ALLOWED(travelling_east);
@@ -1623,6 +1619,14 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, grid * Grid
                 // TODO: if successor is a closed portal, dont jump there
                 Successor = getNodeGivenDirection(Node, direction, Grid);
 
+                if (Node->Z != Successor->Z){
+                    printf("node z %d, succ z: %d\n",Node->Z, Successor->Z);
+                    // TODO add an extra jumppoint here?
+                    // stairs that use multiple tiles need an jumppoint cause taking the stairs moves in the ground plain.
+                    // just a fancy getNodeStairsEnd() or something.
+                
+                }
+                
                 givenCost = ABS(ManHattan(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
                 if (!IS_CARDINAL(direction)) {givenCost *= SQRT2;}
                 givenCost += Node->g;

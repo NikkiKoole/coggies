@@ -9,9 +9,6 @@
 #include <math.h>
 
 
-
-
-
 extern RenderState *renderer;
 extern GameState *game;
 
@@ -156,6 +153,8 @@ internal void update_frame(void *param) {
 }
 
 
+
+
 // TODO generalise these three into a reusable function
 internal void set_wall_batch_sizes(void) {
     u32 used_batches = ceil(game->wall_count / 2048.0f);
@@ -296,7 +295,7 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->world_width = 80;
+    game->world_width = 40;
     game->world_height = 5;
     game->world_depth = 30;
 
@@ -324,8 +323,6 @@ int main(int argc, char **argv) {
         }
     }
     set_wall_batch_sizes();
-
-
 #define ACTOR_BATCH 200
 
     game->actor_count = ACTOR_BATCH;
@@ -379,7 +376,7 @@ int main(int argc, char **argv) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {
                  wants_to_quit = true;
             }
-            if (keys[SDL_SCANCODE_INSERT]) {
+            if (keys[SDL_SCANCODE_Z]) {
                 for (j = 0; j < ACTOR_BATCH; j++) {
                     if (game->actor_count < (2048 * 8) - ACTOR_BATCH) {
                         actor_add(game);

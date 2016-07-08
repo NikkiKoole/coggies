@@ -627,13 +627,8 @@ void prepare_renderer(void) {
 #endif
     }
 
-    // TODO
-    // mayeb in the prepare step the buffers will always all be initialized
-    // that way I think its easier to during runtime, create and delete actors
-
     for (int actor_batch_index = 0; actor_batch_index < 8; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        // actors
         for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
             //batch->vertices[i] = 0;
         }
@@ -658,11 +653,8 @@ void prepare_renderer(void) {
 
 
 
-    // prepage buffers for FONT drawing
-    // TODO
-    // mayeb in the prepare step the buffers will always all be initialized
-    // that way I think its easier to during runtime, create and delete actors
-
+    // prepare buffers for FONT drawing
+ 
     {
         for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
