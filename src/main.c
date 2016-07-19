@@ -87,48 +87,13 @@ internal int event_filter(void *userData, SDL_Event *event) {
 }
 
 
-
-internal char *resource(const char *path, char *buffer) {
-    strcpy(buffer, getResourcePath());
-    strcat(buffer, path);
-    return buffer;
-}
-internal void resource_sprite_atlas(const char *path) {
-    char buffer[256];
-    make_sprite_atlas(resource(path, buffer));
-
-}
-internal void resource_font(BM_Font *font, const char *path) {
-    // lets try and parse a fnt file.
-    char buffer[256];
-    make_font(font, resource(path, buffer));
-}
-
-internal void resource_texture(Texture *t, const char *path) {
-    char buffer[256];
-    make_texture(t, resource(path, buffer));
-}
-internal void resource_shader(GLuint *shader, const char *vertPath, const char *fragPath) {
-    char buffer[256];
-    char buffer2[256];
-    *shader = make_shader_program(resource(vertPath, buffer), resource(fragPath, buffer2));
-}
-internal void resource_ogg(Mix_Music **music, const char *path) {
-    char buffer[256];
-    *music = Mix_LoadMUS(resource(path, buffer));
-    SDL_MIX_ASSERT(*music);
-}
-internal void resource_wav(Mix_Chunk **chunk, const char *path) {
-    char buffer[256];
-    *chunk = Mix_LoadWAV(resource(path, buffer));
-    SDL_MIX_ASSERT(*chunk);
-}
 internal void load_resources(void) {
+    resource_level(&renderer->assets.level, "testlevel2.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "menlo.fnt");
 
     resource_texture(&renderer->assets.menlo, "menlo.tga");
-    resource_texture(&renderer->assets.sprite, "Untitled3.tga");
+    resource_texture(&renderer->assets.sprite, "Untitled4.tga");
     resource_texture(&renderer->assets.palette, "palette2.tga");
 
 #ifdef GL3
@@ -264,8 +229,41 @@ internal void center_view(void) {
 }
 
 
+typedef struct {
+    int x_pos;
+    int y_pos;
+} BlockTextureAtlasPosition;
+
+
 int main(int argc, char **argv) {
 
+
+    BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
+    printf("blocktotal %d\n", BlockTotal);
+
+    texture_atlas_data[Floor]       =  (BlockTextureAtlasPosition){0,0};
+    texture_atlas_data[WallBlock]   =  (BlockTextureAtlasPosition){1,0};
+    texture_atlas_data[Ladder]      =  (BlockTextureAtlasPosition){2,0};
+    texture_atlas_data[StairsUp1N]  =  (BlockTextureAtlasPosition){3,0};
+    texture_atlas_data[StairsUp2N]  =  (BlockTextureAtlasPosition){4,0};
+    texture_atlas_data[StairsUp3N]  =  (BlockTextureAtlasPosition){5,0};
+    texture_atlas_data[StairsUp4N]  =  (BlockTextureAtlasPosition){6,0};
+    texture_atlas_data[StairsUp1S]  =  (BlockTextureAtlasPosition){7,0};
+    texture_atlas_data[StairsUp2S]  =  (BlockTextureAtlasPosition){8,0};
+    texture_atlas_data[StairsUp3S]  =  (BlockTextureAtlasPosition){9,0};
+    texture_atlas_data[StairsUp4S]  =  (BlockTextureAtlasPosition){10,0};
+    texture_atlas_data[StairsUp1E]  =  (BlockTextureAtlasPosition){11,0};
+    texture_atlas_data[StairsUp2E]  =  (BlockTextureAtlasPosition){12,0};
+    texture_atlas_data[StairsUp3E]  =  (BlockTextureAtlasPosition){13,0};
+    texture_atlas_data[StairsUp4E]  =  (BlockTextureAtlasPosition){14,0};
+    texture_atlas_data[StairsUp1W]  =  (BlockTextureAtlasPosition){15,0};
+    texture_atlas_data[StairsUp2W]  =  (BlockTextureAtlasPosition){16,0};
+    texture_atlas_data[StairsUp3W]  =  (BlockTextureAtlasPosition){17,0};
+    texture_atlas_data[StairsUp4W]  =  (BlockTextureAtlasPosition){18,0};
+    texture_atlas_data[Shaded]  =  (BlockTextureAtlasPosition){19,0};
+
+
+    
     Memory _memory;
     Memory *memory = &_memory;
     reserve_memory(memory);
@@ -295,37 +293,111 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    game->dims = (WorldDims){40,30, 5};
+    
+    game->dims = (WorldDims){renderer->assets.level.x,renderer->assets.level.y, renderer->assets.level.z_level};
+    printf("dimensions: %d, %d, %d\n",game->dims.x, game->dims.y, game->dims.z_level);
     game->block_size = (WorldDims){24,24,96};
-    //game->world_width = 40;
-    //game->world_height = 5;
-    //game->dims.y = 30;
-
-    //game->block_width = 24;
-    game->block_size.y = 24;
-    game->block_size.z_level = 96;
 
     center_view();
 
 
-    game->wall_count = (game->dims.x * game->dims.z_level * game->dims.y);
-    printf("%d\n",game->wall_count);
-    ASSERT(game->wall_count <= (2048*8));
 
-    u32 j =0;
-    for (u32 x = 0; x< game->dims.x ; x++) {
-        for (u32 y = 0; y < game->dims.z_level; y++) {
-            for (u32 z = 0; z <  game->dims.y; z++) {
-                game->walls[j].x = x * game->block_size.x;
-                game->walls[j].y = z * game->block_size.y;
-                game->walls[j].z = y * game->block_size.z_level;
-                game->walls[j].frame = 3+rand_int(9);
-                j++;
+
+
+        
+    
+    int used_wall_block =0;
+    for (u32 z = 0; z < game->dims.z_level ; ++z){
+        for (u32 y = 0; y< game->dims.y; ++y){
+            for (u32 x = 0; x< game->dims.x; ++x){
+                //renderer->assets.level
+                WorldBlock *b = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z,game->dims.x, game->dims.y)];
+
+                if (b->object == Nothing){
+
+                }
+                if (b->object == StairsUp1N || b->object == StairsUp2N || b->object == StairsUp3N || b->object == StairsUp4N) {
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+
+                }
+                if (b->object == StairsUp1S || b->object == StairsUp2S || b->object == StairsUp3S || b->object == StairsUp4S) {
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+
+                }
+                if (b->object == StairsUp1E || b->object == StairsUp2E || b->object == StairsUp3E || b->object == StairsUp4E) {
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+
+                }
+                if (b->object == StairsUp1W || b->object == StairsUp2W || b->object == StairsUp3W || b->object == StairsUp4W) {
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+
+                }
+
+
+                if (b->object == Floor){
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+                }
+
+                if (b->object == WallBlock){
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+                }
+                if (b->object == Ladder){
+                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    game->walls[used_wall_block].x = x * game->block_size.x;
+                    game->walls[used_wall_block].y = y * game->block_size.y;
+                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    used_wall_block++;
+                }
+
+
+
+                // Shadow
+                if (z+1 < game->dims.z_level && b->object != Nothing) {
+                    //printf("%d, %d, %d\n",x,y,z+1);
+                    WorldBlock *one_above = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z+1,game->dims.x, game->dims.y)];
+                    //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
+                    if (one_above->object != Nothing){
+                        game->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
+                        game->walls[used_wall_block].x = x * game->block_size.x;
+                        game->walls[used_wall_block].y = y * game->block_size.y;
+                        game->walls[used_wall_block].z = z * game->block_size.z_level;
+                        used_wall_block++;
+                    }
+                }
+                
             }
         }
     }
+    
+    game->wall_count = used_wall_block;
+    //u32 j =0;
+    
     set_wall_batch_sizes();
-#define ACTOR_BATCH 200
+#define ACTOR_BATCH 20
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
@@ -335,7 +407,7 @@ int main(int argc, char **argv) {
     for (u32 i = 0; i< game->actor_count; i++) {
         game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
         game->actors[i].y = 0;
-        game->actors[i].z = rand_int(game->dims.z_level) * game->block_size.z_level;
+        game->actors[i].z = 0 * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
         game->actors[i].frame = rand_int(4);
         int speed = 0;
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
@@ -379,18 +451,18 @@ int main(int argc, char **argv) {
                  wants_to_quit = true;
             }
             if (keys[SDL_SCANCODE_Z]) {
-                for (j = 0; j < ACTOR_BATCH; j++) {
+                for (u32 j = 0; j < ACTOR_BATCH; j++) {
                     if (game->actor_count < (2048 * 8) - ACTOR_BATCH) {
                         actor_add(game);
                         u32 i = game->actor_count;
                         game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
                         game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
-                        game->actors[i].z =  rand_int(game->dims.z_level) * game->block_size.z_level;
+                        game->actors[i].z =  rand_int(2) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
                         game->actors[i].frame = rand_int(4);
                         float speed = 1;
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-                        game->actors[i].palette_index = rand_float();
+                        game->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
                         set_actor_batch_sizes();
                     } else {
                         printf("Wont be adding actors reached max already\n");
@@ -399,22 +471,22 @@ int main(int argc, char **argv) {
 
             }
             if (keys[SDL_SCANCODE_LEFT]) {
-                game->x_view_offset-=20;
+                game->x_view_offset-=24;
                 prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_RIGHT]) {
-                game->x_view_offset+=20;
+                game->x_view_offset+=24;
                 prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
 
             }
             if (keys[SDL_SCANCODE_UP]) {
-                game->y_view_offset-=5;
+                game->y_view_offset-=12;
                 prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
                 printf("y offset: %d\n", game->y_view_offset);
 
             }
             if (keys[SDL_SCANCODE_DOWN]) {
-                game->y_view_offset+=5;
+                game->y_view_offset+=12;
                 prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
                 printf("y offset: %d\n", game->y_view_offset);
 
@@ -422,7 +494,7 @@ int main(int argc, char **argv) {
 
             if (keys[SDL_SCANCODE_DELETE]) {
                 //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
-                for (j = 0; j < ACTOR_BATCH; j++) {
+                for (u32 j = 0; j < ACTOR_BATCH; j++) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
                     set_actor_batch_sizes();
                 }

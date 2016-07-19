@@ -3,46 +3,26 @@
 
 #include "multi_platform.h"
 #include "types.h"
+#include "resource.h"
 
 #include "SDL.h"
 #include "SDL_mixer.h"
 
 
-typedef struct {
-    u32 id;
-    u16 x;
-    u16 y;
-    u16 width;
-    u16 height;
-    u16 xoffset;
-    u16 yoffset;
-    u16 xadvance;
-} BM_Glyph;
 
-typedef struct {
-    // perhaps I should keep the texture in here too
-    BM_Glyph chars[256];
-    u16 line_height;
-} BM_Font;
 
 
 
 // TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
 
-typedef struct {
-    GLuint id;
-    u16 width;
-    u16 height;
-} Texture;
+
+
 
 typedef struct {
     Texture sprite;
     Texture palette;
     Texture menlo;
-
-    /* GLuint sprite_id; */
-    /* GLuint palette_id; */
-    /* GLuint menlo_id; */
+    LevelData level;
 
     GLuint shader1;
     Mix_Music *music1;
@@ -96,4 +76,5 @@ void prepare_renderer(void);
 void make_texture(Texture *t, const char *path);
 void make_font(BM_Font *font, const char *path);
 void make_sprite_atlas(const char *path);
+void make_level(LevelData *level, const char *path);
 #endif

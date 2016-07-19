@@ -1,16 +1,4 @@
 
-ascii map format
-
-** swap y and z
-moving in a groundplane means moving x and y
-taking stairs/ladders etc you change z
-
-pathfinder works this way
- 
-
-
-
-
 
 * Currently doing
   Load some real buildings and display them.

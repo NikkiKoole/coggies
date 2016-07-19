@@ -62,19 +62,11 @@ World_Size validate_and_get_dimensions(char * path){
 typedef struct {
     int floor;
     int wall;
-    
 }WorldBlock;
 
 typedef struct {
     WorldBlock blocks[1024];
 }WorldMap;
-
-
-
-
-
-
-
 
 
 
