@@ -65,7 +65,7 @@ internal void initialize_SDL(void) {
     SDL_ASSERT(renderer->context != NULL);
 
 #ifdef GL3
-    SDL_ASSERT(SDL_GL_SetSwapInterval(1) >= 0);
+    SDL_ASSERT(SDL_GL_SetSwapInterval(0) >= 0);
 #endif
 }
 
@@ -226,6 +226,7 @@ internal void center_view(void) {
 
     game->x_view_offset = offset_x_blocks;
     game->y_view_offset = real_world_depth + offset_y_blocks;
+    
 }
 
 
@@ -374,20 +375,25 @@ int main(int argc, char **argv) {
                 }
 
 
-
+                
                 // Shadow
-                if (z+1 < game->dims.z_level && b->object != Nothing) {
+                if (z+1 < game->dims.z_level-1 && b->object != Nothing) {
                     //printf("%d, %d, %d\n",x,y,z+1);
                     WorldBlock *one_above = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z+1,game->dims.x, game->dims.y)];
                     //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
-                    if (one_above->object != Nothing){
+                    if (one_above->object == Floor){
+                        //if (z >= 0) {
+                        printf("%d, %d, %d, ..... %d\n",x,y,z,one_above->object);
+                            //}
+
                         game->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
                         game->walls[used_wall_block].x = x * game->block_size.x;
                         game->walls[used_wall_block].y = y * game->block_size.y;
                         game->walls[used_wall_block].z = z * game->block_size.z_level;
                         used_wall_block++;
+                        
                     }
-                }
+                   }
                 
             }
         }
@@ -457,7 +463,7 @@ int main(int argc, char **argv) {
                         u32 i = game->actor_count;
                         game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
                         game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
-                        game->actors[i].z =  rand_int(2) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
+                        game->actors[i].z =  rand_int(0) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
                         game->actors[i].frame = rand_int(4);
                         float speed = 1;
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;

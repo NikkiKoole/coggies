@@ -258,7 +258,7 @@ void prepare_renderer(void) {
             float y = (tempY / screenHeight) * 2 - 1.0;
 
             float wallDepth = -1 * ((float)data.y / (float)real_world_depth);
-            float wallY = 12.0f;
+            float wallY = 0.0f;
             float wallHeight = 108.0f;
 
 
@@ -462,8 +462,8 @@ void render(SDL_Window *window) {
 
             float paletteIndex = data.palette_index; //rand_float();
 
-            Rect2 uvs = get_uvs(texture_size, guyFrameX, 11*12.0f , 24.0f, 96.0f);
-            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 96.0f, scale, scale, 0.5, 1.0f);
+            Rect2 uvs = get_uvs(texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
+            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
 
 
             // bottomright
