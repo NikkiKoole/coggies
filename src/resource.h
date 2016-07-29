@@ -2,7 +2,7 @@
 #define RESOURCE_H
 #include "SDL_mixer.h"
 
-#define FLATTEN_3D_INDEX(x,y,z, width, height) (x + (y*width) + (z * width * height)) 
+#define FLATTEN_3D_INDEX(x,y,z, width, height) ((x) + ((y) * (width)) + ((z) * (width) * (height)))
 
 
 typedef struct {

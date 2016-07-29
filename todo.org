@@ -2,32 +2,33 @@
 
 * Currently doing
   Load some real buildings and display them.
-  I do want to also start looking into visible surface detection , for just the wallparts
+  I do want to also start looking into visible surface detection , for just the wall parts
+  Also shadow casting is a thing
 * todo
 - [-] build a renderer for my needs
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
-    keywords, front to back. I have to think a bit more about the datatypes involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
+    keywords, front to back. I have to think a bit more about the data types involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
   - [ ] benchmark manually zsorting every world item and just using x/y VS the current x/y/z + depth-buffer approach:
     I've the feeling the zsorting without using a depth  buffer actually will be better(faster) in my case. And it might make more items/larger buffers possible
-    since I dont have to move the Z in the VBO's and the depthbuffer func doenst need to run.
+    since I don't have to move the Z in the VBO's and the depth buffer func doesn't need to run.
     it will mean a lot of rewriting though for now I just want to move forward and not care about this.
   - [ ] make world position, screen position more stable and the same for everything
-    now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalise them now.
+    now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalize them now.
   - [ ] frame based animation using ±4 body parts
     - [ ] head
     - [ ] mouth
     - [ ] upper body
     - [ ] lower body
-  - [ ] spritesheet texture atlasses.
+  - [ ] sprite sheet texture atlasses.
   - [-] pan & zoom functionality.
     - [X] pan
     - [ ] zoom
-  - [X] have some text drawing, fuck unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ascii there is
-    I think I'll use bmfont to generate a bitmap font, which atleast will mean parsing the fnt file.
+  - [X] have some text drawing, fuck Unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ASCII there is
+    I think I'll use bmfont to generate a bitmap font, which at least will mean parsing the fnt file.
     the bitmap itself is an tga
-  - [X] make a more general purspose batch way of drawing
-    for now I am limited in the batch size, I dont really want that, I want to be able to just try and draw 100_000 actors, even if its slow.
+  - [X] make a more general purpose batch way of drawing
+    for now I am limited in the batch size, I don't really want that, I want to be able to just try and draw 100_000 actors, even if its slow.
   - [X] have possibly more buffers per group, I believe (but test this) that 2000 elements in a buffer is a good size.
     for actors that have 4 parts that means +-500 actors is about the max size of 1 buffer.
     actor group
@@ -35,7 +36,7 @@
     text group ?
     fx group ?
   - [X] sort on Y and Z
-    z is automagically by using a z buffer, y will need o be done client side.
+    z is auto magically by using a z buffer, y will need o be done client side.
     just using qsort for it, maybe that can one day be replaced with my own, but why bother.
   - [X] many dynamic actors with depth
   - [X] make a way you can add or remove actors
@@ -46,19 +47,19 @@
   - [ ] android
   - [X] ios
     why is there extra cruft on the screen though ? x1x2 switch and carrier time and battery stuff?
-    Project settings -> General -> Deployment info -> Devices = Universal (this was iphone)
-    now theres no splash screen anymore though, under Deployment info there's App icons and Launch Images that'll be for that. maybe later
+    Project settings -> General -> Deployment info -> Devices = Universal (this was iPhone)
+    now there's no splash screen anymore though, under Deployment info there's App icons and Launch Images that'll be for that. maybe later
     http://ticons.fokkezb.nl/ can generate splash screens in all resolutions at once.
   - [X] osx
   - [X] rpi2
-    - [X] find out what the deal is with input events, they dont really work in X11 and on the terminal they make the console unresponsive at end
-      installing libudev, adding user to input group (usermod/adduser) and getting rid of close function (name is taken already by os) seemed todo it (https://github.com/kphillisjr/SDL2/blob/master/README-raspberrypi.txt)
-      I was also under the impression linking to bcmhost and initting and deinitting seemed to solve something too, but thats unrelated at second glance.
+    - [X] find out what the deal is with input events, they don't really work in X11 and on the terminal they make the console unresponsive at end
+      installing libudev, adding user to input group (usermod/adduser) and getting rid of close function (name is taken already by OS) seemed to do it (https://github.com/kphillisjr/SDL2/blob/master/README-raspberrypi.txt)
+      I was also under the impression linking to bcmhost and initting and deinitting seemed to solve something too, but that's unrelated at second glance.
       Also I've updated/upgraded my rpi. at what point the issue was solved is hard to say...
-  - [X] linux
+  - [X] Linux
 - [-] live code reloading and osx master rpi slave behaviour for code swapping
   `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "cp '{}' ./otherfolder && make"`
-  the line above will watch the src folder, when a file changes (except for the emacs temp # crap) it
+  the line above will watch the src folder, when a file changes (except for the Emacs temp # crap) it
   triggers a copy of that file to 'otherfolder', adapt this to a scp to the rpi, and it triggers a make command
   the rpi should just have to have a watcher for a folder, when something changes only does the makefile.
   , seeing how the scp will copy a file from osx to the rpi, the rpi watcher will trigger and do a recompile itself.
@@ -78,50 +79,50 @@
   - I could get rid of the Z's and do manual sorting instead of depth func testing.
   - For the walls I could also get rid of the palette index, and just have all colors I want in the TGA file. (maybe I can do that for the actors too actually)
   - There's also visible surface testing which can shave some draws off.
-  - the walls more specifically the floors they draw a tile sized 24x108 pixels of which the most is just tranparant, It could be done by drawing 24x12 pixels at someoffset
-  and thats about it at the time I think.
-  However, it might be a wiser idea to just get a rpi3 (or better) and dont care.
+  - the walls more specifically the floors they draw a tile sized 24x108 pixels of which the most is just transparent, It could be done by drawing 24x12 pixels at some offset
+    (this will actually be fixed as soon as I am using texture atlasses)
+
+  However, it might be a wiser idea to just get a rpi3 (or better) and don't care.
 * done
 - [X] position items in 3d world
   Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
-  You can imagine initializeing the pan value, so the world is centered at start.
+  You can imagine initializing the pan value, so the world is centered at start.
                                    |
                                    |
                                    |
                                    |
-
-                                  y|
+                                  z|
                                0,0,0-------- x
                                     \
-                                     \ z
+                                     \ y
   I think the whole positioning of everything is flipped, but I am not sure, investigate...
-  Yes the actors are flipped over Y, text is too, walls arent :/
-  I think it would be wise to let the Actor/Wall and Glyph (as the structs in memory.h) all have world positions immeadiatly
-  (So no more x=1, y=1 z=1 for a wall block at tile position 1,1,1, just multiiply it with the block sizes already)
-  (For blocks however it could be usefull to keep the tilepositions around (for path finding purposes down the line I think))
-  The way the block are oriented shows why the walls werent flipped over Y.
+  Yes the actors are flipped over Y, text is too, walls aren't :/
+  I think it would be wise to let the Actor/Wall and Glyph (as the structs in memory.h) all have world positions immediately
+  (So no more x=1, y=1 z=1 for a wall block at tile position 1,1,1, just multiply it with the block sizes already)
+  (For blocks however it could be useful to keep the tile positions around (for path finding purposes down the line I think))
+  The way the block are oriented shows why the walls weren't flipped over Y.
   I do want them to be consistently (wrong) like the others.
   So I have to calculate the screenY outside the render loops too (So i can flip it in there.)
   maybe walls and actors will get a screenY property (the x is usable already..)
   (like the Glyph has already)
-  (btw there will be y & z, that will still need to be made into a screenY)
-  then I can generalise them a bit more.
+  (BTW there will be y & z, that will still need to be made into a screenY)
+  then I can generalize them a bit more.
   also I want to get rid of the large vertices for loops for every kind if possible.
   I reckon I will want two passes
-  One where I assume the screen will be of *some* dismensions and 0,0 is at the top left corner.
+  One where I assume the screen will be of *some* dimensions and 0,0 is at the top left corner.
   This is how I want to feed the position data
-  Since I dont really feel like computing screen positions in my game code.
+  Since I don't really feel like computing screen positions in my game code.
   I will keep the data being x,y,z
-  Ok got some stuff going now, I do still need to fix the depths, and the sorting.
+  OK got some stuff going now, I do still need to fix the depths, and the sorting.
 - [X] made a fps counter on screen
-- [X] get some json loading/parsing in (DONT NEED JSON ANYMORE)
+- [X] get some json loading/parsing in (DON'T NEED JSON ANYMORE)
   needed for texture atlasses generated by shoebox
-  alternatively I could rewrite the outputted json into some custom fileformat thats exaclty right for my c structs, maybe move the json parsing into an external app
+  alternatively I could rewrite the outputted json into some custom file format that's exactly right for my c structs, maybe move the json parsing into an external app
   I ended up writing a node app that just creates a binary format of the shoebox js/ json output
   there is one part unclear to me t the moment (spriteSource W, spriteSource H and the other W and H) but I can only know how this works once I start using a lot of sprites
 - [X] multiplatform support
   - [X] makefile as simple as possible, screw keeping .o files around
-- [X] have some barebones opengl(es) way of rendering stuff
+- [X] have some bare bones opengl(es) way of rendering stuff
   - [X] get gl working in sdl2
   - [X] use opengl (3.2) for the desktops
   - [X] use opengles (2.0) for mobile
@@ -132,7 +133,7 @@
     countMovingWest = 0;
     jumpPointLastSeen = 1;
   }
-  Ok still broken spiral3 is te simplest case thast busted/
+  OK still broken spiral3 is te simplest case that busted/
 - [X] compile sdl_mixer and sdl 2 for all platforms
 - [X] make some sorting (need memory scheme for algorithm) to sort wall parts on their Y position.
   just using qsort seemed to be sweet.

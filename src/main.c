@@ -88,7 +88,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(void) {
-    resource_level(&renderer->assets.level, "testlevel2.txt");
+    resource_level(&renderer->assets.level, "test3.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "menlo.fnt");
 
@@ -226,7 +226,7 @@ internal void center_view(void) {
 
     game->x_view_offset = offset_x_blocks;
     game->y_view_offset = real_world_depth + offset_y_blocks;
-    
+
 }
 
 
@@ -235,9 +235,13 @@ typedef struct {
     int y_pos;
 } BlockTextureAtlasPosition;
 
+internal void sort_wall_blocks_front_to_back() {
+
+
+}
 
 int main(int argc, char **argv) {
-
+    printf("\n");
 
     BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
     printf("blocktotal %d\n", BlockTotal);
@@ -261,10 +265,10 @@ int main(int argc, char **argv) {
     texture_atlas_data[StairsUp2W]  =  (BlockTextureAtlasPosition){16,0};
     texture_atlas_data[StairsUp3W]  =  (BlockTextureAtlasPosition){17,0};
     texture_atlas_data[StairsUp4W]  =  (BlockTextureAtlasPosition){18,0};
-    texture_atlas_data[Shaded]  =  (BlockTextureAtlasPosition){19,0};
+    texture_atlas_data[Shaded]      =  (BlockTextureAtlasPosition){19,0};
 
 
-    
+
     Memory _memory;
     Memory *memory = &_memory;
     reserve_memory(memory);
@@ -294,7 +298,7 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
 
-    
+
     game->dims = (WorldDims){renderer->assets.level.x,renderer->assets.level.y, renderer->assets.level.z_level};
     printf("dimensions: %d, %d, %d\n",game->dims.x, game->dims.y, game->dims.z_level);
     game->block_size = (WorldDims){24,24,96};
@@ -305,12 +309,16 @@ int main(int argc, char **argv) {
 
 
 
-        
-    
+
+
     int used_wall_block =0;
-    for (u32 z = 0; z < game->dims.z_level ; ++z){
-        for (u32 y = 0; y< game->dims.y; ++y){
-            for (u32 x = 0; x< game->dims.x; ++x){
+    int count_shadow = 0;
+    int used_floors = 0;
+    int wall_count =0;
+
+    for (u32 z = 0; z < game->dims.z_level ; z++){
+        for (u32 y = 0; y< game->dims.y; y++){
+            for (u32 x = 0; x< game->dims.x; x++){
                 //renderer->assets.level
                 WorldBlock *b = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z,game->dims.x, game->dims.y)];
 
@@ -357,6 +365,7 @@ int main(int argc, char **argv) {
                     game->walls[used_wall_block].y = y * game->block_size.y;
                     game->walls[used_wall_block].z = z * game->block_size.z_level;
                     used_wall_block++;
+                    used_floors++;
                 }
 
                 if (b->object == WallBlock){
@@ -365,6 +374,7 @@ int main(int argc, char **argv) {
                     game->walls[used_wall_block].y = y * game->block_size.y;
                     game->walls[used_wall_block].z = z * game->block_size.z_level;
                     used_wall_block++;
+                    wall_count++;
                 }
                 if (b->object == Ladder){
                     game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
@@ -375,15 +385,19 @@ int main(int argc, char **argv) {
                 }
 
 
-                
+
                 // Shadow
-                if (z+1 < game->dims.z_level-1 && b->object != Nothing) {
+                //if (z+1 < game->dims.z_level-1 && b->object != Nothing) {
                     //printf("%d, %d, %d\n",x,y,z+1);
-                    WorldBlock *one_above = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z+1,game->dims.x, game->dims.y)];
+
+                WorldBlock *one_above = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,game->dims.x, game->dims.y)];
+
+
                     //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
-                    if (one_above->object == Floor){
+                    if (one_above->object == Floor && z+1 < game->dims.z_level){
                         //if (z >= 0) {
-                        printf("%d, %d, %d, ..... %d\n",x,y,z,one_above->object);
+                        count_shadow++;
+                        //printf("%d, %d, %d, ..... index: %d \n",x,y,z, FLATTEN_3D_INDEX(x,y,(z_up),game->dims.x, game->dims.y));
                             //}
 
                         game->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
@@ -391,17 +405,26 @@ int main(int argc, char **argv) {
                         game->walls[used_wall_block].y = y * game->block_size.y;
                         game->walls[used_wall_block].z = z * game->block_size.z_level;
                         used_wall_block++;
-                        
+
                     }
-                   }
-                
+                    //}
+
             }
         }
     }
-    
+
+    // TODO sort the game->walls on Z
+
+
+    printf("shadow casters (floor one above) : %d, floor count:%d , wall count: %d\n", count_shadow, used_floors, wall_count);
+
+
+
+
+
     game->wall_count = used_wall_block;
     //u32 j =0;
-    
+
     set_wall_batch_sizes();
 #define ACTOR_BATCH 20
 
@@ -438,6 +461,10 @@ int main(int argc, char **argv) {
     char actorCount[64];
     char wallCount[64];
 
+     u64 last_avg_frame_time = 0;
+     u32 avg_frame_time_ticker = 0;
+     u64 running_frame_time = 0;
+
     while (! wants_to_quit) {
         snprintf(actorCount, 64, "actors: %d", game->actor_count);
         snprintf(wallCount, 64, "walls: %d", game->wall_count);
@@ -450,6 +477,8 @@ int main(int argc, char **argv) {
         set_glyph_batch_sizes();
 
         u64 time = SDL_GetPerformanceCounter();
+
+
 
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
@@ -498,7 +527,7 @@ int main(int argc, char **argv) {
 
             }
 
-            if (keys[SDL_SCANCODE_DELETE]) {
+            if (keys[SDL_SCANCODE_X]) {
                 //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
@@ -546,9 +575,23 @@ int main(int argc, char **argv) {
         }
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
+
         render(renderer->window);
         time = SDL_GetPerformanceCounter() - time;
-        snprintf (frameCount, 64, "frame: %.2f",  ((float)time/(SDL_GetPerformanceFrequency()) )*1000.0f );
+
+
+
+        // I AM AVERIGING FPS over 5 frames.
+        running_frame_time += time;
+        avg_frame_time_ticker++;
+        if (avg_frame_time_ticker == 5) {
+            last_avg_frame_time = ((float)(running_frame_time/5.0f)/(SDL_GetPerformanceFrequency()) ) * 1000.0f;
+            avg_frame_time_ticker = 0;
+            running_frame_time = 0;
+        }
+        snprintf (frameCount, 64, "ms: %.2f",  (float)last_avg_frame_time );
+        //snprintf (frameCount, 64, "frame: %.2f",  ((float)(time)/(SDL_GetPerformanceFrequency()) ) * 1000.0f );
+
 #endif
 
     }

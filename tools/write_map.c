@@ -7,24 +7,31 @@
 #include <string.h>
 
 
+char custom_middle = ' ';
+
 
 static void build_line_in_parts(char left, char middle, int middle_length, char right, char * buffer){
     char result[middle_length+2];
     int index = 0;
     result[0] = left;
+
     for (index=0; index<middle_length; ++index){
-        result[index+1]= middle;
+        if (middle == ' ' && custom_middle != ' ') {
+             result[index+1]= custom_middle;
+        } else {
+            result[index+1]= middle;
+        }
     }
     index++;
+
     result[index] = right;
     result[index+1]='\n';
-    result[index+2]=0;
-
+    result[index+2]='\0';
     strcpy(buffer, result);
 }
 
 
-static int write_map(int width, int depth, int height, char * name){
+static void write_map(int width, int depth, int height, char * name){
     FILE *f = fopen(name, "w");
     if (!f) {
         printf("Couldnt open file: %s\n",name);
@@ -33,32 +40,36 @@ static int write_map(int width, int depth, int height, char * name){
     fprintf(f, "1\n"); // version
     fprintf(f, "%d, %d, %d\n",width, depth, height); // dimensions
 
-    char *line;
+    //char *line;
+    char * line = (char *) malloc(width+2);
 
     int i,j = 0;
     for (i = 0; i < height; i++) {
         build_line_in_parts('+','-',width,'+',line);
-        fprintf(f, line);
+        fprintf(f,"%s", line);
 
         for (j = 0; j < depth; ++j) {
             build_line_in_parts('|',' ',width,'|',line);
-            fprintf(f, line);
+            fprintf(f,"%s", line);
         }
     }
     // final line
     build_line_in_parts('+','-',width,'+',line);
-    fprintf(f, line);
-
+    fprintf(f, "%s",line);
     fclose(f);
 }
 
 
 int main(int argc, char* argv[]) {
-
-    if (argc != 5) {
+    printf("arg count : %d \n", argc);
+    if (argc < 5) {
         printf("Incorrect amount of arguments.\n\n\n");
         goto info;
+
     } else {
+        if (argc == 6) {
+            custom_middle = *argv[5];
+        }
         int x=0, z_level=0, y=0;
         char* name;
 
@@ -76,14 +87,14 @@ int main(int argc, char* argv[]) {
         printf("%d, %d, %d, %s\n",x,y,z_level,name);
         if (x && z_level && y) {
             write_map(x, y, z_level,name);
-            return;
+            return 0;
         } else {
             printf("dimensions are wrong.\n\n\n");
             goto usage;
         }
     }
 
-    
+
  info:
     printf("Little empty map creation tool.\n");
     printf("x & y form a plane, z_level is the amount of these planes.\n");
@@ -91,4 +102,6 @@ int main(int argc, char* argv[]) {
  usage:
     printf("Usage:\n");
     printf(BOLDWHITE "\twrite_map x y z_level name\n");
+    return 0;
+
 }
