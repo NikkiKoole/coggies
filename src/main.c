@@ -235,9 +235,14 @@ typedef struct {
     int y_pos;
 } BlockTextureAtlasPosition;
 
-internal void sort_wall_blocks_front_to_back() {
 
-
+internal int wallsortfunc (const void * a, const void * b)
+{
+    //1536 = some guestimate, assuming the depth is maximum 128.
+    // and the height of each block is 128
+    const Wall *a2 = (const Wall *) a;
+    const Wall *b2 = (const Wall *) b;
+    return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
 
 int main(int argc, char **argv) {
@@ -413,14 +418,16 @@ int main(int argc, char **argv) {
         }
     }
 
-    // TODO sort the game->walls on Z
+    ASSERT(used_wall_block <= 16384);
+
+
+    // sort the game->walls on Z and Y to help openGl with depth testing etc.
+    // this improves frame time from 8ms to 1ms (for 16000 walls)
+
+    qsort(game->walls, used_wall_block, sizeof(Wall), wallsortfunc);
 
 
     printf("shadow casters (floor one above) : %d, floor count:%d , wall count: %d\n", count_shadow, used_floors, wall_count);
-
-
-
-
 
     game->wall_count = used_wall_block;
     //u32 j =0;
