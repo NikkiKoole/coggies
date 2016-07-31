@@ -14,11 +14,20 @@ SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -W
 WARNINGS = $(SUPERSTRICT)
 
 
-all:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX -lSDL2_mixer -g  -lglew -framework OpenGL src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
+OBJDIR = ./objs/
+LIBRARY_NAME := gamelibrary.so
+
+osx:
+	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX  -std=gnu99 -lSDL2_mixer -g3 -lglew -framework OpenGL src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
 
 linux:
 	gcc -g -I/usr/local/include/  -lGL $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX  -std=gnu99 -lSDL2_mixer -lGLEW  src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm
 
 pi:
 	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -std=gnu99 -DRPI -lSDL2_mixer -L/opt/vc/lib -lGLESv2 src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm
+
+gamelibrary:
+	mkdir -p $(OBJDIR)
+	gcc -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) -std=gnu99 -g3 -fPIC src/game.c
+	gcc -shared -o $(LIBRARY_NAME) game.o $(SDL_LFLAGS)
+	mv *.o $(OBJDIR)

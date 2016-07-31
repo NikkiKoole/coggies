@@ -16,8 +16,8 @@
   on rpi fswatch cannot be installed, so instead i went with inotify
   `sudo apt-get install inotify-tools`
   - [ ] build state struct that remains intact after reloading the lib
-  - [ ] makefile command to build so library
-  - [ ] loading of a lib
+  - [X] makefile command to build so library
+  - [X] loading of a lib
   - [X] scp commands
   - [X] memory sheme
   - [X] filesystem watcher

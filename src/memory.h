@@ -9,6 +9,20 @@
 #define GIGABYTES(value) (MEGABYTES(value) * 1024LL)
 #define TERABYTES(value) (GIGABYTES(value) * 1024LL)
 
+#include <sys/stat.h>   //struct stat
+#include <sys/types.h>  //struct stat
+typedef struct Shared_Library
+{
+    void *handle;
+    const char *name;
+    intmax_t creation_time;
+    u32 id;
+    u32 size;
+    const char *fn_name;
+    struct stat stats;
+} Shared_Library;
+
+
 typedef size_t memory_index;
 
 typedef struct {

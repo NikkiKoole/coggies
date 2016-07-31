@@ -8,6 +8,9 @@
 
 #include <math.h>
 
+#include <unistd.h> //usleep
+
+void (*func)(void);
 
 extern RenderState *renderer;
 extern GameState *game;
@@ -28,10 +31,6 @@ internal void initialize_SDL(void) {
     if (error < 0) {
         printf("%d %s\n", error, SDL_GetError());
     }
-
-    //SDL_ASSERT(SDL_Init(SDL_INIT_VIDEO));
-    //SDL_ASSERT(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER | SDL_INIT_AUDIO));
-
     SDL_MIX_ASSERT(Mix_OpenAudio(44100, MIX_DEFAULT_FORMAT, 2, 2048) >= 0);
     SDL_DisplayMode displayMode;
     SDL_GetDesktopDisplayMode(0, &displayMode);
@@ -53,7 +52,7 @@ internal void initialize_SDL(void) {
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
-    renderer->window = SDL_CreateWindow("Hello World",
+    renderer->window = SDL_CreateWindow("POPSOPDOPSOD",
                                       SDL_WINDOWPOS_UNDEFINED,
                                       SDL_WINDOWPOS_UNDEFINED,
                                       renderer->view.width, renderer->view.height,
@@ -254,6 +253,49 @@ internal int actorsortfunc (const void * a, const void * b)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
 
+Shared_Library libgame = {
+    .handle = NULL,
+    .name = "./gamelibrary.so",
+    .creation_time = 0,
+    .size = 0,
+    .fn_name = "game_update_and_render"
+};
+
+internal void stub(void)
+{
+    usleep(10000);
+}
+
+internal void maybe_load_libgame(void)
+{
+    stat(libgame.name, &libgame.stats);
+    if (libgame.stats.st_ino != libgame.id){
+        if ((intmax_t)libgame.stats.st_size > 0 && libgame.stats.st_nlink > 0) {
+            libgame.id = libgame.stats.st_ino;
+            if (libgame.handle) {
+                SDL_UnloadObject(libgame.handle);
+            }
+            libgame.handle = SDL_LoadObject(libgame.name);
+            if (!libgame.handle) {
+                libgame.handle = NULL;
+                libgame.id = 0;
+                printf("couldnt load:%s, error: %s\n", libgame.name, SDL_GetError());
+                func = stub;
+            } else {
+                func = (void (*)(void)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
+                if (func == NULL) {
+                    printf("couldnt find: %s, error: %s\n",libgame.fn_name, SDL_GetError());
+                } else {
+                    printf("succes loading libgame\n");
+                }
+            }
+        }
+    }
+}
+
+
+
+
 
 int main(int argc, char **argv) {
     printf("\n");
@@ -301,6 +343,8 @@ int main(int argc, char **argv) {
                      (u8 *)memory->scratch + sizeof(TransState));
 
     memory->is_initialized = true;
+
+
 
 
     UNUSED(argc);
@@ -455,7 +499,7 @@ int main(int argc, char **argv) {
         game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
         game->actors[i].z =  rand_int(0) * game->block_size.z_level;
         game->actors[i].frame = rand_int(4);
-        float speed = 10 + rand_int(10); // px per seconds
+        float speed = 1;//10 + rand_int(10); // px per seconds
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].palette_index = rand_float();
@@ -483,7 +527,10 @@ int main(int argc, char **argv) {
     u64 running_frame_time = 0;
     float last_frame_time_ms = 1.0f;
 
+    maybe_load_libgame();
+
     while (! wants_to_quit) {
+        maybe_load_libgame();
         snprintf(actorCount, 64, "actors: %d", game->actor_count);
         snprintf(wallCount, 64, "walls: %d", game->wall_count);
 
@@ -574,7 +621,7 @@ int main(int argc, char **argv) {
                     game->actors[i].x = ((game->dims.x-1) * game->block_size.x);
                 }
 
-                game->actors[i].dx *= -1;
+                game->actors[i].dx *= -1.0f;
             }
             game->actors[i].x += game->actors[i].dx * (last_frame_time_ms/1000.0f);
 
@@ -586,11 +633,12 @@ int main(int argc, char **argv) {
                     game->actors[i].y = ((game->dims.y-1) * game->block_size.y);
                 }
 
-                game->actors[i].dy *= -1;
+                game->actors[i].dy *= -1.0f;
 
 
             }
             game->actors[i].y += game->actors[i].dy *  (last_frame_time_ms/1000.0f);
+            //printf("is it a float: %f \n", game->actors[i].y);
         }
 
 

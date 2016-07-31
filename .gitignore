@@ -1,4 +1,6 @@
 /relevant_old_code
 a.out
 .DS_Store
+*.so
+/objs
 /a.out.dSYM

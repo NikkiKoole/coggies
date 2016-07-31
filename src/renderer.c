@@ -353,7 +353,7 @@ void prepare_renderer(void) {
 
 
     // prepare buffers for FONT drawing
- 
+
     {
         for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
@@ -445,6 +445,7 @@ void render(SDL_Window *window) {
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
+            //printf("in render is actor float?  %f \n", data.y);
             r32 scale = 1;
             r32 guyFrameX = data.frame * 24.0f;
 
