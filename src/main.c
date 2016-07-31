@@ -8,7 +8,6 @@
 
 #include <math.h>
 
-#include <unistd.h> //usleep
 
 void (*func)(void);
 
@@ -263,7 +262,7 @@ Shared_Library libgame = {
 
 internal void stub(void)
 {
-    usleep(10000);
+    SDL_Delay(1);
 }
 
 internal void maybe_load_libgame(void)

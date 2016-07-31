@@ -1,6 +1,8 @@
 /relevant_old_code
+coggies.app
 a.out
 .DS_Store
 *.so
 /objs
 /a.out.dSYM
+/coggies.app.dSYM

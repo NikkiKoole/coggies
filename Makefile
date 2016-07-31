@@ -17,14 +17,16 @@ WARNINGS = $(SUPERSTRICT)
 OBJDIR = ./objs/
 LIBRARY_NAME := gamelibrary.so
 
+PROGRAM_NAME := coggies.app
+
 osx:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX  -std=gnu99 -lSDL2_mixer -g3 -lglew -framework OpenGL src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
+	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX  -std=gnu99 -lSDL2_mixer -g3 -lglew -framework OpenGL src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -o $(PROGRAM_NAME)
 
 linux:
-	gcc -g -I/usr/local/include/  -lGL $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX  -std=gnu99 -lSDL2_mixer -lGLEW  src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm
+	gcc -g -I/usr/local/include/  -lGL $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX  -std=gnu99 -lSDL2_mixer -lGLEW  src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm -o $(PROGRAM_NAME)
 
 pi:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -std=gnu99 -DRPI -lSDL2_mixer -L/opt/vc/lib -lGLESv2 src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm
+	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -std=gnu99 -DRPI -lSDL2_mixer -L/opt/vc/lib -lGLESv2 src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm -o $(PROGRAM_NAME)
 
 gamelibrary:
 	mkdir -p $(OBJDIR)
