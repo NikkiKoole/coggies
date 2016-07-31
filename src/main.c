@@ -245,6 +245,16 @@ internal int wallsortfunc (const void * a, const void * b)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
 
+internal int actorsortfunc (const void * a, const void * b)
+{
+    //1536 = some guestimate, assuming the depth is maximum 128.
+    // and the height of each block is 128
+    const Actor *a2 = (const Actor *) a;
+    const Actor *b2 = (const Actor *) b;
+    return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
+}
+
+
 int main(int argc, char **argv) {
     printf("\n");
 
@@ -433,7 +443,7 @@ int main(int argc, char **argv) {
     //u32 j =0;
 
     set_wall_batch_sizes();
-#define ACTOR_BATCH 20
+#define ACTOR_BATCH 200
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
@@ -484,7 +494,6 @@ int main(int argc, char **argv) {
         set_glyph_batch_sizes();
 
         u64 time = SDL_GetPerformanceCounter();
-
 
 
         SDL_PumpEvents();
@@ -580,6 +589,13 @@ int main(int argc, char **argv) {
             }
             game->actors[i].y += game->actors[i].dy;
         }
+
+
+
+        // sorting the actors is less profitable(because it runs every frame), it does however improve the speed from  6ms to 3.5ms for 16K actors (almost 100%)
+        // on the negative side it introduces some fighting Z cases. (flickering!)
+        // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
+        qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 

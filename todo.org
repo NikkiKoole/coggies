@@ -1,11 +1,33 @@
 
+* Currently doing / Upcoming
+  - Make actors move in variable time step
+  - Prepare code for static memory block. perhaps just doing the hot reload immediately
 
-* Currently doing
-  Load some real buildings and display them.
-  I do want to also start looking into visible surface detection , for just the wall parts
-  Also shadow casting is a thing
-* todo
+* Todo
+- [ ] tag memory usage
+  I would like to start tagging memory usage with labels like "actors/sprite", "renderer/walls/vbo", "pathfinder/JPS" things like that, so I can during runtime inspect what the memory usage for various pieces is.
+- [-] live code reloading and osx master rpi slave behaviour for code swapping (static memory block)
+  `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "cp '{}' ./otherfolder && make"`
+  the line above will watch the src folder, when a file changes (except for the Emacs temp # crap) it
+  triggers a copy of that file to 'otherfolder', adapt this to a scp to the rpi, and it triggers a make command
+  the rpi should just have to have a watcher for a folder, when something changes only does the makefile.
+  , seeing how the scp will copy a file from osx to the rpi, the rpi watcher will trigger and do a recompile itself.
+  `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "scp '{}' pi@192.168.1.66:~/test2/ && make"`
+  handles the scp-ing to the remote pi
+  on rpi fswatch cannot be installed, so instead i went with inotify
+  `sudo apt-get install inotify-tools`
+  - [ ] build state struct that remains intact after reloading the lib
+  - [ ] makefile command to build so library
+  - [ ] loading of a lib
+  - [X] scp commands
+  - [X] memory sheme
+  - [X] filesystem watcher
 - [-] build a renderer for my needs
+  - [ ] debug rendering stuff
+    - [ ] lines for pathfinder (to show paths that have ben found (x y z in 3 colors))
+    - [ ] bboxes of objects to check hiotarea and collisions down the line
+  - [-] either fixed  OR variable time step. (now i do nothing particular)
+    maybe during development variable timestep at the end change it too fixed.
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
     keywords, front to back. I have to think a bit more about the data types involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
@@ -57,22 +79,6 @@
       I was also under the impression linking to bcmhost and initting and deinitting seemed to solve something too, but that's unrelated at second glance.
       Also I've updated/upgraded my rpi. at what point the issue was solved is hard to say...
   - [X] Linux
-- [-] live code reloading and osx master rpi slave behaviour for code swapping
-  `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "cp '{}' ./otherfolder && make"`
-  the line above will watch the src folder, when a file changes (except for the Emacs temp # crap) it
-  triggers a copy of that file to 'otherfolder', adapt this to a scp to the rpi, and it triggers a make command
-  the rpi should just have to have a watcher for a folder, when something changes only does the makefile.
-  , seeing how the scp will copy a file from osx to the rpi, the rpi watcher will trigger and do a recompile itself.
-  `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "scp '{}' pi@192.168.1.66:~/test2/ && make"`
-  handles the scp-ing to the remote pi
-  on rpi fswatch cannot be installed, so instead i went with inotify
-  `sudo apt-get install inotify-tools`
-  - [ ] build state struct that remains intact after reloading the lib
-  - [ ] makefile command to build so library
-  - [ ] loading of a lib
-  - [X] scp commands
-  - [X] memory sheme
-  - [X] filesystem watcher
 - [ ] optimize
   on the rpi I can only draw 1000 actors and 1000 walls, more then that I go under 60fps.
   - I could improve it a little bit (I think) by making my VBO's smaller (zindex and palette index could go with some work)
@@ -83,7 +89,16 @@
     (this will actually be fixed as soon as I am using texture atlasses)
 
   However, it might be a wiser idea to just get a rpi3 (or better) and don't care.
-* done
+- [ ] game play stuff
+  - [ ] pathfinder
+    - next to hooking it in, the current pathfinder code also needs some dirty list (to help cleaning the data quickly) and maybe some notion of keys (to help actors not look in rooms they shouldnt be in)
+      the key stuff is not mandatory its just an improvement, the dirtylist stuff is mandatory otherwise the whole 10 Mb of data needs cleaning for every actor.
+  - [ ] collision detection & avoidance for actors
+
+
+* Done
+- [X] I do want to also start looking into visible surface detection , for just the wall parts
+  instead I just sort the walls to help the renderer, it seemed to improves speed by 800%, we'll see later if (if ever) I need to improve it further.
 - [X] position items in 3d world
   Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
   You can imagine initializing the pan value, so the world is centered at start.
@@ -133,10 +148,11 @@
     countMovingWest = 0;
     jumpPointLastSeen = 1;
   }
-  OK still broken spiral3 is te simplest case that busted/
+  code seems fixed, cannot find any broken situations anymore. (keep an eye on it though)
 - [X] compile sdl_mixer and sdl 2 for all platforms
 - [X] make some sorting (need memory scheme for algorithm) to sort wall parts on their Y position.
   just using qsort seemed to be sweet.
+
 
 * Compiling SDL2_Mixer
 **** ios
@@ -156,7 +172,8 @@
     make -j 4
     make install
 
-* tools
+
+* Tools
 - http://renderhjs.net/shoebox/ for generating texture atlasses
   sadly I cannot really get that AIR thing working on *nux, damn adobe
   keep my eyes open for an alternativools
