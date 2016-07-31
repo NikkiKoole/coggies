@@ -42,9 +42,9 @@ typedef struct {
 } Wall;
 
 typedef struct {
-    u16 x;
-    u16 y;
-    u16 z;
+    r32 x;
+    r32 y;
+    r32 z;
     u16 frame;
     s16 dx;
     s16 dy;

@@ -88,7 +88,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(void) {
-    resource_level(&renderer->assets.level, "test3.txt");
+    resource_level(&renderer->assets.level, "test4.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "menlo.fnt");
 
@@ -452,10 +452,10 @@ int main(int argc, char **argv) {
 
     for (u32 i = 0; i< game->actor_count; i++) {
         game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
-        game->actors[i].y = 0;
-        game->actors[i].z = 0 * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
+        game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
+        game->actors[i].z =  rand_int(0) * game->block_size.z_level;
         game->actors[i].frame = rand_int(4);
-        int speed = 0;
+        float speed = 10 + rand_int(10); // px per seconds
         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
         game->actors[i].palette_index = rand_float();
@@ -478,9 +478,10 @@ int main(int argc, char **argv) {
     char actorCount[64];
     char wallCount[64];
 
-     u64 last_avg_frame_time = 0;
-     u32 avg_frame_time_ticker = 0;
-     u64 running_frame_time = 0;
+    u64 last_avg_frame_time = 0;
+    u32 avg_frame_time_ticker = 0;
+    u64 running_frame_time = 0;
+    float last_frame_time_ms = 1.0f;
 
     while (! wants_to_quit) {
         snprintf(actorCount, 64, "actors: %d", game->actor_count);
@@ -510,7 +511,7 @@ int main(int argc, char **argv) {
                         game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
                         game->actors[i].z =  rand_int(0) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
                         game->actors[i].frame = rand_int(4);
-                        float speed = 1;
+                        float speed = 10 + rand_int(10); // px per seconds
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
@@ -562,23 +563,25 @@ int main(int argc, char **argv) {
             }
         }
 
+
+        // TODO: plenty of bugs are in this loop, never really cleaned up after
         for (u32 i = 0; i < game->actor_count; i++) {
             if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
-                //if (game->actors[i].x < 0) {
-                //    game->actors[i].x = 0;
-                //}
+                if (game->actors[i].x < 0) {
+                   game->actors[i].x = 0;
+                }
                 if (game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
                     game->actors[i].x = ((game->dims.x-1) * game->block_size.x);
                 }
 
                 game->actors[i].dx *= -1;
             }
-            game->actors[i].x += game->actors[i].dx;
+            game->actors[i].x += game->actors[i].dx * (last_frame_time_ms/1000.0f);
 
             if (game->actors[i].y <= 0 || game->actors[i].y >= ((game->dims.y-1) * game->block_size.y)) {
-                //if (game->actors[i].z < 0) {
-                //    game->actors[i].z = 0;
-                //}
+                if (game->actors[i].z < 0) {
+                   game->actors[i].z = 0;
+                }
                 if (game->actors[i].y > ((game->dims.y-1) * game->block_size.y)) {
                     game->actors[i].y = ((game->dims.y-1) * game->block_size.y);
                 }
@@ -587,7 +590,7 @@ int main(int argc, char **argv) {
 
 
             }
-            game->actors[i].y += game->actors[i].dy;
+            game->actors[i].y += game->actors[i].dy *  (last_frame_time_ms/1000.0f);
         }
 
 
@@ -601,7 +604,9 @@ int main(int argc, char **argv) {
 
         render(renderer->window);
         time = SDL_GetPerformanceCounter() - time;
+        last_frame_time_ms =  (float)((float)time/SDL_GetPerformanceFrequency()) * 1000.0f;
 
+        //        printf("%f\n", (float)((float)time/SDL_GetPerformanceFrequency()) * 1000.0f);
 
 
         // I AM AVERIGING FPS over 5 frames.

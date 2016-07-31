@@ -1,6 +1,5 @@
 
 * Currently doing / Upcoming
-  - Make actors move in variable time step
   - Prepare code for static memory block. perhaps just doing the hot reload immediately
 
 * Todo
@@ -26,8 +25,6 @@
   - [ ] debug rendering stuff
     - [ ] lines for pathfinder (to show paths that have ben found (x y z in 3 colors))
     - [ ] bboxes of objects to check hiotarea and collisions down the line
-  - [-] either fixed  OR variable time step. (now i do nothing particular)
-    maybe during development variable timestep at the end change it too fixed.
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
     keywords, front to back. I have to think a bit more about the data types involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
@@ -46,6 +43,9 @@
   - [-] pan & zoom functionality.
     - [X] pan
     - [ ] zoom
+  - [X] either fixed  OR variable time step. (now i do nothing particular)
+    maybe during development variable timestep at the end change it too fixed.
+    its variable at the moment
   - [X] have some text drawing, fuck Unicode, fuck boxes, geom and crazy symbols, just the simplest 32-128 ASCII there is
     I think I'll use bmfont to generate a bitmap font, which at least will mean parsing the fnt file.
     the bitmap itself is an tga
