@@ -1621,12 +1621,12 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, grid * Grid
 
                 if (Node->Z != Successor->Z){
                     printf("node z %d, succ z: %d\n",Node->Z, Successor->Z);
-                    // TODO add an extra jumppoint here?
+                    // TODO add an extra jumppoint here? for stairs that arent ladders (move in Z and in X or Y)
                     // stairs that use multiple tiles need an jumppoint cause taking the stairs moves in the ground plain.
                     // just a fancy getNodeStairsEnd() or something.
-                
+
                 }
-                
+
                 givenCost = ABS(ManHattan(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
                 if (!IS_CARDINAL(direction)) {givenCost *= SQRT2;}
                 givenCost += Node->g;

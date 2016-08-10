@@ -18,18 +18,27 @@ OBJDIR = ./objs/
 LIBRARY_NAME := gamelibrary.so
 
 PROGRAM_NAME := coggies.app
+CHK_SOURCES := src/main.c
+
+DEBUGFLAG:=-g3
+OPTIMIZE:=-O3
+STD:=-std=gnu99
+
+CC:=clang
+
+BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
 
 osx:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX  -std=gnu99 -lSDL2_mixer -g3 -lglew -framework OpenGL src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
 
 linux:
-	gcc -g -I/usr/local/include/  -lGL $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX  -std=gnu99 -lSDL2_mixer -lGLEW  src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 pi:
-	gcc -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -std=gnu99 -DRPI -lSDL2_mixer -L/opt/vc/lib -lGLESv2 src/main.c src/resource.c src/random.c src/memory.c src/renderer.c -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	gcc -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) -std=gnu99 -g3 -fPIC src/game.c
-	gcc -shared -o $(LIBRARY_NAME) game.o $(SDL_LFLAGS)
+	${CC} -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} -fPIC src/game.c
+	${CC} -shared -o $(LIBRARY_NAME) game.o $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)

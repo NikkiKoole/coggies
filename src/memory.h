@@ -3,14 +3,14 @@
 
 #include <sys/mman.h> //mmap
 #include "types.h"
+#include <sys/stat.h>   //struct stat
 
 #define KILOBYTES(value) ((value)*1024LL)
 #define MEGABYTES(value) (KILOBYTES(value) * 1024LL)
 #define GIGABYTES(value) (MEGABYTES(value) * 1024LL)
 #define TERABYTES(value) (GIGABYTES(value) * 1024LL)
 
-#include <sys/stat.h>   //struct stat
-#include <sys/types.h>  //struct stat
+
 typedef struct Shared_Library
 {
     void *handle;

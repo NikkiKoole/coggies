@@ -9,6 +9,8 @@
 #include <math.h>
 
 
+
+
 void (*func)(void);
 
 extern RenderState *renderer;
@@ -24,6 +26,8 @@ extern GameState *game;
         printf("%s, %s, function %s, file: %s, line:%d. \n", #expression, Mix_GetError(), __FUNCTION__, __FILE__, __LINE__); \
         exit(0);                                                                                                             \
     }
+
+
 
 internal void initialize_SDL(void) {
     int error = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
@@ -51,7 +55,7 @@ internal void initialize_SDL(void) {
 
     SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 16);
 
-    renderer->window = SDL_CreateWindow("POPSOPDOPSOD",
+    renderer->window = SDL_CreateWindow("Work in progress",
                                       SDL_WINDOWPOS_UNDEFINED,
                                       SDL_WINDOWPOS_UNDEFINED,
                                       renderer->view.width, renderer->view.height,
@@ -285,7 +289,7 @@ internal void maybe_load_libgame(void)
                 if (func == NULL) {
                     printf("couldnt find: %s, error: %s\n",libgame.fn_name, SDL_GetError());
                 } else {
-                    printf("succes loading libgame\n");
+                    printf("succes loading libgame timestamp: %d \n", SDL_GetTicks());
                 }
             }
         }
@@ -325,10 +329,12 @@ int main(int argc, char **argv) {
 
 
 
+
+
+
     Memory _memory;
     Memory *memory = &_memory;
     reserve_memory(memory);
-
     ASSERT(sizeof(GameState) <= memory->permanent_size);
     GameState *storage = (GameState *)memory->permanent;
     ASSERT(sizeof(TransState) <= memory->scratch_size);
@@ -425,6 +431,8 @@ int main(int argc, char **argv) {
                     used_wall_block++;
                     used_floors++;
                 }
+
+
 
                 if (b->object == WallBlock){
                     game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
