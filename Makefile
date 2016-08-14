@@ -11,7 +11,7 @@ STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
 SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls -pedantic-errors -Wcast-qual -Wshadow
-WARNINGS = $(SUPERSTRICT)
+WARNINGS = $(STRICT_RPI2)
 
 
 OBJDIR = ./objs/
@@ -35,7 +35,7 @@ linux:
 	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 pi:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -mfp16-format=ieee -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

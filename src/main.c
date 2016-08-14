@@ -66,7 +66,8 @@ internal void initialize_SDL(void) {
     renderer->context = SDL_GL_CreateContext(renderer->window);
     SDL_ASSERT(renderer->context != NULL);
 
-#ifdef GL3
+#ifndef IOS
+
     SDL_ASSERT(SDL_GL_SetSwapInterval(0) >= 0);
 #endif
 }

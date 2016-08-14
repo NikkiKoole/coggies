@@ -90,7 +90,7 @@ internal Rect2 get_verts(float viewportWidth,
 
 
 #ifdef GLES
-internal void makeBufferRPI(GLfloat vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage) {
+internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage) {
     glGenBuffers(1, VBO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * VALUES_PER_ELEM, vertices, usage);
@@ -105,13 +105,13 @@ internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     //setup and enable attrib pointer
     GLuint a_Position = glGetAttribLocation(*program, "a_Position");
-    glVertexAttribPointer(a_Position, 3, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid *)0);
+    glVertexAttribPointer(a_Position, 3, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)0);
     glEnableVertexAttribArray(a_Position);
     GLuint a_TexCoord = glGetAttribLocation(*program, "a_TexCoord");
-    glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid *)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(a_TexCoord);
     GLuint a_Palette = glGetAttribLocation(*program, "a_Palette");
-    glVertexAttribPointer(a_Palette, 1, GL_FLOAT, GL_FALSE, sizeof(GLfloat) * 6, (GLvoid *)(5 * sizeof(GLfloat)));
+    glVertexAttribPointer(a_Palette, 1, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(a_Palette);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
 }
@@ -319,6 +319,7 @@ void prepare_renderer(void) {
             batch->indices[i + 3] = j + 0;
             batch->indices[i + 4] = j + 2;
             batch->indices[i + 5] = j + 3;
+
         }
 
 #ifdef GLES
@@ -462,8 +463,8 @@ u64 render(SDL_Window *window) {
             float offset_toget_actor_ontop_of_floor = (float)24.0f / real_world_depth;
             float guyDepth = -1 * ((float)data.y / (float)real_world_depth) - offset_toget_actor_ontop_of_floor;
 
-            float tempX = data.x;
-            float tempY = (data.z) - (data.y) / 2;
+            int tempX = data.x;
+            int tempY = (data.z) - (data.y) / 2;
             tempX += game->x_view_offset;
             tempY += game->y_view_offset;
 
@@ -511,7 +512,7 @@ u64 render(SDL_Window *window) {
 #ifdef GLES
         bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
         CHECK();
-        glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
 #endif
@@ -619,14 +620,14 @@ u64 render(SDL_Window *window) {
 #ifdef GLES
             bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
             CHECK();
-            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
             glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
             glDisableVertexAttribArray(0);
 #endif
 #ifdef GL3
             glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
             //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
-            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+            glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
             glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
             glBindVertexArray(0);
 #endif

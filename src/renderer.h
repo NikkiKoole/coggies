@@ -11,16 +11,24 @@
 
 
 
-//#define USES_HALF_FLOAT
 
-// TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
+
+#define USES_HALF_FLOAT
 
 #ifdef USES_HALF_FLOAT
 #define VERTEX_FLOAT_TYPE __fp16
 #define GL_FLOAT_TYPE GL_HALF_FLOAT
+#ifdef GL3
+#define GL_FLOAT_TYPE GL_HALF_FLOAT
+#endif
+#ifdef GLES
+#define GL_FLOAT_TYPE GL_HALF_FLOAT_OES
+#endif
 #else
+
 #define VERTEX_FLOAT_TYPE GLfloat
 #define GL_FLOAT_TYPE GL_FLOAT
+
 #endif
 
 
