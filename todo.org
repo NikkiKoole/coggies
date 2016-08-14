@@ -1,9 +1,25 @@
 
 NOTE:
-On the rpi GL_OES_mapbuffer is supported it seems
+On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
 before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
 On the same note I could try and give GL_OES_vertex_half_float a look over, that too -if I can use it in sdl2- can shave a lot of my buffers (50%)
 Haha top hit on Google: https://www.raspberrypi.org/forums/viewtopic.php?t=125128&p=839778 (my own question...)
+gcc documentation saying that it supports a half-float type (__fp16) for ARM targets.
+
+also look into this:
+
+https://www.reddit.com/r/opengl/comments/1kjsr9/how_to_render_2d_objects_using_2_triangles_for_a/
+You can often get away with using a single triangle with twice the width and height of the intended sprite. This may be faster if you have a lot of sprites. Crappy ASCII art follows:
+*
+| \
+|   \
+|     \
++------*
+|      | \
+|      |   \
+|      |     \
++------+------*
+
 
 
 * Currently doing / Upcoming
