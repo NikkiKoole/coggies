@@ -140,16 +140,16 @@ internal void set_wall_batch_sizes(void) {
 }
 
 internal void set_actor_batch_sizes(void) {
-    u32 used_batches = ceil(game->actor_count / 2048.0f);
+    u32 used_batches = ceil(game->actor_count / (MAX_IN_BUFFER*1.0f));
     renderer->used_actor_batches = used_batches;
 
     if (used_batches == 1) {
         renderer->actors[0].count = game->actor_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
-            renderer->actors[i].count = 2048;
+            renderer->actors[i].count = MAX_IN_BUFFER;
         }
-        renderer->actors[used_batches-1].count = game->actor_count % 2048;
+        renderer->actors[used_batches-1].count = game->actor_count % MAX_IN_BUFFER;
     } else {
         renderer->used_actor_batches = 0;
     }
@@ -494,7 +494,7 @@ int main(int argc, char **argv) {
     //u32 j =0;
 
     set_wall_batch_sizes();
-#define ACTOR_BATCH 200
+#define ACTOR_BATCH 1000
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
@@ -528,6 +528,7 @@ int main(int argc, char **argv) {
     char frameCount[64];
     char actorCount[64];
     char wallCount[64];
+    char updateActorBufferDuration[64];
 
     u64 last_avg_frame_time = 0;
     u32 avg_frame_time_ticker = 0;
@@ -545,6 +546,8 @@ int main(int argc, char **argv) {
         game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
         game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
         game->glyph_count += draw_text(wallCount, 0, 48, &renderer->assets.menlo_font);
+        game->glyph_count += draw_text(updateActorBufferDuration, 0, 48+24,&renderer->assets.menlo_font);
+
 
         set_glyph_batch_sizes();
 
@@ -558,7 +561,7 @@ int main(int argc, char **argv) {
             }
             if (keys[SDL_SCANCODE_Z]) {
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
-                    if (game->actor_count < (2048 * 8) - ACTOR_BATCH) {
+                    if (game->actor_count < (2048 * 32) - ACTOR_BATCH) {
                         actor_add(game);
                         u32 i = game->actor_count;
                         game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
@@ -657,7 +660,7 @@ int main(int argc, char **argv) {
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 
-        render(renderer->window);
+        u64 delta = render(renderer->window);
         time = SDL_GetPerformanceCounter() - time;
         last_frame_time_ms =  (float)((float)time/SDL_GetPerformanceFrequency()) * 1000.0f;
 
@@ -673,6 +676,7 @@ int main(int argc, char **argv) {
             running_frame_time = 0;
         }
         snprintf (frameCount, 64, "ms: %.2f",  (float)last_avg_frame_time );
+        snprintf (updateActorBufferDuration, 64, " %.2f actor batch update",  ((float)delta/(SDL_GetPerformanceFrequency()) ) * 1000.0f );
         //snprintf (frameCount, 64, "frame: %.2f",  ((float)(time)/(SDL_GetPerformanceFrequency()) ) * 1000.0f );
 
 #endif

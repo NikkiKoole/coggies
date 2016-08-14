@@ -24,18 +24,18 @@ DEBUGFLAG:=-g3
 OPTIMIZE:=-O3
 STD:=-std=gnu99
 
-CC:=clang
+CC:=gcc
 
 BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
 
 osx:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
 
 linux:
 	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 pi:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -mfp16-format=ieee -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

@@ -85,7 +85,7 @@ typedef struct {
     MemoryArena arena;
     Wall walls[16384];
     u32 wall_count;
-    Actor actors[16384];
+    Actor actors[16384*4];
     u32 actor_count;
     Glyph glyphs[16384];
     u32 glyph_count;

@@ -118,7 +118,10 @@ internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
 #endif
 
 #ifdef GL3
-internal void makeBuffer(GLfloat vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage) {
+
+internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage) {
+
+
     glGenVertexArrays(1, VAO);
     glGenBuffers(1, VBO);
     glGenBuffers(1, EBO);
@@ -131,13 +134,13 @@ internal void makeBuffer(GLfloat vertices[], GLushort indices[], int size, GLuin
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * size * 6, indices, GL_STATIC_DRAW);
 
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)0);
+    glVertexAttribPointer(0, 3, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)0);
     glEnableVertexAttribArray(0);
     // TexCoord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(3 * sizeof(GLfloat)));
+    glVertexAttribPointer(1, 2, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(1);
 
-    glVertexAttribPointer(2, 1, GL_FLOAT, GL_FALSE, 6 * sizeof(GLfloat), (GLvoid *)(5 * sizeof(GLfloat)));
+    glVertexAttribPointer(2, 1, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(2);
 
     glBindVertexArray(0); // Unbind VAO
@@ -326,7 +329,7 @@ void prepare_renderer(void) {
 #endif
     }
 
-    for (int actor_batch_index = 0; actor_batch_index < 8; actor_batch_index++) {
+    for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
         for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
             //batch->vertices[i] = 0;
@@ -383,7 +386,7 @@ void prepare_renderer(void) {
 
 
 
-void render(SDL_Window *window) {
+u64 render(SDL_Window *window) {
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     glClearDepthf(1.0f);
     glEnable(GL_BLEND);
@@ -425,6 +428,17 @@ void render(SDL_Window *window) {
 
     CHECK();
 
+    u64 time_before_actor_update = SDL_GetPerformanceCounter();
+
+    u32 screenWidth = renderer->view.width;
+    u32 screenHeight = renderer->view.height;
+    int actor_texture_size = renderer->assets.sprite.width;
+    int real_world_height = game->dims.z_level * game->block_size.z_level;
+    int real_world_depth = game->dims.y * game->block_size.y;
+
+
+    u64 running_total_nested_loop = 0;
+
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
         int count = batch->count; //game->actor_count;
@@ -433,15 +447,10 @@ void render(SDL_Window *window) {
 #ifdef GL3
         glBindVertexArray(batch->VAO);
 #endif
-        u32 screenWidth = renderer->view.width;
-        u32 screenHeight = renderer->view.height;
 
-
-        int texture_size = renderer->assets.sprite.width;
-        int real_world_height = game->dims.z_level * game->block_size.z_level;
-        int real_world_depth = game->dims.y * game->block_size.y;
 
         for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
+            u64 begin_loop = SDL_GetPerformanceCounter();
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
@@ -459,11 +468,11 @@ void render(SDL_Window *window) {
             tempY += game->y_view_offset;
 
             float x = ((float)tempX / (float)screenWidth) * 2.0f - 1.0f;
-            double y = ((float)tempY / (float)screenHeight) * 2.0f - 1.0f;
+            float y = ((float)tempY / (float)screenHeight) * 2.0f - 1.0f;
 
             float paletteIndex = data.palette_index; //rand_float();
 
-            Rect2 uvs = get_uvs(texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
+            Rect2 uvs = get_uvs(actor_texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
 
 
@@ -495,6 +504,8 @@ void render(SDL_Window *window) {
             batch->vertices[i + 21] = uvs.tl.x;
             batch->vertices[i + 22] = uvs.br.y;
             batch->vertices[i + 23] = paletteIndex;
+            u64 end_loop = SDL_GetPerformanceCounter();
+            running_total_nested_loop += (end_loop - begin_loop);
         }
 
 #ifdef GLES
@@ -506,14 +517,17 @@ void render(SDL_Window *window) {
 #endif
 #ifdef GL3
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
+        CHECK();
         //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * 4, batch->vertices);
+        glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
+        CHECK();
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        CHECK();
         glBindVertexArray(0);
 #endif
         CHECK();
     }
-
+    u64 time_after_actor_update = SDL_GetPerformanceCounter();
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
@@ -624,4 +638,5 @@ void render(SDL_Window *window) {
 
     CHECK();
     SDL_GL_SwapWindow(window);
+    return running_total_nested_loop;
 }

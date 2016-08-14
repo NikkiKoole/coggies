@@ -11,11 +11,17 @@
 
 
 
-
+//#define USES_HALF_FLOAT
 
 // TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
 
-
+#ifdef USES_HALF_FLOAT
+#define VERTEX_FLOAT_TYPE __fp16
+#define GL_FLOAT_TYPE GL_HALF_FLOAT
+#else
+#define VERTEX_FLOAT_TYPE GLfloat
+#define GL_FLOAT_TYPE GL_FLOAT
+#endif
 
 
 typedef struct {
@@ -37,8 +43,8 @@ typedef struct {
 } ViewPort;
 
 #define VALUES_PER_ELEM 24
-// todo find some useful size 2048 might be too big idk, in total these two arrays use 3.5 Mb atm.
 #define MAX_IN_BUFFER 2048
+
 typedef struct DrawBuffer {
     u32 max_amount;
     u32 used_count;
@@ -47,7 +53,7 @@ typedef struct DrawBuffer {
     GLuint VBO;
     GLuint EBO;
     GLushort indices[MAX_IN_BUFFER * 6];
-    GLfloat vertices[MAX_IN_BUFFER * 24];
+    VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
 } DrawBuffer;
 
 
@@ -58,7 +64,7 @@ typedef struct RenderState {
     Assets assets;
     DrawBuffer walls[8];
     int used_wall_batches;
-    DrawBuffer actors[8];
+    DrawBuffer actors[32];
     int used_actor_batches;
     DrawBuffer glyphs[1];
     int used_glyph_batches;
@@ -67,7 +73,7 @@ typedef struct RenderState {
 
 
 
-void render(SDL_Window *window);
+u64 render(SDL_Window *window);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(void);
