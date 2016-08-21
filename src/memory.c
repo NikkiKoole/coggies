@@ -1,4 +1,54 @@
 #include "memory.h"
+#include <string.h>
+
+
+
+
+internal u64 hash(const char *str) {
+    // http://www.cse.yorku.ca/~oz/hash.html  // djb2 by dan bernstein
+    u64 hash = 5381;
+    int c;
+
+    while ((c = *str++)) {
+        hash = ((hash << 5) + hash) + c;
+    }
+    return hash;
+}
+internal int perf_dict_cmp(const void * a, const void * b) {
+    const PerfDictEntry *a2 = (const PerfDictEntry *) a;
+    const PerfDictEntry *b2 = (const PerfDictEntry *) b;
+    return (b2->total_time - a2->total_time);
+}
+
+void perf_dict_set(PerfDict *d,  const char *key, u64 add) {
+    int index = hash(key) % PERF_DICT_SIZE;
+
+    if (d->data[index].times_counted > 0) {
+        ASSERT("key clash!, needs bigger dictionary." && strcmp(d->data[index].key , key) == 0);
+    }
+
+    d->data[index].key = key;
+    d->data[index].times_counted++;
+    d->data[index].total_time += add;
+
+}
+
+PerfDictEntry perf_dict_get(PerfDict *d, char* key) {
+    int index = hash(key) % PERF_DICT_SIZE;
+    return d->data[index];
+}
+
+void perf_dict_reset(PerfDict *d) {
+    memset(d->data, 0, sizeof(d->data));
+}
+
+void perf_dict_sort_clone(PerfDict *source, PerfDict *clone) {
+    memcpy(&clone->data, &source->data, sizeof(source->data));
+    qsort(clone->data, PERF_DICT_SIZE, sizeof(PerfDictEntry), perf_dict_cmp);
+}
+
+
+
 
 
 // actors live in a pool, to easily add and remove them into the simulation.

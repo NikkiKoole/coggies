@@ -1,3 +1,4 @@
+
 #ifdef LINUX
 #define getResourcePath() "./resources/"
 #define GL3
@@ -19,6 +20,17 @@
 #include <SDL_opengles2.h>
 #endif
 
+
+// THIS IS JUST TO PLEASE FLYCHECKER, it cant find the GL headers otherwise
+#if (!defined(OSX) && !defined(RPI) && !defined(LINUX))
+#include <GL/glew.h>
+#include <SDL_opengl.h>
+#endif
+
+
+// THIS IS JUST TO PLEASE FLYCHECKER, it looks for opengles headers on osx otherwise
+
+#if 0
 #ifndef OSX
 #if defined(TARGET_OS_IPHONE) | defined(TARGET_IPHONE_SIMULATOR)
 #define IOS
@@ -28,3 +40,7 @@
 #include "ResourcePath.h"
 #endif
 #endif
+#endif
+
+#include "SDL.h"
+#include "SDL_mixer.h"

@@ -10,6 +10,23 @@
 #define GIGABYTES(value) (MEGABYTES(value) * 1024LL)
 #define TERABYTES(value) (GIGABYTES(value) * 1024LL)
 
+#define PERF_DICT_SIZE 64
+typedef struct  {
+    const char* key;
+    int times_counted;
+    u64 total_time;
+} PerfDictEntry;
+
+typedef struct {
+    PerfDictEntry data[PERF_DICT_SIZE];
+} PerfDict;;
+
+
+
+
+#define BEGIN_PERFORMANCE_COUNTER(name) u64 name##_begin = SDL_GetPerformanceCounter()
+#define END_PERFORMANCE_COUNTER(name)  u64 name##_end = SDL_GetPerformanceCounter();perf_dict_set(perf_dict, #name, name##_end - name##_begin);
+
 
 typedef struct Shared_Library
 {
@@ -59,9 +76,9 @@ typedef struct {
     r32 x;
     r32 y;
     r32 z;
-    u16 frame;
-    s16 dx;
-    s16 dy;
+    r32 frame;
+    r32 dx;
+    r32 dy;
     float palette_index;
 } Actor;
 
@@ -98,6 +115,12 @@ typedef struct {
     ////
 
 } GameState;
+
+
+void perf_dict_set(PerfDict *d,  const char *key, u64 add);
+PerfDictEntry perf_dict_get(PerfDict *d, char* key);
+void perf_dict_reset(PerfDict *d);
+void perf_dict_sort_clone(PerfDict *source, PerfDict *clone);
 
 void actor_remove(GameState *state, u32 index);
 void actor_add(GameState *state);

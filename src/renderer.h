@@ -1,16 +1,8 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "multi_platform.h"
-#include "types.h"
-#include "resource.h"
-
 #include "SDL.h"
-#include "SDL_mixer.h"
-
-
-
-
+#include "resource.h"
 
 
 #define USES_HALF_FLOAT
@@ -81,7 +73,7 @@ typedef struct RenderState {
 
 
 
-u64 render(SDL_Window *window);
+void render(SDL_Window *window);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(void);

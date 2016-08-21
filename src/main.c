@@ -1,20 +1,18 @@
-#include "SDL.h"
-#include "SDL_mixer.h"
+#include <math.h>
+#include <stdarg.h>
 
+#include "multi_platform.h"
 #include "types.h"
 #include "renderer.h"
 #include "memory.h"
 #include "random.h"
-
-#include <math.h>
-
-
 
 
 void (*func)(void);
 
 extern RenderState *renderer;
 extern GameState *game;
+extern PerfDict *perf_dict;
 
 #define SDL_ASSERT(expression)                                                                                               \
     if (!(expression)) {                                                                                                     \
@@ -185,9 +183,11 @@ internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h)
     g->h = h;
 }
 
+
+u32 debug_text_x = 0;
+u32 debug_text_y = 0;
 internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
     UNUSED(str);UNUSED(x);UNUSED(y);UNUSED(font);
-
     u32 currentY = y;
     u32 currentX = x;
 
@@ -214,8 +214,31 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
         draw_glyph(drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
         drawn++;
     }
+    debug_text_y = currentY;
     return drawn;
 }
+
+
+
+#pragma GCC diagnostic ignored "-Wformat-nonliteral"
+
+internal void print(const char *text, ...) {
+    char buffer[999];
+    va_list va;
+    va_start(va, text);
+    vsprintf(buffer, text, va);
+    va_end(va);
+    game->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font);
+    debug_text_y += 24;
+    //printf("%s\n", buffer);
+    //print_string(pos_x, pos_y, buffer, text_color[0], text_color[1], text_color[2]);
+    //pos_y += 10;
+}
+
+#pragma GCC diagnostic warning "-Wformat-nonliteral"
+
+
+
 
 internal void center_view(void) {
     // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
@@ -239,7 +262,7 @@ typedef struct {
 } BlockTextureAtlasPosition;
 
 
-internal int wallsortfunc (const void * a, const void * b)
+inline internal int wallsortfunc (const void * a, const void * b)
 {
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
@@ -248,7 +271,7 @@ internal int wallsortfunc (const void * a, const void * b)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
 
-internal int actorsortfunc (const void * a, const void * b)
+inline internal int actorsortfunc (const void * a, const void * b)
 {
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
@@ -302,6 +325,7 @@ internal void maybe_load_libgame(void)
 
 
 int main(int argc, char **argv) {
+
     printf("\n");
 
     BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
@@ -346,7 +370,7 @@ int main(int argc, char **argv) {
 
     initialize_arena(&trans->scratch_arena,
                      memory->scratch_size - sizeof(TransState),
-                     (u8 *)memory->scratch + sizeof(TransState));
+                    (u8 *)memory->scratch + sizeof(TransState));
 
     memory->is_initialized = true;
 
@@ -492,9 +516,9 @@ int main(int argc, char **argv) {
     printf("shadow casters (floor one above) : %d, floor count:%d , wall count: %d\n", count_shadow, used_floors, wall_count);
 
     game->wall_count = used_wall_block;
-    //u32 j =0;
 
     set_wall_batch_sizes();
+
 #define ACTOR_BATCH 1000
 
     game->actor_count = ACTOR_BATCH;
@@ -526,34 +550,53 @@ int main(int argc, char **argv) {
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
-    char frameCount[64];
-    char actorCount[64];
-    char wallCount[64];
-    char updateActorBufferDuration[64];
+    //char frameCount[64];
+    //char actorCount[64];
+    //char wallCount[64];
+    //char updateActorBufferDuration[64];
 
-    u64 last_avg_frame_time = 0;
-    u32 avg_frame_time_ticker = 0;
-    u64 running_frame_time = 0;
+    //u64 last_avg_frame_time = 0;
+    //u32 avg_frame_time_ticker = 0;
+    //u64 running_frame_time = 0;
     float last_frame_time_ms = 1.0f;
+    float render_time = 0.0f;
+    u64 actor_batch_delta = 0;
 
     maybe_load_libgame();
 
+    perf_dict_reset(perf_dict);
+    u64 freq = SDL_GetPerformanceFrequency();
     while (! wants_to_quit) {
-        maybe_load_libgame();
-        snprintf(actorCount, 64, "actors: %d", game->actor_count);
-        snprintf(wallCount, 64, "walls: %d", game->wall_count);
-
+        debug_text_y  = 0;
         game->glyph_count = 0;
-        game->glyph_count += draw_text(frameCount, 0, 0, &renderer->assets.menlo_font);
-        game->glyph_count += draw_text(actorCount, 0, 24, &renderer->assets.menlo_font);
-        game->glyph_count += draw_text(wallCount, 0, 48, &renderer->assets.menlo_font);
-        game->glyph_count += draw_text(updateActorBufferDuration, 0, 48+24,&renderer->assets.menlo_font);
+        print("%.2f ms\n", (float)last_frame_time_ms);
+
+        PerfDict clone;
+        perf_dict_sort_clone(perf_dict, &clone);
+        for (int i =0; i < PERF_DICT_SIZE; i++) {
+            PerfDictEntry *e = &clone.data[i];
+            if (e->times_counted > 0) {
+                print("%.3f %-15s x(%d)",((float)(e->total_time/(float)freq)* 1000.0f), e->key,  e->times_counted);
+            } else {
+                break;
+            }
+        }
+
+        perf_dict_reset(perf_dict);
+
+        u64 begin_render_time = SDL_GetPerformanceCounter();
+        maybe_load_libgame();
 
 
+
+
+        //print("%.2f ms render", render_time);
+        //print("%d actors", game->actor_count);
+        //print("%d walls", game->wall_count);
+        //print("%.2f ms actor batch update",  ((float)actor_batch_delta/(SDL_GetPerformanceFrequency()) ) * 1000.0f);
         set_glyph_batch_sizes();
 
-        u64 time = SDL_GetPerformanceCounter();
-
+        BEGIN_PERFORMANCE_COUNTER(main_loop);
 
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
@@ -575,7 +618,7 @@ int main(int argc, char **argv) {
                         game->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
                         set_actor_batch_sizes();
                     } else {
-                        printf("Wont be adding actors reached max already\n");
+                        printf(".");
                     }
                 }
 
@@ -657,28 +700,17 @@ int main(int argc, char **argv) {
         // sorting the actors is less profitable(because it runs every frame), it does however improve the speed from  6ms to 3.5ms for 16K actors (almost 100%)
         // on the negative side it introduces some fighting Z cases. (flickering!)
         // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
+        BEGIN_PERFORMANCE_COUNTER(actors_sort);
         qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
+        END_PERFORMANCE_COUNTER(actors_sort);
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
+        render(renderer->window);
 
-        u64 delta = render(renderer->window);
-        time = SDL_GetPerformanceCounter() - time;
-        last_frame_time_ms =  (float)((float)time/SDL_GetPerformanceFrequency()) * 1000.0f;
-
-        //        printf("%f\n", (float)((float)time/SDL_GetPerformanceFrequency()) * 1000.0f);
-
-
-        // I AM AVERIGING FPS over 5 frames.
-        running_frame_time += time;
-        avg_frame_time_ticker++;
-        if (avg_frame_time_ticker == 5) {
-            last_avg_frame_time = ((float)(running_frame_time/5.0f)/(SDL_GetPerformanceFrequency()) ) * 1000.0f;
-            avg_frame_time_ticker = 0;
-            running_frame_time = 0;
-        }
-        snprintf (frameCount, 64, "ms: %.2f",  (float)last_avg_frame_time );
-        snprintf (updateActorBufferDuration, 64, " %.2f actor batch update",  ((float)delta/(SDL_GetPerformanceFrequency()) ) * 1000.0f );
-        //snprintf (frameCount, 64, "frame: %.2f",  ((float)(time)/(SDL_GetPerformanceFrequency()) ) * 1000.0f );
+        u64 end_render_time = SDL_GetPerformanceCounter();
+        last_frame_time_ms = ((float)(end_render_time - begin_render_time)/freq) * 1000.0f;
+            //render_time = ((float)(end_render_time - begin_render_time)/SDL_GetPerformanceFrequency())* 1000.0f;
+        END_PERFORMANCE_COUNTER(main_loop);
 
 #endif
 

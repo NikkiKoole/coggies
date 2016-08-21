@@ -1,5 +1,7 @@
 #ifndef RESOURCE_H
 #define RESOURCE_H
+#include "types.h"
+#include "multi_platform.h"
 #include "SDL_mixer.h"
 
 #define FLATTEN_3D_INDEX(x,y,z, width, height) ((x) + ((y) * (width)) + ((z) * (width) * (height)))

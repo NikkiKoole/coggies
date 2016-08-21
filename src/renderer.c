@@ -1,11 +1,13 @@
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+
 #include "renderer.h"
 #include "multi_platform.h"
 #include "types.h"
 #include "memory.h"
 #include "random.h"
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
 
 /*
   TODO
@@ -36,6 +38,9 @@ RenderState *renderer = &_rstate;
 
 GameState _gstate;
 GameState *game = &_gstate;
+
+PerfDict _p_dict;
+PerfDict *perf_dict = &_p_dict;
 
 typedef struct {
     float x;
@@ -139,7 +144,7 @@ internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int s
     // TexCoord attribute
     glVertexAttribPointer(1, 2, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(1);
-
+    // PAlette
     glVertexAttribPointer(2, 1, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(2);
 
@@ -218,19 +223,19 @@ void initialize_GL(void) {
 }
 
 
-internal int cmpfunc(const void *a, const void *b) {
-    // TODO  I dont understand it anymore ;)
+/* internal int cmpfunc(const void *a, const void *b) { */
+/*     // TODO  I dont understand it anymore ;) */
 
-    const Wall *a2 = (const Wall *)a;
-    const Wall *b2 = (const Wall *)b;
-    return ((a2->y) - (b2->y));
-}
+/*     const Wall *a2 = (const Wall *)a; */
+/*     const Wall *b2 = (const Wall *)b; */
+/*     return ((a2->y) - (b2->y)); */
+/* } */
 
 void prepare_renderer(void) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    int real_world_height = game->dims.z_level * game->block_size.z_level;
+    //int real_world_height = game->dims.z_level * game->block_size.z_level;
     int real_world_depth = game->dims.y * (game->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
@@ -387,7 +392,8 @@ void prepare_renderer(void) {
 
 
 
-u64 render(SDL_Window *window) {
+void render(SDL_Window *window) {
+    BEGIN_PERFORMANCE_COUNTER(render_func);
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     glClearDepthf(1.0f);
     glEnable(GL_BLEND);
@@ -429,16 +435,15 @@ u64 render(SDL_Window *window) {
 
     CHECK();
 
-    u64 time_before_actor_update = SDL_GetPerformanceCounter();
-
-    u32 screenWidth = renderer->view.width;
-    u32 screenHeight = renderer->view.height;
-    int actor_texture_size = renderer->assets.sprite.width;
-    int real_world_height = game->dims.z_level * game->block_size.z_level;
-    int real_world_depth = game->dims.y * game->block_size.y;
+    float screenWidth = renderer->view.width;
+    float screenHeight = renderer->view.height;
+    float actor_texture_size = renderer->assets.sprite.width;
+    //float real_world_height = game->dims.z_level * game->block_size.z_level;
+    float real_world_depth = game->dims.y * game->block_size.y;
 
 
     u64 running_total_nested_loop = 0;
+
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
@@ -449,64 +454,98 @@ u64 render(SDL_Window *window) {
         glBindVertexArray(batch->VAO);
 #endif
 
+        // TODO: try to optimize this loop., humpf getting rid of the functions didnt do a whole lot..
+        // https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
+        // I might have to bite the bullet, make my actors an soa instead of an aos and
+        // simdify/neonify the f*ck out of them..
+
+        // also for the mapbuffer stuff to actually work, I will need to try to chaneg the amount of actors as littel as possible
+        // changing the AMOUNT will need to a new bufferData, so perhaps, just a isDead is a better approach.
+        // then I could shedule some moment in tme where I clean up
+
+        // anyway, it will be quite the rewrite, better test this in a separate exzample first
 
         for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
-            u64 begin_loop = SDL_GetPerformanceCounter();
+            BEGIN_PERFORMANCE_COUNTER(actor_draw);
+            //            u64 begin_loop = SDL_GetPerformanceCounter();
             int prepare_index = i / VALUES_PER_ELEM;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
+
+
             //printf("in render is actor float?  %f \n", data.y);
-            r32 scale = 1;
-            r32 guyFrameX = data.frame * 24.0f;
+            const float scale = 1.0f;
+            const float guyFrameX = data.frame * 24.0f;
+
 
             // this offset is to get actors drawn on top of walls/floors that are of the same depth
-            float offset_toget_actor_ontop_of_floor = (float)24.0f / real_world_depth;
-            float guyDepth = -1 * ((float)data.y / (float)real_world_depth) - offset_toget_actor_ontop_of_floor;
+            const float offset_toget_actor_ontop_of_floor = 24.0f / real_world_depth;
+            const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
 
-            int tempX = data.x;
-            int tempY = (data.z) - (data.y) / 2;
-            tempX += game->x_view_offset;
-            tempY += game->y_view_offset;
+            const float tempX = round(data.x + game->x_view_offset);
+            const float tempY = round(((data.z) - (data.y) / 2.0f) + game->y_view_offset);
+            //tempX += game->x_view_offset;
+            //tempY += game->y_view_offset;
 
-            float x = ((float)tempX / (float)screenWidth) * 2.0f - 1.0f;
-            float y = ((float)tempY / (float)screenHeight) * 2.0f - 1.0f;
+            const float x = (tempX / screenWidth) * 2.0f - 1.0f;
+            const float y = (tempY / screenHeight) * 2.0f - 1.0f;
 
-            float paletteIndex = data.palette_index; //rand_float();
+            const float paletteIndex = data.palette_index; //rand_float();
 
-            Rect2 uvs = get_uvs(actor_texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
-            Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
+
+            const float guyFrameY =  9.0f*12.0f;
+            const float guyFrameHeight = 108.0f;
+            const float guyFrameWidth = 24.0f;
+
+            const float UV_TL_X = guyFrameX / actor_texture_size;
+            const float UV_TL_Y = (guyFrameY + guyFrameHeight) / actor_texture_size;
+            const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_size;
+            const float UV_BR_Y = guyFrameY / actor_texture_size;
+
+            //Rect2 uvs = get_uvs(actor_texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
+            //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
+
+            const float pivotX = 0.5f;
+            const float pivotY = 1.0f;//
+
+            const float VERT_TL_X =  x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
+            const float VERT_TL_Y = y - ((2 - pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
+            const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
+            const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
 
 
             // bottomright
-            batch->vertices[i + 0] = verts.br.x;
-            batch->vertices[i + 1] = verts.br.y;
+            batch->vertices[i + 0] = VERT_BR_X;//verts.br.x;
+            batch->vertices[i + 1] = VERT_BR_Y;//verts.br.y;
             batch->vertices[i + 2] = guyDepth;
-            batch->vertices[i + 3] = uvs.br.x;
-            batch->vertices[i + 4] = uvs.br.y;
+            batch->vertices[i + 3] = UV_BR_X;// uvs.br.x;
+            batch->vertices[i + 4] = UV_BR_Y;////uvs.br.y;
             batch->vertices[i + 5] = paletteIndex;
             //topright
-            batch->vertices[i + 6] = verts.br.x;
-            batch->vertices[i + 7] = verts.tl.y;
+            batch->vertices[i + 6] = VERT_BR_X;//verts.br.x;
+            batch->vertices[i + 7] = VERT_TL_Y;//verts.tl.y;
             batch->vertices[i + 8] = guyDepth;
-            batch->vertices[i + 9] = uvs.br.x;
-            batch->vertices[i + 10] = uvs.tl.y;
+            batch->vertices[i + 9] = UV_BR_X;//uvs.br.x;
+            batch->vertices[i + 10] = UV_TL_Y;//uvs.tl.y;
             batch->vertices[i + 11] = paletteIndex;
             // top left
-            batch->vertices[i + 12] = verts.tl.x;
-            batch->vertices[i + 13] = verts.tl.y;
+            batch->vertices[i + 12] = VERT_TL_X;//verts.tl.x;
+            batch->vertices[i + 13] = VERT_TL_Y;//verts.tl.y;
             batch->vertices[i + 14] = guyDepth;
-            batch->vertices[i + 15] = uvs.tl.x;
-            batch->vertices[i + 16] = uvs.tl.y;
+            batch->vertices[i + 15] = UV_TL_X;//uvs.tl.x;
+            batch->vertices[i + 16] = UV_TL_Y;//uvs.tl.y;
             batch->vertices[i + 17] = paletteIndex;
             // bottomleft
-            batch->vertices[i + 18] = verts.tl.x;
-            batch->vertices[i + 19] = verts.br.y;
+            batch->vertices[i + 18] = VERT_TL_X;//verts.tl.x;
+            batch->vertices[i + 19] = VERT_BR_Y ;//verts.br.y;
             batch->vertices[i + 20] = guyDepth;
-            batch->vertices[i + 21] = uvs.tl.x;
-            batch->vertices[i + 22] = uvs.br.y;
+            batch->vertices[i + 21] = UV_TL_X;//uvs.tl.x;
+            batch->vertices[i + 22] = UV_BR_Y;//uvs.br.y;
             batch->vertices[i + 23] = paletteIndex;
-            u64 end_loop = SDL_GetPerformanceCounter();
-            running_total_nested_loop += (end_loop - begin_loop);
+            END_PERFORMANCE_COUNTER(actor_draw);
+
+            //u64 end_loop = SDL_GetPerformanceCounter();
+            //running_total_nested_loop += (end_loop - begin_loop);
         }
 
 #ifdef GLES
@@ -528,11 +567,12 @@ u64 render(SDL_Window *window) {
 #endif
         CHECK();
     }
-    u64 time_after_actor_update = SDL_GetPerformanceCounter();
+    //u64 time_after_actor_update = SDL_GetPerformanceCounter();
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        int count = batch->count; //game->wall_count;
+        UNUSED(batch);
+        //int count = batch->count; //game->wall_count;
                                   //Draw walls
 #ifdef GLES
         bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
@@ -584,7 +624,7 @@ u64 render(SDL_Window *window) {
                 float guyDepth = -1.0f;
                 float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
-                float paletteIndex = 0.4f; //rand_float();
+                float paletteIndex = 0.3f; //rand_float();
 
                 Rect2 uvs = get_uvs(texture_size, (float)data.sx, (float)data.sy, (float)data.w, (float)data.h);
                 Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
@@ -620,6 +660,7 @@ u64 render(SDL_Window *window) {
 #ifdef GLES
             bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
             CHECK();
+
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
             glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
             glDisableVertexAttribArray(0);
@@ -638,6 +679,9 @@ u64 render(SDL_Window *window) {
 
 
     CHECK();
+    END_PERFORMANCE_COUNTER(render_func);
+    BEGIN_PERFORMANCE_COUNTER(swap_window);
     SDL_GL_SwapWindow(window);
-    return running_total_nested_loop;
+    END_PERFORMANCE_COUNTER(swap_window);
+
 }

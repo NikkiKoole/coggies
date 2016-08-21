@@ -17,16 +17,19 @@ WARNINGS = $(STRICT_RPI2)
 OBJDIR = ./objs/
 LIBRARY_NAME := gamelibrary.so
 
-PROGRAM_NAME := coggies.app
+PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
-DEBUGFLAG:=-g3
-OPTIMIZE:=-O3
+DEBUG:=-g
+OPTIMIZE:=-O2
 STD:=-std=gnu99
 
 CC:=gcc
 
 BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
+
+all:
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
 
 osx:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
@@ -39,6 +42,6 @@ pi:
 
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	${CC} -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} -fPIC src/game.c
+	${CC} -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUG} -fPIC src/game.c
 	${CC} -shared -o $(LIBRARY_NAME) game.o $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)

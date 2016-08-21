@@ -1,6 +1,5 @@
 #include <string.h>
 #include "multi_platform.h"
-
 #include "types.h"
 #include "resource.h"
 
@@ -382,7 +381,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
     char str[BUF_SIZE];
 
     FILE *f = fopen(path, "rb");
-    
+
     if (!f) {
         printf("Couldn't open file: %s\n", path);
     }
@@ -400,7 +399,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
             printf("version %d\n", atoi(str));
         }
     }
-    
+
     // third line should contain 3 values, with with commas inbetween, width/depth,height
     if (fgets(str, BUF_SIZE, f) != NULL) {
         char * pch;
@@ -434,21 +433,21 @@ internal void read_level(LevelData * level, World_Size dimensions, const char *p
                 for(int x = 0; x<dimensions.x;x++){
                     WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(x,y,z, dimensions.x, dimensions.y)];
                     b->object = Nothing;
-                    
+
                 }
             }
         }
 
 
     }
-    
-    
+
+
     #define LINES_BEFORE_DATA 3
     char str[BUF_SIZE];
     int line_counter = LINES_BEFORE_DATA;
     int height_counter = -1;
 
-    
+
     FILE *f = fopen(path, "rb");
     // Skip the first 3 lines. (I've already validated them);
     for (int i = 0; i<LINES_BEFORE_DATA;i++){
@@ -472,7 +471,7 @@ internal void read_level(LevelData * level, World_Size dimensions, const char *p
                 // this is where its at
                 int _z_level = height_counter;
                 int _y_level = (line_counter-LINES_BEFORE_DATA) % (dimensions.y+1)-1;
-                
+
                 for (int i = 1; i < dimensions.x+1; i++) {
                     WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(i-1,_y_level,_z_level, dimensions.x, dimensions.y)];
 
@@ -552,7 +551,7 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x, y-3, z, StairsUp4N);
                         }
                     }
-                    
+
                     if (x+4 < level->x){
                         b32 is_stairs_east = true;
 
@@ -613,7 +612,7 @@ internal void add_stairs(LevelData *level){
         }
     }
 
-    
+
 }
 
 
@@ -624,10 +623,10 @@ internal void make_level(LevelData *level, const char * path){
         read_level(level, dimensions,  path);
         // add stairs into level
         add_stairs(level);
-        
 
-        
-        
+
+
+
     } else {
         printf("file not found!\n");
     }
