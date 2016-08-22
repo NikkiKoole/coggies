@@ -48,6 +48,7 @@ typedef struct {
     // shaders
     GLuint xyz_uv_palette;
     GLuint xyz_uv;
+    GLuint xy_uv;
 
     //sfx & music
     Mix_Music *music1;

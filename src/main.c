@@ -100,6 +100,7 @@ internal void load_resources(void) {
 #ifdef GL3
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GL330.vert", "shaders/xyz_uv_palette.GL330.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GL330.vert", "shaders/xyz_uv.GL330.frag");
+    resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GL330.vert", "shaders/xy_uv.GL330.frag");
 #endif
 #ifdef GLES
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/gles20.vert", "shaders/gles20.frag");

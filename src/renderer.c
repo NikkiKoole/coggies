@@ -329,9 +329,9 @@ void prepare_renderer(void) {
     CHECK();
     for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
+        //for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
             //batch->vertices[i] = 0;
-        }
+        //}
 
         for (u32 i = 0; i < 2048 * 6; i += 6) {
             int j = (i / 6) * 4;
@@ -359,9 +359,9 @@ void prepare_renderer(void) {
         for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
             // actors
-            for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
+            //for (u32 i = 0; i <= 2048 * 16; i++) {
                 //batch->vertices[i] = 0;
-            }
+            //}
 
             for (u32 i = 0; i < 2048 * 6; i += 6) {
                 int j = (i / 6) * 4;
@@ -373,10 +373,10 @@ void prepare_renderer(void) {
                 batch->indices[i + 5] = j + 3;
             }
 #ifdef GLES
-            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
+            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &debug_text_layout);
 #endif
 #ifdef GL3
-            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
+            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &debug_text_layout);
 #endif
         }
     }
@@ -396,8 +396,6 @@ void render_walls(void) {
     //glActiveTexture(GL_TEXTURE1);
     //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
     //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-
-
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
@@ -421,6 +419,21 @@ void render_walls(void) {
 
 void render_actors(void);
 void render_actors(void) {
+
+     // this part needs to be repeated in all render loops (To use specific shader programs)
+    glUseProgram(renderer->assets.xyz_uv_palette);
+
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
+    // end this part needs to be repeated
+
+
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
     float actor_texture_size = renderer->assets.sprite.width;
@@ -559,21 +572,12 @@ void render_text(void);
 void render_text(void) {
     // Draw FONTS
     {
-        // Bind Textures using texture units
         glActiveTexture(GL_TEXTURE0);
-        CHECK();
-
         glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
+        glUniform1i(glGetUniformLocation(renderer->assets.xy_uv, "sprite_atlas"), 0);
         CHECK();
 
-        glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
-        CHECK();
 
-        glActiveTexture(GL_TEXTURE1);
-        glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-        glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-
-        CHECK();
 
         int texture_size = renderer->assets.menlo.width;
 
@@ -584,46 +588,39 @@ void render_text(void) {
             glBindVertexArray(batch->VAO);
 #endif
 
-            for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
-                int prepare_index = i / VALUES_PER_ELEM;
+            for (int i = 0; i < count * 16; i += 16) {
+                int prepare_index = i / 16;
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
-                float guyDepth = -1.0f;
                 float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
-                float paletteIndex = 0.3f; //rand_float();
-
                 Rect2 uvs = get_uvs(texture_size, (float)data.sx, (float)data.sy, (float)data.w, (float)data.h);
                 Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
+
                 /* // bottomright */
                 batch->vertices[i + 0] = verts.br.x;
                 batch->vertices[i + 1] = verts.br.y;
-                batch->vertices[i + 2] = guyDepth;
-                batch->vertices[i + 3] = uvs.br.x;
-                batch->vertices[i + 4] = uvs.br.y;
-                batch->vertices[i + 5] = paletteIndex;
+                batch->vertices[i + 2] = uvs.br.x;
+                batch->vertices[i + 3] = uvs.br.y;
+
                 //topright
-                batch->vertices[i + 6] = verts.br.x;
-                batch->vertices[i + 7] = verts.tl.y;
-                batch->vertices[i + 8] = guyDepth;
-                batch->vertices[i + 9] = uvs.br.x;
-                batch->vertices[i + 10] = uvs.tl.y;
-                batch->vertices[i + 11] = paletteIndex;
+                batch->vertices[i + 4] = verts.br.x;
+                batch->vertices[i + 5] = verts.tl.y;
+                batch->vertices[i + 6] = uvs.br.x;
+                batch->vertices[i + 7] = uvs.tl.y;
+
                 // top left
-                batch->vertices[i + 12] = verts.tl.x;
-                batch->vertices[i + 13] = verts.tl.y;
-                batch->vertices[i + 14] = guyDepth;
-                batch->vertices[i + 15] = uvs.tl.x;
-                batch->vertices[i + 16] = uvs.tl.y;
-                batch->vertices[i + 17] = paletteIndex;
+                batch->vertices[i + 8] = verts.tl.x;
+                batch->vertices[i + 9] = verts.tl.y;
+                batch->vertices[i + 10] = uvs.tl.x;
+                batch->vertices[i + 11] = uvs.tl.y;
+
                 // bottomleft
-                batch->vertices[i + 18] = verts.tl.x;
-                batch->vertices[i + 19] = verts.br.y;
-                batch->vertices[i + 20] = guyDepth;
-                batch->vertices[i + 21] = uvs.tl.x;
-                batch->vertices[i + 22] = uvs.br.y;
-                batch->vertices[i + 23] = paletteIndex;
+                batch->vertices[i + 12] = verts.tl.x;
+                batch->vertices[i + 13] = verts.br.y;
+                batch->vertices[i + 14] = uvs.tl.x;
+                batch->vertices[i + 15] = uvs.br.y;
             }
 #ifdef GLES
             bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
@@ -658,34 +655,13 @@ void render(SDL_Window *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    // this part needs to be repeated in all render loops (To use specific shader programs)
-    glUseProgram(renderer->assets.xyz_uv_palette);
 
-    // Bind Textures using texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
 
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-    // end this part needs to be repeated
 
     render_actors();
     render_walls();
 
- // this part needs to be repeated in all render loops (To use specific shader programs)
-    glUseProgram(renderer->assets.xyz_uv_palette);
-
-    // Bind Textures using texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-    // end this part needs to be repeated
+    glDisable(GL_DEPTH_TEST);
     render_text();
 
 
