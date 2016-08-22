@@ -240,8 +240,8 @@ void prepare_renderer(void) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //game->actor_count;
 
-        for (u32 i = 0; i < count * 24; i += 24) {
-            int prepare_index = i / 24;
+        for (u32 i = 0; i < count * 20; i += 20) {
+            int prepare_index = i / 20;
             prepare_index += (wall_batch_index * 2048);
             Wall data = game->walls[prepare_index];
             float scale = 1;
@@ -268,7 +268,7 @@ void prepare_renderer(void) {
             /* } */
 
 
-            float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
+            // float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
             Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
             //printf("%d\n",i);
@@ -278,28 +278,28 @@ void prepare_renderer(void) {
             batch->vertices[i + 2] = wallDepth;
             batch->vertices[i + 3] = uvs.br.x;
             batch->vertices[i + 4] = uvs.br.y;
-            batch->vertices[i + 5] = paletteIndex;
+            //batch->vertices[i + 5] = paletteIndex;
             //topright
-            batch->vertices[i + 6] = verts.br.x;
-            batch->vertices[i + 7] = verts.tl.y;
-            batch->vertices[i + 8] = wallDepth;
-            batch->vertices[i + 9] = uvs.br.x;
-            batch->vertices[i + 10] = uvs.tl.y;
-            batch->vertices[i + 11] = paletteIndex;
+            batch->vertices[i + 5] = verts.br.x;
+            batch->vertices[i + 6] = verts.tl.y;
+            batch->vertices[i + 7] = wallDepth;
+            batch->vertices[i + 8] = uvs.br.x;
+            batch->vertices[i + 9] = uvs.tl.y;
+            //batch->vertices[i + 11] = paletteIndex;
             // top left
-            batch->vertices[i + 12] = verts.tl.x;
-            batch->vertices[i + 13] = verts.tl.y;
-            batch->vertices[i + 14] = wallDepth;
-            batch->vertices[i + 15] = uvs.tl.x;
-            batch->vertices[i + 16] = uvs.tl.y;
-            batch->vertices[i + 17] = paletteIndex;
+            batch->vertices[i + 10] = verts.tl.x;
+            batch->vertices[i + 11] = verts.tl.y;
+            batch->vertices[i + 12] = wallDepth;
+            batch->vertices[i + 13] = uvs.tl.x;
+            batch->vertices[i + 14] = uvs.tl.y;
+            // batch->vertices[i + 17] = paletteIndex;
             // bottomleft
-            batch->vertices[i + 18] = verts.tl.x;
-            batch->vertices[i + 19] = verts.br.y;
-            batch->vertices[i + 20] = wallDepth;
-            batch->vertices[i + 21] = uvs.tl.x;
-            batch->vertices[i + 22] = uvs.br.y;
-            batch->vertices[i + 23] = paletteIndex;
+            batch->vertices[i + 15] = verts.tl.x;
+            batch->vertices[i + 16] = verts.br.y;
+            batch->vertices[i + 17] = wallDepth;
+            batch->vertices[i + 18] = uvs.tl.x;
+            batch->vertices[i + 19] = uvs.br.y;
+            //batch->vertices[i + 23] = paletteIndex;
             //printf("uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
         }
 
@@ -320,10 +320,10 @@ void prepare_renderer(void) {
         }
 
 #ifdef GLES
-        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &actors_layout);
+        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
 #endif
 #ifdef GL3
-        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &actors_layout);
+        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
 #endif
     }
     CHECK();
@@ -386,12 +386,12 @@ void prepare_renderer(void) {
 
 void render_walls(void);
 void render_walls(void) {
-    /* glUseProgram(renderer->assets.xyz_uv); */
+    glUseProgram(renderer->assets.xyz_uv);
 
-    /* // Bind Textures using texture units */
-    /* glActiveTexture(GL_TEXTURE0); */
-    /* glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id); */
-    /* glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0); */
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
 
     //glActiveTexture(GL_TEXTURE1);
     //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);

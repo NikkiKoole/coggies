@@ -2,7 +2,7 @@
 in vec2 out_uv;
 in float out_palette;
 out vec4 color;
-// Texture samplers
+
 uniform sampler2D sprite_atlas;
 uniform sampler2D palette16x16;
 
