@@ -25,14 +25,35 @@
 
 
 typedef struct {
+    int amount;
+    GLenum type;
+    int type_size;
+    const char* attr_name;
+} ShaderLayoutElement;
+
+typedef struct {
+    ShaderLayoutElement elements[32]; // NOTE 32 attributes to a shader thats plenty right?
+    int element_count;
+    int values_per_quad;
+} ShaderLayout;
+
+
+typedef struct {
+
     Texture sprite;
     Texture palette;
     Texture menlo;
     LevelData level;
 
-    GLuint shader1;
+    // shaders
+    GLuint xyz_uv_palette;
+    GLuint xyz_uv;
+
+    //sfx & music
     Mix_Music *music1;
     Mix_Chunk *wav1;
+
+    // font
     BM_Font menlo_font;
 } Assets;
 
@@ -74,6 +95,7 @@ typedef struct RenderState {
 
 
 void render(SDL_Window *window);
+void setup_shader_layouts(void);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(void);

@@ -2,36 +2,11 @@
 #include <stdio.h>
 #include <string.h>
 
-
 #include "renderer.h"
 #include "multi_platform.h"
 #include "types.h"
 #include "memory.h"
 #include "random.h"
-
-/*
-  TODO
-  I think a bit more descriptive rendering methods would be better in the long run:
-
-  initArchitecture()
-  initActors()
-
-  drawArchitecture()
-  drawActors()
-
-  and eventually
-  drawObjects()
-  drawTexts()
-  etc
-
-  updating would be done with:
-  updateArchitecture()
-  updateActors()
-
-  and etc
-*/
-
-
 
 RenderState _rstate;
 RenderState *renderer = &_rstate;
@@ -41,6 +16,11 @@ GameState *game = &_gstate;
 
 PerfDict _p_dict;
 PerfDict *perf_dict = &_p_dict;
+
+
+ShaderLayout debug_text_layout;
+ShaderLayout actors_layout;
+ShaderLayout walls_layout;
 
 typedef struct {
     float x;
@@ -56,13 +36,32 @@ typedef struct {
 
 
 #define CHECK()                                                                                        \
-    {                                                                                                  \
-        int error = glGetError();                                                                      \
-        if (error != 0) {                                                                              \
+    {                                                                   \
+        int error = glGetError();                                       \
+        if (error != 0) {                                               \
             printf("%d, function %s, file: %s, line:%d. \n", error, __FUNCTION__, __FILE__, __LINE__); \
-            exit(0);                                                                                   \
-        }                                                                                              \
+            exit(0);                                                    \
+        }                                                               \
     }
+
+
+void setup_shader_layouts(void) {
+    debug_text_layout.elements[0] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xy"} ;
+    debug_text_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    debug_text_layout.values_per_quad = (2 + 2) * 4;
+    debug_text_layout.element_count = 2;
+
+    actors_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
+    actors_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    actors_layout.elements[2] = (ShaderLayoutElement) {1, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "palette"} ;
+    actors_layout.values_per_quad = (3 + 2 + 1) * 4;
+    actors_layout.element_count = 3;
+
+    walls_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
+    walls_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    walls_layout.values_per_quad = (3 + 2) * 4;
+    walls_layout.element_count = 2;
+}
 
 
 internal Rect2 get_uvs(float size, int x, int y, int width, int height) {
@@ -109,13 +108,13 @@ internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], in
 internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     //setup and enable attrib pointer
-    GLuint a_Position = glGetAttribLocation(*program, "a_Position");
+    GLuint a_Position = glGetAttribLocation(*program, "xyz");
     glVertexAttribPointer(a_Position, 3, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)0);
     glEnableVertexAttribArray(a_Position);
-    GLuint a_TexCoord = glGetAttribLocation(*program, "a_TexCoord");
+    GLuint a_TexCoord = glGetAttribLocation(*program, "uv");
     glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(a_TexCoord);
-    GLuint a_Palette = glGetAttribLocation(*program, "a_Palette");
+    GLuint a_Palette = glGetAttribLocation(*program, "palette");
     glVertexAttribPointer(a_Palette, 1, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
     glEnableVertexAttribArray(a_Palette);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
@@ -124,59 +123,49 @@ internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
 
 #ifdef GL3
 
-internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage) {
-
-
+internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage, ShaderLayout *layout) {
+    UNUSED(layout);
     glGenVertexArrays(1, VAO);
     glGenBuffers(1, VBO);
     glGenBuffers(1, EBO);
 
     glBindVertexArray(*VAO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * VALUES_PER_ELEM, vertices, usage);
 
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * layout->values_per_quad, vertices, usage);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * size * 6, indices, GL_STATIC_DRAW);
 
+
+    int stride = 0;
+    for (int i = 0; i < layout->element_count; i++) {
+        //printf("%d, %d,  %s\n",i, stride, layout->elements[i].attr_name);
+        ShaderLayoutElement *elem = &layout->elements[i];
+        glVertexAttribPointer(i, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
+        stride += elem->amount;
+        glEnableVertexAttribArray(i);
+        CHECK();
+        //printf("stuff!\n");
+        //printf("%s\n",layout->elements[i].attr_name);
+    }
     // Position attribute
-    glVertexAttribPointer(0, 3, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)0);
-    glEnableVertexAttribArray(0);
-    // TexCoord attribute
-    glVertexAttribPointer(1, 2, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
-    glEnableVertexAttribArray(1);
-    // PAlette
-    glVertexAttribPointer(2, 1, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
-    glEnableVertexAttribArray(2);
+    /* glVertexAttribPointer(0, 3, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)0); */
+    /* glEnableVertexAttribArray(0); */
+    /* // TexCoord attribute */
+    /* glVertexAttribPointer(1, 2, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE))); */
+    /* glEnableVertexAttribArray(1); */
+    /* // PAlette */
+    /* glVertexAttribPointer(2, 1, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE))); */
+    /* glEnableVertexAttribArray(2); */
+
+
+
 
     glBindVertexArray(0); // Unbind VAO
     CHECK();
 }
 #endif
-
-
-/* internal b32 exists(const char *fname) { */
-/*     FILE *f; */
-/*     if ((f = fopen(fname, "r"))) { */
-/*         fclose(f); */
-/*         return true; */
-/*     } */
-/*     return false; */
-/* } */
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -232,6 +221,7 @@ void initialize_GL(void) {
 /* } */
 
 void prepare_renderer(void) {
+    //printf("PREPARE CALLED!\n");
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
@@ -250,8 +240,8 @@ void prepare_renderer(void) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //game->actor_count;
 
-        for (u32 i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
-            int prepare_index = i / VALUES_PER_ELEM;
+        for (u32 i = 0; i < count * 24; i += 24) {
+            int prepare_index = i / 24;
             prepare_index += (wall_batch_index * 2048);
             Wall data = game->walls[prepare_index];
             float scale = 1;
@@ -278,10 +268,10 @@ void prepare_renderer(void) {
             /* } */
 
 
-            float paletteIndex = 1.0f/16 *1;//rand_float(); //(data.y / 350.0f);
+            float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
             Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
             Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-
+            //printf("%d\n",i);
             // bottomright
             batch->vertices[i + 0] = verts.br.x;
             batch->vertices[i + 1] = verts.br.y;
@@ -310,31 +300,33 @@ void prepare_renderer(void) {
             batch->vertices[i + 21] = uvs.tl.x;
             batch->vertices[i + 22] = uvs.br.y;
             batch->vertices[i + 23] = paletteIndex;
+            //printf("uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
         }
 
 
 
 
         //ASSERT(batch->count * 6 < 2048 * 6);
+        //printf("batch-count: %d\n",batch->count * 6);
         for (u32 i = 0; i < batch->count * 6; i += 6) {
             int j = (i / 6) * 4;
+            //printf("%d\n",j);
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
             batch->indices[i + 2] = j + 2;
             batch->indices[i + 3] = j + 0;
             batch->indices[i + 4] = j + 2;
             batch->indices[i + 5] = j + 3;
-
         }
 
 #ifdef GLES
-        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW);
+        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &actors_layout);
 #endif
 #ifdef GL3
-        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW);
+        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &actors_layout);
 #endif
     }
-
+    CHECK();
     for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
         for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
@@ -351,10 +343,10 @@ void prepare_renderer(void) {
             batch->indices[i + 5] = j + 3;
         }
 #ifdef GLES
-        makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+        makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
 #endif
 #ifdef GL3
-        makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+        makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
 #endif
     }
 
@@ -381,60 +373,54 @@ void prepare_renderer(void) {
                 batch->indices[i + 5] = j + 3;
             }
 #ifdef GLES
-            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
 #endif
 #ifdef GL3
-            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW);
+            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
 #endif
         }
     }
+    //printf("PREPARE END!\n");
 }
 
 
+void render_walls(void);
+void render_walls(void) {
+    /* glUseProgram(renderer->assets.xyz_uv); */
 
-void render(SDL_Window *window) {
-    BEGIN_PERFORMANCE_COUNTER(render_func);
-    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
-    glClearDepthf(1.0f);
-    glEnable(GL_BLEND);
+    /* // Bind Textures using texture units */
+    /* glActiveTexture(GL_TEXTURE0); */
+    /* glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id); */
+    /* glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0); */
 
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    //glDepthFunc(GL_GREATER);
-
-
-    CHECK();
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
 
 
-    // TODO
-    // I should separate out the architecture drawing and the actor drawing
-    // That will probably cost setting the textures and shader twice but its much cleaner
-    // I also get rid of the palletized architecture drawing, cause I dont need that
-    // I could also add some new shader logic to the architecture (to add shadow (or well dark light tiles))
 
+    for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
+        DrawBuffer *batch = &renderer->walls[wall_batch_index];
+        UNUSED(batch);
+//int count = batch->count; //game->wall_count;
+//Draw walls
+#ifdef GLES
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glDisableVertexAttribArray(0);
+#endif
 
-    glUseProgram(renderer->assets.shader1);
-    CHECK();
+#ifdef GL3
+        glBindVertexArray(batch->VAO);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glBindVertexArray(0);
+#endif
+        CHECK();
+    }
+}
 
-    // Bind Textures using texture units
-    glActiveTexture(GL_TEXTURE0);
-    CHECK();
-
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
-    CHECK();
-
-
-    glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture1"), 0);
-    CHECK();
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
-
-    CHECK();
-
+void render_actors(void);
+void render_actors(void) {
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
     float actor_texture_size = renderer->assets.sprite.width;
@@ -442,7 +428,7 @@ void render(SDL_Window *window) {
     float real_world_depth = game->dims.y * game->block_size.y;
 
 
-    u64 running_total_nested_loop = 0;
+    //u64 running_total_nested_loop = 0;
 
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
@@ -493,7 +479,7 @@ void render(SDL_Window *window) {
             const float paletteIndex = data.palette_index; //rand_float();
 
 
-            const float guyFrameY =  9.0f*12.0f;
+            const float guyFrameY = 9.0f * 12.0f;
             const float guyFrameHeight = 108.0f;
             const float guyFrameWidth = 24.0f;
 
@@ -506,41 +492,41 @@ void render(SDL_Window *window) {
             //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
 
             const float pivotX = 0.5f;
-            const float pivotY = 1.0f;//
+            const float pivotY = 1.0f; //
 
-            const float VERT_TL_X =  x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
+            const float VERT_TL_X = x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
             const float VERT_TL_Y = y - ((2 - pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
             const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
             const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
 
 
             // bottomright
-            batch->vertices[i + 0] = VERT_BR_X;//verts.br.x;
-            batch->vertices[i + 1] = VERT_BR_Y;//verts.br.y;
+            batch->vertices[i + 0] = VERT_BR_X; //verts.br.x;
+            batch->vertices[i + 1] = VERT_BR_Y; //verts.br.y;
             batch->vertices[i + 2] = guyDepth;
-            batch->vertices[i + 3] = UV_BR_X;// uvs.br.x;
-            batch->vertices[i + 4] = UV_BR_Y;////uvs.br.y;
+            batch->vertices[i + 3] = UV_BR_X; // uvs.br.x;
+            batch->vertices[i + 4] = UV_BR_Y; ////uvs.br.y;
             batch->vertices[i + 5] = paletteIndex;
             //topright
-            batch->vertices[i + 6] = VERT_BR_X;//verts.br.x;
-            batch->vertices[i + 7] = VERT_TL_Y;//verts.tl.y;
+            batch->vertices[i + 6] = VERT_BR_X; //verts.br.x;
+            batch->vertices[i + 7] = VERT_TL_Y; //verts.tl.y;
             batch->vertices[i + 8] = guyDepth;
-            batch->vertices[i + 9] = UV_BR_X;//uvs.br.x;
-            batch->vertices[i + 10] = UV_TL_Y;//uvs.tl.y;
+            batch->vertices[i + 9] = UV_BR_X;  //uvs.br.x;
+            batch->vertices[i + 10] = UV_TL_Y; //uvs.tl.y;
             batch->vertices[i + 11] = paletteIndex;
             // top left
-            batch->vertices[i + 12] = VERT_TL_X;//verts.tl.x;
-            batch->vertices[i + 13] = VERT_TL_Y;//verts.tl.y;
+            batch->vertices[i + 12] = VERT_TL_X; //verts.tl.x;
+            batch->vertices[i + 13] = VERT_TL_Y; //verts.tl.y;
             batch->vertices[i + 14] = guyDepth;
-            batch->vertices[i + 15] = UV_TL_X;//uvs.tl.x;
-            batch->vertices[i + 16] = UV_TL_Y;//uvs.tl.y;
+            batch->vertices[i + 15] = UV_TL_X; //uvs.tl.x;
+            batch->vertices[i + 16] = UV_TL_Y; //uvs.tl.y;
             batch->vertices[i + 17] = paletteIndex;
             // bottomleft
-            batch->vertices[i + 18] = VERT_TL_X;//verts.tl.x;
-            batch->vertices[i + 19] = VERT_BR_Y ;//verts.br.y;
+            batch->vertices[i + 18] = VERT_TL_X; //verts.tl.x;
+            batch->vertices[i + 19] = VERT_BR_Y; //verts.br.y;
             batch->vertices[i + 20] = guyDepth;
-            batch->vertices[i + 21] = UV_TL_X;//uvs.tl.x;
-            batch->vertices[i + 22] = UV_BR_Y;//uvs.br.y;
+            batch->vertices[i + 21] = UV_TL_X; //uvs.tl.x;
+            batch->vertices[i + 22] = UV_BR_Y; //uvs.br.y;
             batch->vertices[i + 23] = paletteIndex;
             END_PERFORMANCE_COUNTER(actor_draw);
 
@@ -549,7 +535,7 @@ void render(SDL_Window *window) {
         }
 
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
         CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
@@ -567,28 +553,10 @@ void render(SDL_Window *window) {
 #endif
         CHECK();
     }
-    //u64 time_after_actor_update = SDL_GetPerformanceCounter();
+}
 
-    for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
-        DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        UNUSED(batch);
-        //int count = batch->count; //game->wall_count;
-                                  //Draw walls
-#ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
-        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
-        glDisableVertexAttribArray(0);
-#endif
-
-#ifdef GL3
-        glBindVertexArray(batch->VAO);
-        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
-        glBindVertexArray(0);
-#endif
-
-        CHECK();
-    }
-
+void render_text(void);
+void render_text(void) {
     // Draw FONTS
     {
         // Bind Textures using texture units
@@ -598,12 +566,12 @@ void render(SDL_Window *window) {
         glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
         CHECK();
 
-        glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture1"), 0);
+        glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
         CHECK();
 
         glActiveTexture(GL_TEXTURE1);
         glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-        glUniform1i(glGetUniformLocation(renderer->assets.shader1, "ourTexture2"), 1);
+        glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
 
         CHECK();
 
@@ -658,7 +626,7 @@ void render(SDL_Window *window) {
                 batch->vertices[i + 23] = paletteIndex;
             }
 #ifdef GLES
-            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.shader1);
+            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
             CHECK();
 
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
@@ -675,7 +643,50 @@ void render(SDL_Window *window) {
             CHECK();
         }
     }
+}
 
+void render(SDL_Window *window) {
+    BEGIN_PERFORMANCE_COUNTER(render_func);
+    glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
+    glClearDepthf(1.0f);
+    glEnable(GL_BLEND);
+
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LEQUAL);
+    //glDepthFunc(GL_GREATER);
+
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    // this part needs to be repeated in all render loops (To use specific shader programs)
+    glUseProgram(renderer->assets.xyz_uv_palette);
+
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
+    // end this part needs to be repeated
+
+    render_actors();
+    render_walls();
+
+ // this part needs to be repeated in all render loops (To use specific shader programs)
+    glUseProgram(renderer->assets.xyz_uv_palette);
+
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
+    // end this part needs to be repeated
+    render_text();
 
 
     CHECK();
@@ -683,5 +694,4 @@ void render(SDL_Window *window) {
     BEGIN_PERFORMANCE_COUNTER(swap_window);
     SDL_GL_SwapWindow(window);
     END_PERFORMANCE_COUNTER(swap_window);
-
 }

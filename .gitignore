@@ -6,3 +6,5 @@ a.out
 /objs
 /a.out.dSYM
 /coggies.app.dSYM
+/coggies.out.dSYM
+coggies.out

@@ -16,6 +16,27 @@
   the makeBuffer/makeBufferPI functions need to know what kind of layout they will build (when various shaders with various vertex usages is used)
   for that I will need to build some helper struct that knows what attributes are used, how large they are, what their location is (core330) or their name (gles2) and what their type is.
 
+- [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
+
+- [ ] Another thing that needs experimenting is the usage of depthbuffer
+  https://www.opengl.org/discussion_boards/showthread.php/153121-Reading-the-Depth-Buffer-Why-so-slow
+  It seems feeding floats (which I do) is by far the slowest, rather use chars or shorts
+
+- [ ] glMapBuffer
+  On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
+  before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
+  My hopes are on this now actuall, I think a triple buffered setup using this will give me the most gains on the pi
+
+  I've verified its not fillrate bound (when i draw much smaller sprites, smaller part of the texture too) my fps is roughly the same.
+  I'd thought it was the size of the data (so that why i started with halfloat), but now i am thinking it must be the driver itself.
+
+  about mapbuffers:
+  http://hacksoflife.blogspot.co.uk/2012/04/beyond-glmapbuffer.html
+  http://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html#demo
+  https://www.raspberrypi.org/forums/viewtopic.php?f=68&t=136093
+
+  http://stackoverflow.com/questions/7243518/opengl-es-2-0-seeking-vbo-performance-optimisation-tips-for-many-moving-vertic
+
 - [ ] single triangle instead of quad trick
   also look into this:
   https://www.reddit.com/r/opengl/comments/1kjsr9/how_to_render_2d_objects_using_2_triangles_for_a/
@@ -34,21 +55,6 @@
   |      |     \
   +------+------*
 
-- [ ] glMapBuffer
-  On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
-  before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
-  My hopes are on this now actuall, I think a triple buffered setup using this will give me the most gains on the pi
-
-  I've verified its not fillrate bound (when i draw much smaller sprites, smaller part of the texture too) my fps is roughly the same.
-  I'd thought it was the size of the data (so that why i started with halfloat), but now i am thinking it must be the driver itself.
-
-  about mapbuffers:
-  http://hacksoflife.blogspot.co.uk/2012/04/beyond-glmapbuffer.html
-  http://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html#demo
-  https://www.raspberrypi.org/forums/viewtopic.php?f=68&t=136093
-
-  http://stackoverflow.com/questions/7243518/opengl-es-2-0-seeking-vbo-performance-optimisation-tips-for-many-moving-vertic
-
 - [ ] filling the vertice arrays on CPU side
   on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
   try to optimize this, first by helping the compiler, (no function calls, setting up varibale more strict)
@@ -58,7 +64,6 @@
   see2 -> neon (so i can build some nice macros)
   http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
 
-- [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
 
 * Todo
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
