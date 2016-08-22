@@ -91,9 +91,9 @@ internal int event_filter(void *userData, SDL_Event *event) {
 internal void load_resources(void) {
     resource_level(&renderer->assets.level, "levels/test4.txt");
     resource_sprite_atlas("out.sho");
-    resource_font(&renderer->assets.menlo_font, "fonts/menlo.fnt");
+    resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
-    resource_texture(&renderer->assets.menlo, "fonts/menlo.tga");
+    resource_texture(&renderer->assets.menlo, "fonts/osaka.tga");
     resource_texture(&renderer->assets.sprite, "textures/Untitled4.tga");
     resource_texture(&renderer->assets.palette, "textures/palette2.tga");
 
@@ -186,8 +186,8 @@ internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h)
 }
 
 
-u32 debug_text_x = 0;
-u32 debug_text_y = 0;
+u32 debug_text_x = 5;
+u32 debug_text_y = 5;
 internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
     UNUSED(str);UNUSED(x);UNUSED(y);UNUSED(font);
     u32 currentY = y;
@@ -195,6 +195,7 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
 
     u32 drawn = 0;
     for (u32 i = 0; i < strlen(str); i++) {
+
         if (str[i] == 10) { // newline
             currentY += font->line_height;
             currentX = x;
@@ -205,15 +206,18 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
             continue;
         }
         if (str[i] == 32) { // space
+            //printf("%s\n", str);
             currentX += font->chars[32].xadvance;
             continue;
         }
 
         //printf("(%d, %d) %d\n", currentX, currentY, str[i]);
-        currentX += font->chars[(u8)(str[i])].xadvance;
+
         BM_Glyph glyph = font->chars[(u8)(str[i])];
 
-        draw_glyph(drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
+
+        draw_glyph(drawn, currentX+glyph.xoffset, currentY + glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
+        currentX += (glyph.xadvance);
         drawn++;
     }
     debug_text_y = currentY;
@@ -558,26 +562,40 @@ int main(int argc, char **argv) {
 
     perf_dict_reset(perf_dict);
     u64 freq = SDL_GetPerformanceFrequency();
+    int ticker = 0;
+    PerfDict clone;
+    perf_dict_sort_clone(perf_dict, &clone);
     while (! wants_to_quit) {
-        debug_text_y  = 0;
+        ticker++;
+        debug_text_y  = 5;
         game->glyph_count = 0;
         print("%.2f ms\n", (float)last_frame_time_ms);
 
-        PerfDict clone;
-        perf_dict_sort_clone(perf_dict, &clone);
-        for (int i =0; i < PERF_DICT_SIZE; i++) {
+        if (ticker == 60) {
+            perf_dict_sort_clone(perf_dict, &clone);
+            ticker = 0;
+            perf_dict_reset(perf_dict);
+
+        }
+
+         for (int i =0; i < PERF_DICT_SIZE; i++) {
             PerfDictEntry *e = &clone.data[i];
+            float averaged = ((float)(e->total_time/(float)freq)* 1000.0f)/60;
+            float min = ((float)(e->min/(float)freq)* 1000.0f);
+            float max = ((float)(e->max/(float)freq)* 1000.0f);
+
             if (e->times_counted > 0) {
-                print("%.3f %-15s x(%d)\n",((float)(e->total_time/(float)freq)* 1000.0f), e->key,  e->times_counted);
+                print("%.3f %-15s x(%d) min:%.3f max:%.3f \n", averaged, e->key,  e->times_counted/60, min, max);
             } else {
                 break;
             }
         }
+
         set_glyph_batch_sizes();
 
 
 
-        perf_dict_reset(perf_dict);
+
 
         u64 begin_render_time = SDL_GetPerformanceCounter();
         maybe_load_libgame();

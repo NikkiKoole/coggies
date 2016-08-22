@@ -30,6 +30,8 @@ void perf_dict_set(PerfDict *d,  const char *key, u64 add) {
     d->data[index].key = key;
     d->data[index].times_counted++;
     d->data[index].total_time += add;
+    if (add < d->data[index].min || d->data[index].min == 0) d->data[index].min = add;
+    if (add > d->data[index].max) d->data[index].max = add;
 
 }
 

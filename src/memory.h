@@ -15,6 +15,8 @@ typedef struct  {
     const char* key;
     int times_counted;
     u64 total_time;
+    u64 min;
+    u64 max;
 } PerfDictEntry;
 
 typedef struct {

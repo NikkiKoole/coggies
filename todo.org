@@ -1,20 +1,7 @@
 
-
-
 * Currently doing / Upcoming
 
-- [ ] enable differnt kind of shaders for various parts:
-  - xy
-  - xy_uv           /// plain bitmap font ui
-  - xy_rgb
-  - xyz
-  - xyz_uv          /// walls
-  - xyz_rgb         /// 3d colored lines for debugging, 3d colored rects too.
-  - xyz_uv_rgb
-  - xyz_uv_palette  /// actors
-
-  the makeBuffer/makeBufferPI functions need to know what kind of layout they will build (when various shaders with various vertex usages is used)
-  for that I will need to build some helper struct that knows what attributes are used, how large they are, what their location is (core330) or their name (gles2) and what their type is.
+- [ ] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
 
 - [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
 
@@ -170,7 +157,6 @@
     Ok half float is being used, sadly it doenst really has much effect, only when buffers are really large, and framerate is down to 100ms on rpi anyway
     then it does save 10/20% compared to glFloat ah well.. atleast my meory usage is down with 50%
 
-
 - [-] game play stuff
   - [-] pathfinder
     Next to hooking it in, the current pathfinder code also needs some dirty list (to help cleaning the data quickly) and maybe some notion of keys (to help actors not look in rooms they shouldnt be in)
@@ -184,6 +170,20 @@
 
 
 * Done
+
+- [X] enable differnt kind of shaders for various parts:
+  - xy
+  - xy_uv           /// plain bitmap font ui
+  - xy_rgb
+  - xyz
+  - xyz_uv          /// walls
+  - xyz_rgb         /// 3d colored lines for debugging, 3d colored rects too.
+  - xyz_uv_rgb
+  - xyz_uv_palette  /// actors
+
+  the makeBuffer/makeBufferPI functions need to know what kind of layout they will build (when various shaders with various vertex usages is used)
+  for that I will need to build some helper struct that knows what attributes are used, how large they are, what their location is (core330) or their name (gles2) and what their type is.
+
 - [X] having a better (simpler to use) debug printing on screen
 
 - [X] having a speed profiler for pieces of code
