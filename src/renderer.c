@@ -1,12 +1,35 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
-
 #include "renderer.h"
 #include "multi_platform.h"
 #include "types.h"
 #include "memory.h"
 #include "random.h"
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+
+/*
+  TODO
+  I think a bit more descriptive rendering methods would be better in the long run:
+
+  initArchitecture()
+  initActors()
+
+  drawArchitecture()
+  drawActors()
+
+  and eventually
+  drawObjects()
+  drawTexts()
+  etc
+
+  updating would be done with:
+  updateArchitecture()
+  updateActors()
+
+  and etc
+*/
+
+
 
 RenderState _rstate;
 RenderState *renderer = &_rstate;
@@ -16,7 +39,6 @@ GameState *game = &_gstate;
 
 PerfDict _p_dict;
 PerfDict *perf_dict = &_p_dict;
-
 
 ShaderLayout debug_text_layout;
 ShaderLayout actors_layout;
@@ -34,15 +56,15 @@ typedef struct {
 
 
 
-
 #define CHECK()                                                                                        \
-    {                                                                   \
-        int error = glGetError();                                       \
-        if (error != 0) {                                               \
+    {                                                                                                  \
+        int error = glGetError();                                                                      \
+        if (error != 0) {                                                                              \
             printf("%d, function %s, file: %s, line:%d. \n", error, __FUNCTION__, __FILE__, __LINE__); \
-            exit(0);                                                    \
-        }                                                               \
+            exit(0);                                                                                   \
+        }                                                                                              \
     }
+
 
 
 void setup_shader_layouts(void) {
@@ -64,7 +86,8 @@ void setup_shader_layouts(void) {
 }
 
 
-internal Rect2 get_uvs(float size, int x, int y, int width, int height) {
+
+internal inline Rect2 get_uvs(float size, int x, int y, int width, int height) {
     Rect2 result;
     result.tl.x = x / size;
     result.tl.y = (y + height) / size;
@@ -73,7 +96,7 @@ internal Rect2 get_uvs(float size, int x, int y, int width, int height) {
     return result;
 }
 
-internal Rect2 get_verts(float viewportWidth,
+internal inline Rect2 get_verts(float viewportWidth,
                          float viewportHeight,
                          float x,
                          float y,
@@ -94,50 +117,45 @@ internal Rect2 get_verts(float viewportWidth,
 
 
 #ifdef GLES
-internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage) {
+internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage, ShaderLayout *layout) {
+    UNUSED(layout);
     glGenBuffers(1, VBO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * VALUES_PER_ELEM, vertices, usage);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * layout->values_per_quad, vertices, usage);
 
     glGenBuffers(1, EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices[0]) * size * 6, indices, GL_STATIC_DRAW);
+
+
 }
 
 
 internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayout *layout) {
+    UNUSED(layout);
+
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    //setup and enable attrib pointer
-
-
     int stride = 0;
     for (int i = 0; i < layout->element_count; i++) {
         ShaderLayoutElement *elem = &layout->elements[i];
-        glVertexAttribPointer(i, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
-        stride += elem->amount;
-        glEnableVertexAttribArray(i);
+	GLuint loc =  glGetAttribLocation(*program, elem->attr_name);
+
+        glVertexAttribPointer(loc, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
+	//printf("%d, %d, %d, %d, %d, %d\n",( GLuint)i, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (stride * elem->type_size));
+	stride += elem->amount;
+        glEnableVertexAttribArray(loc);
         CHECK();
     }
-
-
-    /* GLuint a_Position = glGetAttribLocation(*program, "xyz"); */
-    /* glVertexAttribPointer(a_Position, 3, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)0); */
-    /* glEnableVertexAttribArray(a_Position); */
-    /* GLuint a_TexCoord = glGetAttribLocation(*program, "uv"); */
-    /* glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE))); */
-    /* glEnableVertexAttribArray(a_TexCoord); */
-    /* GLuint a_Palette = glGetAttribLocation(*program, "palette"); */
-    /* glVertexAttribPointer(a_Palette, 1, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE))); */
-    /* glEnableVertexAttribArray(a_Palette); */
-
-
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
 }
+
 #endif
 
 #ifdef GL3
 
 internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage, ShaderLayout *layout) {
+
+
     UNUSED(layout);
     glGenVertexArrays(1, VAO);
     glGenBuffers(1, VBO);
@@ -160,28 +178,15 @@ internal void makeBuffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int s
         stride += elem->amount;
         glEnableVertexAttribArray(i);
         CHECK();
-        //printf("stuff!\n");
-        //printf("%s\n",layout->elements[i].attr_name);
+
     }
-    // Position attribute
-    /* glVertexAttribPointer(0, 3, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)0); */
-    /* glEnableVertexAttribArray(0); */
-    /* // TexCoord attribute */
-    /* glVertexAttribPointer(1, 2, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE))); */
-    /* glEnableVertexAttribArray(1); */
-    /* // PAlette */
-    /* glVertexAttribPointer(2, 1, GL_FLOAT_TYPE, GL_FALSE, 6 * sizeof(VERTEX_FLOAT_TYPE), (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE))); */
-    /* glEnableVertexAttribArray(2); */
-
-
 
 
     glBindVertexArray(0); // Unbind VAO
     CHECK();
+
 }
 #endif
-
-
 
 
 internal const char *gl_error_string(GLenum error) {
@@ -226,20 +231,19 @@ void initialize_GL(void) {
 }
 
 
-/* internal int cmpfunc(const void *a, const void *b) { */
-/*     // TODO  I dont understand it anymore ;) */
+internal int cmpfunc(const void *a, const void *b) {
+    // TODO  I dont understand it anymore ;)
 
-/*     const Wall *a2 = (const Wall *)a; */
-/*     const Wall *b2 = (const Wall *)b; */
-/*     return ((a2->y) - (b2->y)); */
-/* } */
+    const Wall *a2 = (const Wall *)a;
+    const Wall *b2 = (const Wall *)b;
+    return ((a2->y) - (b2->y));
+}
 
 void prepare_renderer(void) {
-    //printf("PREPARE CALLED!\n");
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    //int real_world_height = game->dims.z_level * game->block_size.z_level;
+    int real_world_height = game->dims.z_level * game->block_size.z_level;
     int real_world_depth = game->dims.y * (game->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
@@ -254,7 +258,7 @@ void prepare_renderer(void) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //game->actor_count;
 
-        for (u32 i = 0; i < count * 20; i += 20) {
+	for (u32 i = 0; i < count * 20; i += 20) {
             int prepare_index = i / 20;
             prepare_index += (wall_batch_index * 2048);
             Wall data = game->walls[prepare_index];
@@ -272,14 +276,6 @@ void prepare_renderer(void) {
             float wallDepth = -1 * ((float)data.y / (float)real_world_depth);
             float wallY = 0.0f;
             float wallHeight = 108.0f;
-
-
-            // TODO THIS IS SOME OPTIMIZATION, TEST IT ON THE RPI
-            // Eventually I want to have some meta lookup for texture atlasses, then everything will be like this.
-            /* if (data.frame > 6 && data.frame < 10) { // wallpart is a floor, much smaller then a wall */
-            /*     wallY = 106.0f; */
-            /*     wallHeight = 14.0f; */
-            /* } */
 
 
             // float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
@@ -317,14 +313,9 @@ void prepare_renderer(void) {
             //printf("uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
         }
 
-
-
-
         //ASSERT(batch->count * 6 < 2048 * 6);
-        //printf("batch-count: %d\n",batch->count * 6);
         for (u32 i = 0; i < batch->count * 6; i += 6) {
             int j = (i / 6) * 4;
-            //printf("%d\n",j);
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
             batch->indices[i + 2] = j + 2;
@@ -340,12 +331,12 @@ void prepare_renderer(void) {
         makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
 #endif
     }
-    CHECK();
+
     for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        //for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
+        for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
             //batch->vertices[i] = 0;
-        //}
+        }
 
         for (u32 i = 0; i < 2048 * 6; i += 6) {
             int j = (i / 6) * 4;
@@ -373,9 +364,9 @@ void prepare_renderer(void) {
         for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
             // actors
-            //for (u32 i = 0; i <= 2048 * 16; i++) {
+            for (u32 i = 0; i <= 2048 * VALUES_PER_ELEM; i++) {
                 //batch->vertices[i] = 0;
-            //}
+            }
 
             for (u32 i = 0; i < 2048 * 6; i += 6) {
                 int j = (i / 6) * 4;
@@ -394,42 +385,8 @@ void prepare_renderer(void) {
 #endif
         }
     }
-    //printf("PREPARE END!\n");
 }
 
-
-void render_walls(void);
-void render_walls(void) {
-    glUseProgram(renderer->assets.xyz_uv);
-
-    // Bind Textures using texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
-
-    //glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-
-    for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
-        DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        UNUSED(batch);
-//int count = batch->count; //game->wall_count;
-//Draw walls
-#ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
-        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
-        glDisableVertexAttribArray(0);
-#endif
-
-#ifdef GL3
-        glBindVertexArray(batch->VAO);
-        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
-        glBindVertexArray(0);
-#endif
-        CHECK();
-    }
-}
 
 void render_actors(void);
 void render_actors(void) {
@@ -564,7 +521,7 @@ void render_actors(void) {
         }
 
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette, &actors_layout);
         CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
@@ -597,10 +554,46 @@ void render_actors(void) {
     }
 }
 
+
+
+void render_walls(void);
+void render_walls(void) {
+    glUseProgram(renderer->assets.xyz_uv);
+
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
+
+    //glActiveTexture(GL_TEXTURE1);
+    //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
+
+    for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
+        DrawBuffer *batch = &renderer->walls[wall_batch_index];
+        UNUSED(batch);
+//int count = batch->count; //game->wall_count;
+//Draw walls
+#ifdef GLES
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv, &walls_layout );
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glDisableVertexAttribArray(0);
+#endif
+
+#ifdef GL3
+        glBindVertexArray(batch->VAO);
+        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glBindVertexArray(0);
+#endif
+        CHECK();
+    }
+}
+
 void render_text(void);
 void render_text(void) {
     // Draw FONTS
     {
+	glUseProgram(renderer->assets.xy_uv);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
         glUniform1i(glGetUniformLocation(renderer->assets.xy_uv, "sprite_atlas"), 0);
@@ -652,7 +645,7 @@ void render_text(void) {
                 batch->vertices[i + 15] = uvs.br.y;
             }
 #ifdef GLES
-            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette);
+            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xy_uv, &debug_text_layout);
             CHECK();
 
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
@@ -671,31 +664,31 @@ void render_text(void) {
     }
 }
 
+
+
 void render(SDL_Window *window) {
     BEGIN_PERFORMANCE_COUNTER(render_func);
+
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
     glClearDepthf(1.0f);
     glEnable(GL_BLEND);
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LEQUAL);
-    //glDepthFunc(GL_GREATER);
 
+    CHECK();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
 
-
-
     render_actors();
     render_walls();
-
     glDisable(GL_DEPTH_TEST);
     render_text();
 
-
     CHECK();
     END_PERFORMANCE_COUNTER(render_func);
+
     BEGIN_PERFORMANCE_COUNTER(swap_window);
     SDL_GL_SwapWindow(window);
     END_PERFORMANCE_COUNTER(swap_window);

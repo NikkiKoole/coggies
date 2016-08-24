@@ -13,8 +13,8 @@ typedef struct {
     u16 y;
     u16 width;
     u16 height;
-    s16 xoffset;
-    s16 yoffset;
+    u16 xoffset;
+    u16 yoffset;
     u16 xadvance;
 } BM_Glyph;
 

@@ -1,4 +1,3 @@
-
 #ifdef LINUX
 #define getResourcePath() "./resources/"
 #define GL3
@@ -21,13 +20,11 @@
 #endif
 
 
-// THIS IS JUST TO PLEASE FLYCHECKER, it cant find the GL headers otherwise
+
 #if (!defined(OSX) && !defined(RPI) && !defined(LINUX))
 #include <GL/glew.h>
 #include <SDL_opengl.h>
 #endif
-
-
 // THIS IS JUST TO PLEASE FLYCHECKER, it looks for opengles headers on osx otherwise
 
 #if 0

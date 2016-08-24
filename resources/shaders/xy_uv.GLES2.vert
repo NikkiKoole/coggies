@@ -2,8 +2,11 @@ attribute vec2 xy;
 attribute vec2 uv;
 
 varying vec2 out_uv;
-void main()
-{
-	gl_Position = vec4(xy, 1.0f, 1.0f);
-    out_uv = vec2(uv.x, uv.y);
+
+
+void main() {
+    //gl_Position = xy;
+    gl_Position = vec4(xy.x, xy.y, -1.0, 1.0);
+    //gl_Position = vec3(1.0, 1.0, 1.0)
+    out_uv = uv;
 }

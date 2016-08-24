@@ -1,27 +1,46 @@
 #ifndef RENDERER_H
 #define RENDERER_H
 
-#include "SDL.h"
+#include "multi_platform.h"
+#include "types.h"
 #include "resource.h"
+
+#include "SDL.h"
+#include "SDL_mixer.h"
+
 
 
 #define USES_HALF_FLOAT
 
+// TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
+
+
+
+
 #ifdef USES_HALF_FLOAT
 #define VERTEX_FLOAT_TYPE __fp16
-#define GL_FLOAT_TYPE GL_HALF_FLOAT
 #ifdef GL3
 #define GL_FLOAT_TYPE GL_HALF_FLOAT
 #endif
+
 #ifdef GLES
 #define GL_FLOAT_TYPE GL_HALF_FLOAT_OES
 #endif
 #else
-
 #define VERTEX_FLOAT_TYPE GLfloat
 #define GL_FLOAT_TYPE GL_FLOAT
+#endif
+
+// for flycheck on osx
+#ifndef GL_FLOAT_TYPE
+#ifdef USES_HALF_FLOAT
+#define GL_FLOAT_TYPE GL_HALF_FLOAT
+#else
+#define GL_FLOAT_TYPE GL_FLOAT
+#endif
 
 #endif
+
 
 
 typedef struct {
@@ -39,22 +58,17 @@ typedef struct {
 
 
 typedef struct {
-
     Texture sprite;
     Texture palette;
     Texture menlo;
     LevelData level;
 
-    // shaders
     GLuint xyz_uv_palette;
     GLuint xyz_uv;
     GLuint xy_uv;
 
-    //sfx & music
     Mix_Music *music1;
     Mix_Chunk *wav1;
-
-    // font
     BM_Font menlo_font;
 } Assets;
 
@@ -88,15 +102,14 @@ typedef struct RenderState {
     int used_wall_batches;
     DrawBuffer actors[32];
     int used_actor_batches;
-    DrawBuffer glyphs[1];
+    DrawBuffer glyphs[2];
     int used_glyph_batches;
 
 } RenderState;
 
 
-
-void render(SDL_Window *window);
 void setup_shader_layouts(void);
+void render(SDL_Window *window);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(void);

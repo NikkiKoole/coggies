@@ -1,11 +1,14 @@
-#include <math.h>
-#include <stdarg.h>
+#include "SDL.h"
+#include "SDL_mixer.h"
 
-#include "multi_platform.h"
 #include "types.h"
 #include "renderer.h"
 #include "memory.h"
 #include "random.h"
+
+#include <math.h>
+
+
 
 
 void (*func)(void);
@@ -13,6 +16,7 @@ void (*func)(void);
 extern RenderState *renderer;
 extern GameState *game;
 extern PerfDict *perf_dict;
+
 
 #define SDL_ASSERT(expression)                                                                                               \
     if (!(expression)) {                                                                                                     \
@@ -101,14 +105,13 @@ internal void load_resources(void) {
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GL330.vert", "shaders/xyz_uv_palette.GL330.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GL330.vert", "shaders/xyz_uv.GL330.frag");
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GL330.vert", "shaders/xy_uv.GL330.frag");
+
 #endif
 #ifdef GLES
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GLES2.vert", "shaders/xyz_uv_palette.GLES2.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GLES2.vert", "shaders/xyz_uv.GLES2.frag");
-    resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GLES2.vert", "shaders/xy_uv.GLES2.frag");quickre
+    resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GLES2.vert", "shaders/xy_uv.GLES2.frag");
 
-
-    //resource_shader(&renderer->assets.xyz_uv_palette, "shaders/gles20.vert", "shaders/gles20.frag");
 #endif
 
     resource_ogg(&renderer->assets.music1, "ogg/Stiekem.ogg");
@@ -171,6 +174,7 @@ internal void set_glyph_batch_sizes(void) {
         for (u32 i = 0; i < used_batches-1; i++) {
             renderer->glyphs[i].count = 2048;
         }
+	printf("%d array out bounds glyphs\n", used_batches-1);
         renderer->glyphs[used_batches-1].count = game->glyph_count % 2048;
     } else {
         renderer->used_glyph_batches = 0;
@@ -190,17 +194,17 @@ internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h)
     g->h = h;
 }
 
-
 u32 debug_text_x = 5;
 u32 debug_text_y = 5;
+
 internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
     UNUSED(str);UNUSED(x);UNUSED(y);UNUSED(font);
+
     u32 currentY = y;
     u32 currentX = x;
 
     u32 drawn = 0;
     for (u32 i = 0; i < strlen(str); i++) {
-
         if (str[i] == 10) { // newline
             currentY += font->line_height;
             currentX = x;
@@ -211,23 +215,24 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
             continue;
         }
         if (str[i] == 32) { // space
-            //printf("%s\n", str);
             currentX += font->chars[32].xadvance;
             continue;
         }
 
         //printf("(%d, %d) %d\n", currentX, currentY, str[i]);
-
+        //currentX += font->chars[(u8)(str[i])].xadvance;
         BM_Glyph glyph = font->chars[(u8)(str[i])];
 
+        draw_glyph(drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
 
-        draw_glyph(drawn, currentX+glyph.xoffset, currentY + glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
-        currentX += (glyph.xadvance);
+
+	currentX += (glyph.xadvance);
         drawn++;
     }
     debug_text_y = currentY;
     return drawn;
 }
+
 
 
 
@@ -241,6 +246,7 @@ internal void print(const char *text, ...) {
     game->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font);
 }
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
+
 
 
 
@@ -267,7 +273,7 @@ typedef struct {
 } BlockTextureAtlasPosition;
 
 
-inline internal int wallsortfunc (const void * a, const void * b)
+internal int wallsortfunc (const void * a, const void * b)
 {
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
@@ -276,9 +282,8 @@ inline internal int wallsortfunc (const void * a, const void * b)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
 
-inline internal int actorsortfunc (const void * a, const void * b)
+internal int actorsortfunc (const void * a, const void * b)
 {
-    // this routine sorts from FRONT to BACK, its how the renderer loves it.
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
     const Actor *a2 = (const Actor *) a;
@@ -331,7 +336,6 @@ internal void maybe_load_libgame(void)
 
 
 int main(int argc, char **argv) {
-
     printf("\n");
 
     BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
@@ -376,7 +380,7 @@ int main(int argc, char **argv) {
 
     initialize_arena(&trans->scratch_arena,
                      memory->scratch_size - sizeof(TransState),
-                    (u8 *)memory->scratch + sizeof(TransState));
+                     (u8 *)memory->scratch + sizeof(TransState));
 
     memory->is_initialized = true;
 
@@ -393,6 +397,7 @@ int main(int argc, char **argv) {
     initialize_GL();
     load_resources();
     setup_shader_layouts();
+
 
     game->dims = (WorldDims){renderer->assets.level.x,renderer->assets.level.y, renderer->assets.level.z_level};
     printf("dimensions: %d, %d, %d\n",game->dims.x, game->dims.y, game->dims.z_level);
@@ -522,10 +527,10 @@ int main(int argc, char **argv) {
     printf("shadow casters (floor one above) : %d, floor count:%d , wall count: %d\n", count_shadow, used_floors, wall_count);
 
     game->wall_count = used_wall_block;
+    //u32 j =0;
 
     set_wall_batch_sizes();
-
-#define ACTOR_BATCH 1000
+#define ACTOR_BATCH 100
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
@@ -556,29 +561,40 @@ int main(int argc, char **argv) {
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
+    char frameCount[64];
+    char actorCount[64];
+    char wallCount[64];
+    char updateActorBufferDuration[64];
+    char updateActorDuration[64];
+    char sortActorDuration[64];
+    char soaBuildDuration[64];
+
+
+    u64 last_avg_frame_time = 0;
+    u32 avg_frame_time_ticker = 0;
+    u64 running_frame_time = 0;
     float last_frame_time_ms = 1.0f;
 
-
     maybe_load_libgame();
-
-    perf_dict_reset(perf_dict);
     u64 freq = SDL_GetPerformanceFrequency();
     int ticker = 0;
     PerfDict clone;
     perf_dict_sort_clone(perf_dict, &clone);
     while (! wants_to_quit) {
-        ticker++;
+
+
+	ticker++;
         debug_text_y  = 5;
         game->glyph_count = 0;
         print("%.2f ms\n", (float)last_frame_time_ms);
-
+	//printf("%.2f ms\n", (float)last_frame_time_ms);
         if (ticker == 60) {
             perf_dict_sort_clone(perf_dict, &clone);
             ticker = 0;
             perf_dict_reset(perf_dict);
         }
 
-         for (int i =0; i < PERF_DICT_SIZE; i++) {
+	for (int i =0; i < PERF_DICT_SIZE; i++) {
             PerfDictEntry *e = &clone.data[i];
             float averaged = ((float)(e->total_time/(float)freq)* 1000.0f)/60;
             float min = ((float)(e->min/(float)freq)* 1000.0f);
@@ -586,23 +602,24 @@ int main(int argc, char **argv) {
 
             if (e->times_counted > 0) {
                 print("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
+		//printf("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
             } else {
                 break;
             }
         }
 
+
+
+
+
+
+
         set_glyph_batch_sizes();
-
-
-
-
-
         u64 begin_render_time = SDL_GetPerformanceCounter();
-        maybe_load_libgame();
+	maybe_load_libgame();
 
 
-
-        BEGIN_PERFORMANCE_COUNTER(main_loop);
+	BEGIN_PERFORMANCE_COUNTER(main_loop);
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {
@@ -617,16 +634,15 @@ int main(int argc, char **argv) {
                         game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
                         game->actors[i].z =  rand_int(0) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
                         game->actors[i].frame = rand_int(4);
-                        float speed = 10 + rand_int(10); // px per seconds
+                        float speed = 40 + rand_int(10); // px per seconds
                         game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
                         game->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
                         set_actor_batch_sizes();
                     } else {
-                        printf(".");
+                        printf("Wont be adding actors reached max already\n");
                     }
                 }
-                game->actor_count_changed = true;
 
             }
             if (keys[SDL_SCANCODE_LEFT]) {
@@ -657,8 +673,6 @@ int main(int argc, char **argv) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
                     set_actor_batch_sizes();
                 }
-                game->actor_count_changed = true;
-
             }
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -672,8 +686,7 @@ int main(int argc, char **argv) {
             }
         }
 
-        BEGIN_PERFORMANCE_COUNTER(actors_update);
-
+	BEGIN_PERFORMANCE_COUNTER(actors_update);
         // TODO: plenty of bugs are in this loop, never really cleaned up after
         for (u32 i = 0; i < game->actor_count; i++) {
             if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
@@ -701,28 +714,42 @@ int main(int argc, char **argv) {
 
             }
             game->actors[i].y += game->actors[i].dy *  (last_frame_time_ms/1000.0f);
+            //printf("is it a float: %f \n", game->actors[i].y);
         }
+	END_PERFORMANCE_COUNTER(actors_update);
 
-        END_PERFORMANCE_COUNTER(actors_update);
+
 
 
         // sorting the actors is less profitable(because it runs every frame), it does however improve the speed from  6ms to 3.5ms for 16K actors (almost 100%)
+        // on the negative side it introduces some fighting Z cases. (flickering!)
         // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
-        // specifically sort routines that are optimized for data that is already sorted for the most part. (TimSort it seems)
-
-        BEGIN_PERFORMANCE_COUNTER(actors_sort);
+	BEGIN_PERFORMANCE_COUNTER(actors_sort);
         qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
-        END_PERFORMANCE_COUNTER(actors_sort);
+	END_PERFORMANCE_COUNTER(actors_sort);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
+
         render(renderer->window);
-
-        u64 end_render_time = SDL_GetPerformanceCounter();
-        last_frame_time_ms = ((float)(end_render_time - begin_render_time)/freq) * 1000.0f;
-        END_PERFORMANCE_COUNTER(main_loop);
-
+	u64 end_render_time = SDL_GetPerformanceCounter();
+	last_frame_time_ms = ((float)(end_render_time - begin_render_time)/freq) * 1000.0f;
+	END_PERFORMANCE_COUNTER(main_loop);
 #endif
-        game->actor_count_changed = false;
+
     }
     quit();
     return 1;

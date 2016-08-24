@@ -30,6 +30,7 @@ typedef struct {
 #define END_PERFORMANCE_COUNTER(name)  u64 name##_end = SDL_GetPerformanceCounter();perf_dict_set(perf_dict, #name, name##_end - name##_begin);
 
 
+
 typedef struct Shared_Library
 {
     void *handle;
@@ -78,9 +79,9 @@ typedef struct {
     r32 x;
     r32 y;
     r32 z;
-    r32 frame;
-    r32 dx;
-    r32 dy;
+    u16 frame;
+    s16 dx;
+    s16 dy;
     float palette_index;
 } Actor;
 
@@ -106,8 +107,6 @@ typedef struct {
     u32 wall_count;
     Actor actors[16384*4];
     u32 actor_count;
-    u32 last_actor_count;
-    b32 actor_count_changed;
     Glyph glyphs[16384];
     u32 glyph_count;
     ///

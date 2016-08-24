@@ -4,6 +4,8 @@
 
 
 
+
+
 internal u64 hash(const char *str) {
     // http://www.cse.yorku.ca/~oz/hash.html  // djb2 by dan bernstein
     u64 hash = 5381;
@@ -48,8 +50,6 @@ void perf_dict_sort_clone(PerfDict *source, PerfDict *clone) {
     memcpy(&clone->data, &source->data, sizeof(source->data));
     qsort(clone->data, PERF_DICT_SIZE, sizeof(PerfDictEntry), perf_dict_cmp);
 }
-
-
 
 
 
