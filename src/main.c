@@ -103,7 +103,12 @@ internal void load_resources(void) {
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GL330.vert", "shaders/xy_uv.GL330.frag");
 #endif
 #ifdef GLES
-    resource_shader(&renderer->assets.xyz_uv_palette, "shaders/gles20.vert", "shaders/gles20.frag");
+    resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GLES2.vert", "shaders/xyz_uv_palette.GLES2.frag");
+    resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GLES2.vert", "shaders/xyz_uv.GLES2.frag");
+    resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GLES2.vert", "shaders/xy_uv.GLES2.frag");quickre
+
+
+    //resource_shader(&renderer->assets.xyz_uv_palette, "shaders/gles20.vert", "shaders/gles20.frag");
 #endif
 
     resource_ogg(&renderer->assets.music1, "ogg/Stiekem.ogg");
@@ -227,7 +232,6 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
 
 
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-
 internal void print(const char *text, ...) {
     char buffer[999];
     va_list va;
@@ -235,10 +239,7 @@ internal void print(const char *text, ...) {
     vsprintf(buffer, text, va);
     va_end(va);
     game->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font);
-    //    debug_text_y += 24;
-
 }
-
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
 
 
@@ -575,7 +576,6 @@ int main(int argc, char **argv) {
             perf_dict_sort_clone(perf_dict, &clone);
             ticker = 0;
             perf_dict_reset(perf_dict);
-
         }
 
          for (int i =0; i < PERF_DICT_SIZE; i++) {
@@ -585,7 +585,7 @@ int main(int argc, char **argv) {
             float max = ((float)(e->max/(float)freq)* 1000.0f);
 
             if (e->times_counted > 0) {
-                print("%.3f %-15s x(%d) min:%.3f max:%.3f \n", averaged, e->key,  e->times_counted/60, min, max);
+                print("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
             } else {
                 break;
             }
@@ -603,7 +603,6 @@ int main(int argc, char **argv) {
 
 
         BEGIN_PERFORMANCE_COUNTER(main_loop);
-
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {
@@ -627,6 +626,7 @@ int main(int argc, char **argv) {
                         printf(".");
                     }
                 }
+                game->actor_count_changed = true;
 
             }
             if (keys[SDL_SCANCODE_LEFT]) {
@@ -657,6 +657,8 @@ int main(int argc, char **argv) {
                     actor_remove(game, rand_int2(0,  game->actor_count-1));
                     set_actor_batch_sizes();
                 }
+                game->actor_count_changed = true;
+
             }
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
@@ -670,6 +672,7 @@ int main(int argc, char **argv) {
             }
         }
 
+        BEGIN_PERFORMANCE_COUNTER(actors_update);
 
         // TODO: plenty of bugs are in this loop, never really cleaned up after
         for (u32 i = 0; i < game->actor_count; i++) {
@@ -700,10 +703,13 @@ int main(int argc, char **argv) {
             game->actors[i].y += game->actors[i].dy *  (last_frame_time_ms/1000.0f);
         }
 
+        END_PERFORMANCE_COUNTER(actors_update);
 
 
         // sorting the actors is less profitable(because it runs every frame), it does however improve the speed from  6ms to 3.5ms for 16K actors (almost 100%)
         // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
+        // specifically sort routines that are optimized for data that is already sorted for the most part. (TimSort it seems)
+
         BEGIN_PERFORMANCE_COUNTER(actors_sort);
         qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
         END_PERFORMANCE_COUNTER(actors_sort);
@@ -716,7 +722,7 @@ int main(int argc, char **argv) {
         END_PERFORMANCE_COUNTER(main_loop);
 
 #endif
-
+        game->actor_count_changed = false;
     }
     quit();
     return 1;

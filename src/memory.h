@@ -106,6 +106,8 @@ typedef struct {
     u32 wall_count;
     Actor actors[16384*4];
     u32 actor_count;
+    u32 last_actor_count;
+    b32 actor_count_changed;
     Glyph glyphs[16384];
     u32 glyph_count;
     ///

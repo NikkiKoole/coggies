@@ -1,7 +1,6 @@
 
-* Currently doing / Upcoming
 
-- [ ] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
+* Currently doing / Upcoming
 
 - [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
 
@@ -21,8 +20,23 @@
   http://hacksoflife.blogspot.co.uk/2012/04/beyond-glmapbuffer.html
   http://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html#demo
   https://www.raspberrypi.org/forums/viewtopic.php?f=68&t=136093
-
   http://stackoverflow.com/questions/7243518/opengl-es-2-0-seeking-vbo-performance-optimisation-tips-for-many-moving-vertic
+
+  this describes a possible solution I want to try
+  http://hacksoflife.blogspot.co.uk/2015/06/glmapbuffer-no-longer-cool.html
+  #+BEGIN_SRC C
+  void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data)
+  {
+   if(offset == 0 && size == size_of_currently_bound_vbo)
+   glBufferData(target,size,NULL,last_buffer_usage);
+   GLvoid * ptr = glMapBuffer(target,GL_WRITE_ONLY);
+   memcpy(ptr, data, size);
+   glUnmapBuffer(target);
+  }
+  #+END_SRC
+
+  So in other words I could try and remake the buffer when its size change (adding or removing actors)
+  Otherwise its just using the ptr to the Mapbuffer
 
 - [ ] single triangle instead of quad trick
   also look into this:
@@ -53,6 +67,12 @@
 
 
 * Todo
+- [ ] update the pathfinder code
+  - add tests (unit tests for functions and a collection of paths that need finding)
+  - have it compile with superstrict warnings set
+  - add the dirty flag and cleanup routines
+  - do the staircases (now stairs are 'ladders')
+
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
   this would mean allocating / or well PUSH_STRUCT calls will need to be feed a string
 
@@ -140,7 +160,7 @@
       Also I've updated/upgraded my rpi. at what point the issue was solved is hard to say...
   - [X] Linux
 
-- [ ] optimize
+- [X] optimize
   on the rpi I can only draw 1000 actors and 1000 walls, more then that I go under 60fps.
   - I could improve it a little bit (I think) by making my VBO's smaller (zindex and palette index could go with some work)
   - I could get rid of the Z's and do manual sorting instead of depth func testing.
@@ -170,6 +190,9 @@
 
 
 * Done
+
+- [X] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
+
 
 - [X] enable differnt kind of shaders for various parts:
   - xy

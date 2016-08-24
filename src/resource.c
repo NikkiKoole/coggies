@@ -88,7 +88,7 @@ internal void make_font(BM_Font *font, const char *path) {
                 font->chars[id].xoffset = xoffset;
                 font->chars[id].yoffset = yoffset;
                 font->chars[id].xadvance = xadvance;
-                printf("%d: x:%d, y:%d, xoffset:%d, yoffset:%d, xadv:%d,width:%d, height:%d\n",id, x,y,xoffset,yoffset,xadvance,width,height);
+                //printf("%d: x:%d, y:%d, xoffset:%d, yoffset:%d, xadv:%d,width:%d, height:%d\n",id, x,y,xoffset,yoffset,xadvance,width,height);
             }
             font->line_height = lineHeight;
             printf("%d chars found in fnt file %s.\n", num_chars, path);

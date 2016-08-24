@@ -105,18 +105,32 @@ internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], in
 }
 
 
-internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program) {
+internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayout *layout) {
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     //setup and enable attrib pointer
-    GLuint a_Position = glGetAttribLocation(*program, "xyz");
-    glVertexAttribPointer(a_Position, 3, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)0);
-    glEnableVertexAttribArray(a_Position);
-    GLuint a_TexCoord = glGetAttribLocation(*program, "uv");
-    glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE)));
-    glEnableVertexAttribArray(a_TexCoord);
-    GLuint a_Palette = glGetAttribLocation(*program, "palette");
-    glVertexAttribPointer(a_Palette, 1, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE)));
-    glEnableVertexAttribArray(a_Palette);
+
+
+    int stride = 0;
+    for (int i = 0; i < layout->element_count; i++) {
+        ShaderLayoutElement *elem = &layout->elements[i];
+        glVertexAttribPointer(i, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
+        stride += elem->amount;
+        glEnableVertexAttribArray(i);
+        CHECK();
+    }
+
+
+    /* GLuint a_Position = glGetAttribLocation(*program, "xyz"); */
+    /* glVertexAttribPointer(a_Position, 3, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)0); */
+    /* glEnableVertexAttribArray(a_Position); */
+    /* GLuint a_TexCoord = glGetAttribLocation(*program, "uv"); */
+    /* glVertexAttribPointer(a_TexCoord, 2, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(3 * sizeof(VERTEX_FLOAT_TYPE))); */
+    /* glEnableVertexAttribArray(a_TexCoord); */
+    /* GLuint a_Palette = glGetAttribLocation(*program, "palette"); */
+    /* glVertexAttribPointer(a_Palette, 1, GL_FLOAT_TYPE, GL_FALSE, sizeof(VERTEX_FLOAT_TYPE) * 6, (GLvoid *)(5 * sizeof(VERTEX_FLOAT_TYPE))); */
+    /* glEnableVertexAttribArray(a_Palette); */
+
+
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
 }
 #endif
@@ -453,6 +467,8 @@ void render_actors(void) {
         glBindVertexArray(batch->VAO);
 #endif
 
+
+
         // TODO: try to optimize this loop., humpf getting rid of the functions didnt do a whole lot..
         // https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
         // I might have to bite the bullet, make my actors an soa instead of an aos and
@@ -555,9 +571,22 @@ void render_actors(void) {
         glDisableVertexAttribArray(0);
 #endif
 #ifdef GL3
+
+
+        /* if (game->actor_count_changed == true) { */
+        /*     glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
+        /*     glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices); */
+        /*     GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY); */
+        /*     memcpy(ptr, batch->vertices, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE)); */
+        /*     glUnmapBuffer(GL_ARRAY_BUFFER); */
+        /* } */
+        /* glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0); */
+        /* glBindVertexArray(0); */
+
+
+
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
         CHECK();
-        //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
         CHECK();
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
