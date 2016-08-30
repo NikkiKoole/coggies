@@ -34,8 +34,8 @@
 RenderState _rstate;
 RenderState *renderer = &_rstate;
 
-GameState _gstate;
-GameState *game = &_gstate;
+PermanentState _gstate;
+PermanentState *game = &_gstate;
 
 PerfDict _p_dict;
 PerfDict *perf_dict = &_p_dict;
@@ -231,19 +231,19 @@ void initialize_GL(void) {
 }
 
 
-internal int cmpfunc(const void *a, const void *b) {
-    // TODO  I dont understand it anymore ;)
+/* internal int cmpfunc(const void *a, const void *b) { */
+/*     // TODO  I dont understand it anymore ;) */
 
-    const Wall *a2 = (const Wall *)a;
-    const Wall *b2 = (const Wall *)b;
-    return ((a2->y) - (b2->y));
-}
+/*     const Wall *a2 = (const Wall *)a; */
+/*     const Wall *b2 = (const Wall *)b; */
+/*     return ((a2->y) - (b2->y)); */
+/* } */
 
 void prepare_renderer(void) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    int real_world_height = game->dims.z_level * game->block_size.z_level;
+    //int real_world_height = game->dims.z_level * game->block_size.z_level;
     int real_world_depth = game->dims.y * (game->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
@@ -252,14 +252,14 @@ void prepare_renderer(void) {
     int offset_y_blocks = game->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
-
+    int number_to_do = walls_layout.values_per_quad;
 
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //game->actor_count;
 
-	for (u32 i = 0; i < count * 20; i += 20) {
-            int prepare_index = i / 20;
+	for (u32 i = 0; i < count * number_to_do; i += number_to_do) {
+            int prepare_index = i / number_to_do;
             prepare_index += (wall_batch_index * 2048);
             Wall data = game->walls[prepare_index];
             float scale = 1;
@@ -355,9 +355,6 @@ void prepare_renderer(void) {
 #endif
     }
 
-
-
-
     // prepare buffers for FONT drawing
 
     {
@@ -388,22 +385,9 @@ void prepare_renderer(void) {
 }
 
 
-void render_actors(void);
-void render_actors(void) {
 
-     // this part needs to be repeated in all render loops (To use specific shader programs)
-    glUseProgram(renderer->assets.xyz_uv_palette);
-
-    // Bind Textures using texture units
-    glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
-
-    glActiveTexture(GL_TEXTURE1);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-    // end this part needs to be repeated
-
+void update_and_draw_actor_vertices(void);
+void update_and_draw_actor_vertices(void){
 
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
@@ -411,36 +395,22 @@ void render_actors(void) {
     //float real_world_height = game->dims.z_level * game->block_size.z_level;
     float real_world_depth = game->dims.y * game->block_size.y;
 
-
-    //u64 running_total_nested_loop = 0;
+    int number_to_do = actors_layout.values_per_quad;
 
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
         int count = batch->count; //game->actor_count;
 
-// actors
-#ifdef GL3
-        glBindVertexArray(batch->VAO);
-#endif
+        /* glBindVertexArray(batch->VAO); */
+        /* glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
+        /* GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); */
 
 
-
-        // TODO: try to optimize this loop., humpf getting rid of the functions didnt do a whole lot..
-        // https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
-        // I might have to bite the bullet, make my actors an soa instead of an aos and
-        // simdify/neonify the f*ck out of them..
-
-        // also for the mapbuffer stuff to actually work, I will need to try to chaneg the amount of actors as littel as possible
-        // changing the AMOUNT will need to a new bufferData, so perhaps, just a isDead is a better approach.
-        // then I could shedule some moment in tme where I clean up
-
-        // anyway, it will be quite the rewrite, better test this in a separate exzample first
-
-        for (int i = 0; i < count * VALUES_PER_ELEM; i += VALUES_PER_ELEM) {
-            BEGIN_PERFORMANCE_COUNTER(actor_draw);
+        for (int i = 0; i < count * number_to_do; i += number_to_do) {
+            BEGIN_PERFORMANCE_COUNTER(render_actors_batches);
             //            u64 begin_loop = SDL_GetPerformanceCounter();
-            int prepare_index = i / VALUES_PER_ELEM;
+            int prepare_index = i / number_to_do;
             prepare_index += (actor_batch_index * 2048);
             Actor data = game->actors[prepare_index];
 
@@ -485,6 +455,40 @@ void render_actors(void) {
             const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
             const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
 
+            /* const int FL = sizeof(VERTEX_FLOAT_TYPE); */
+
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_X;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_Y;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_X;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_Y;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
+
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_X;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_Y;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_X;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_Y;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
+
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_X;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_Y;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_X;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_Y;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
+
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_X;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_Y;     ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_X;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_Y;       ptr+=FL; */
+            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
+
+
+
+
+
 
             // bottomright
             batch->vertices[i + 0] = VERT_BR_X; //verts.br.x;
@@ -514,11 +518,16 @@ void render_actors(void) {
             batch->vertices[i + 21] = UV_TL_X; //uvs.tl.x;
             batch->vertices[i + 22] = UV_BR_Y; //uvs.br.y;
             batch->vertices[i + 23] = paletteIndex;
-            END_PERFORMANCE_COUNTER(actor_draw);
+            END_PERFORMANCE_COUNTER(render_actors_batches);
 
-            //u64 end_loop = SDL_GetPerformanceCounter();
-            //running_total_nested_loop += (end_loop - begin_loop);
+
+            //glUnmapBuffer(GL_ARRAY_BUFFER);
         }
+        //glUnmapBuffer(GL_ARRAY_BUFFER);
+
+        CHECK();
+        BEGIN_PERFORMANCE_COUNTER(render_actors_buffers);
+
 
 #ifdef GLES
         bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette, &actors_layout);
@@ -527,21 +536,31 @@ void render_actors(void) {
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
 #endif
+
+
+
+
+
+
 #ifdef GL3
-
-
-        /* if (game->actor_count_changed == true) { */
-        /*     glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
-        /*     glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices); */
-        /*     GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY); */
-        /*     memcpy(ptr, batch->vertices, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE)); */
-        /*     glUnmapBuffer(GL_ARRAY_BUFFER); */
-        /* } */
+        /*  BEGIN_PERFORMANCE_COUNTER(render_actors_mapbuffer); */
+        /* //glBindVertexArray(batch->VAO); */
+        /* //glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
+        /* //GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); */
+        /* //memcpy(ptr, batch->vertices, (batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE))); */
+        /* CHECK(); */
         /* glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0); */
-        /* glBindVertexArray(0); */
+        /* CHECK(); */
+        /* glUnmapBuffer(GL_ARRAY_BUFFER); */
+        /* glFlush(); */
+        /* CHECK(); */
+        /* END_PERFORMANCE_COUNTER(render_actors_mapbuffer); */
 
 
 
+
+        BEGIN_PERFORMANCE_COUNTER(render_actors_buffersubber);
+        glBindVertexArray(batch->VAO);
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
         CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
@@ -549,9 +568,38 @@ void render_actors(void) {
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         CHECK();
         glBindVertexArray(0);
+        //glFlush(); // not needed but gives a better idea of the costs
+        END_PERFORMANCE_COUNTER(render_actors_buffersubber);
+
 #endif
-        CHECK();
+        END_PERFORMANCE_COUNTER(render_actors_buffers);
     }
+
+}
+
+
+
+
+void render_actors(void);
+void render_actors(void) {
+
+     // this part needs to be repeated in all render loops (To use specific shader programs)
+    glUseProgram(renderer->assets.xyz_uv_palette);
+
+    // Bind Textures using texture units
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
+
+    glActiveTexture(GL_TEXTURE1);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
+    glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
+    // end this part needs to be repeated
+
+    update_and_draw_actor_vertices();
+
+
+
 }
 
 
@@ -602,6 +650,7 @@ void render_text(void) {
 
 
         int texture_size = renderer->assets.menlo.width;
+        int number_to_do = debug_text_layout.values_per_quad;
 
         for (int glyph_batch_index = 0; glyph_batch_index < renderer->used_glyph_batches; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
@@ -610,8 +659,8 @@ void render_text(void) {
             glBindVertexArray(batch->VAO);
 #endif
 
-            for (int i = 0; i < count * 16; i += 16) {
-                int prepare_index = i / 16;
+            for (int i = 0; i < count * number_to_do; i += number_to_do) {
+                int prepare_index = i / number_to_do;
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = game->glyphs[prepare_index];
                 r32 scale = 1;
@@ -679,7 +728,6 @@ void render(SDL_Window *window) {
     CHECK();
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
 
     render_actors();
     render_walls();

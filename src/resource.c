@@ -3,6 +3,8 @@
 
 #include "types.h"
 #include "resource.h"
+#include "memory.h"
+
 
 internal b32 exists(const char *fname) {
     FILE *f;
@@ -382,7 +384,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
     char str[BUF_SIZE];
 
     FILE *f = fopen(path, "rb");
-    
+
     if (!f) {
         printf("Couldn't open file: %s\n", path);
     }
@@ -400,7 +402,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
             printf("version %d\n", atoi(str));
         }
     }
-    
+
     // third line should contain 3 values, with with commas inbetween, width/depth,height
     if (fgets(str, BUF_SIZE, f) != NULL) {
         char * pch;
@@ -417,7 +419,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
 }
 
 
-internal void read_level(LevelData * level, World_Size dimensions, const char *path) {
+internal void read_level(PermanentState * permanent, LevelData * level, World_Size dimensions, const char *path) {
     UNUSED(level);
     UNUSED(path);
     UNUSED(dimensions);
@@ -426,7 +428,7 @@ internal void read_level(LevelData * level, World_Size dimensions, const char *p
     level->y = dimensions.y;
     level->z_level = dimensions.z_level;
     level->block_count = dimensions.x * dimensions.y * dimensions.z_level;
-    level->blocks = malloc((level->block_count) * sizeof(WorldBlock));
+    level->blocks = (WorldBlock*) PUSH_ARRAY(&permanent->arena, (level->block_count), Block);
     printf("reading level : %s \n", path);
     {
         for (int z = 0; z< dimensions.z_level; z++){
@@ -434,21 +436,21 @@ internal void read_level(LevelData * level, World_Size dimensions, const char *p
                 for(int x = 0; x<dimensions.x;x++){
                     WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(x,y,z, dimensions.x, dimensions.y)];
                     b->object = Nothing;
-                    
+
                 }
             }
         }
 
 
     }
-    
-    
+
+
     #define LINES_BEFORE_DATA 3
     char str[BUF_SIZE];
     int line_counter = LINES_BEFORE_DATA;
     int height_counter = -1;
 
-    
+
     FILE *f = fopen(path, "rb");
     // Skip the first 3 lines. (I've already validated them);
     for (int i = 0; i<LINES_BEFORE_DATA;i++){
@@ -472,7 +474,7 @@ internal void read_level(LevelData * level, World_Size dimensions, const char *p
                 // this is where its at
                 int _z_level = height_counter;
                 int _y_level = (line_counter-LINES_BEFORE_DATA) % (dimensions.y+1)-1;
-                
+
                 for (int i = 1; i < dimensions.x+1; i++) {
                     WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(i-1,_y_level,_z_level, dimensions.x, dimensions.y)];
 
@@ -552,7 +554,7 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x, y-3, z, StairsUp4N);
                         }
                     }
-                    
+
                     if (x+4 < level->x){
                         b32 is_stairs_east = true;
 
@@ -613,29 +615,29 @@ internal void add_stairs(LevelData *level){
         }
     }
 
-    
+
 }
 
 
 
-internal void make_level(LevelData *level, const char * path){
+internal void make_level(PermanentState * permanent, LevelData *level,  const char * path){
     if (exists(path)) {
         World_Size dimensions = validate_and_get_dimensions(path);
-        read_level(level, dimensions,  path);
+        read_level(permanent, level, dimensions,  path);
         // add stairs into level
         add_stairs(level);
-        
 
-        
-        
+
+
+
     } else {
         printf("file not found!\n");
     }
 }
 
-void resource_level(LevelData *level, const char * path) {
+void resource_level(PermanentState *permanent, LevelData *level, const char * path) {
     char buffer[256];
-    make_level(level, resource(path, buffer));
+    make_level(permanent, level, resource(path, buffer));
 }
 
 

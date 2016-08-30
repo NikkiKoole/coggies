@@ -11,10 +11,20 @@
 
 
 
-void (*func)(void);
+#define SORT_NAME Actor
+#define SORT_TYPE Actor
+// note the AB possibly have to be swapped
+#define SORT_CMP(b, a) ((((a).y*16384) - (a).z ) - ( ((b).y*16384) - (b).z))
+//#define SORT_CMP(a, b) ((a).y - (b).y)
+#include "sort_common.h"
+
+#include "sort.h"
+
+void (*func)(Memory *, RenderState *renderer);
+//void (*func)(void);
 
 extern RenderState *renderer;
-extern GameState *game;
+extern PermanentState *game;
 extern PerfDict *perf_dict;
 
 
@@ -92,8 +102,8 @@ internal int event_filter(void *userData, SDL_Event *event) {
 }
 
 
-internal void load_resources(void) {
-    resource_level(&renderer->assets.level, "levels/test4.txt");
+internal void load_resources(PermanentState *permanent) {
+    resource_level(permanent, &game->level, "levels/test4.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
@@ -299,8 +309,10 @@ Shared_Library libgame = {
     .fn_name = "game_update_and_render"
 };
 
-internal void stub(void)
-{
+internal void stub(Memory *memory, RenderState *renderer){
+    UNUSED(memory);
+    UNUSED(renderer);
+
     SDL_Delay(1);
 }
 
@@ -320,7 +332,8 @@ internal void maybe_load_libgame(void)
                 printf("couldnt load:%s, error: %s\n", libgame.name, SDL_GetError());
                 func = stub;
             } else {
-                func = (void (*)(void)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
+            //func = (void (*)(void)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
+                func = (void (*)(Memory *, RenderState *renderer)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
                 if (func == NULL) {
                     printf("couldnt find: %s, error: %s\n",libgame.fn_name, SDL_GetError());
                 } else {
@@ -369,22 +382,47 @@ int main(int argc, char **argv) {
 
     Memory _memory;
     Memory *memory = &_memory;
-    reserve_memory(memory);
-    ASSERT(sizeof(GameState) <= memory->permanent_size);
-    GameState *storage = (GameState *)memory->permanent;
-    ASSERT(sizeof(TransState) <= memory->scratch_size);
-    TransState *trans = (TransState *) memory->scratch;
-    initialize_arena(&storage->arena,
-                     memory->permanent_size - sizeof(GameState),
-                     (u8 *)memory->permanent + sizeof(GameState));
+    //reserve_memory(memory);
 
-    initialize_arena(&trans->scratch_arena,
-                     memory->scratch_size - sizeof(TransState),
-                     (u8 *)memory->scratch + sizeof(TransState));
+    void *base_address = (void *)GIGABYTES(0);
+    memory->permanent_size = MEGABYTES(16);
+    memory->scratch_size = MEGABYTES(16);
+    memory->debug_size = MEGABYTES(16);
+
+    u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->debug_size;
+    memory->permanent = mmap(base_address, total_storage_size,
+                        PROT_READ | PROT_WRITE,
+                        MAP_ANON | MAP_PRIVATE,
+                        -1, 0);
+    memory->scratch = (u8 *)(memory->permanent) + memory->permanent_size;
+    memory->debug  = (u8 *) (memory->scratch) + memory->scratch_size;
+
+
+    memory->is_initialized = false;
+
+    ASSERT(sizeof(PermanentState) <= memory->permanent_size);
+    PermanentState *permanent = (PermanentState *)memory->permanent;
+    ASSERT(sizeof(ScratchState) <= memory->scratch_size);
+    ScratchState *scratch = (ScratchState *) memory->scratch;
+    ASSERT(sizeof(DebugState) <= memory->debug_size);
+    DebugState *debug = (DebugState *) memory->debug;
+
+
+
+    initialize_arena(&permanent->arena,
+                     memory->permanent_size - sizeof(PermanentState),
+                     (u8 *)memory->permanent + sizeof(PermanentState));
+
+    initialize_arena(&scratch->arena,
+                     memory->scratch_size - sizeof(ScratchState),
+                     (u8 *)memory->scratch + sizeof(ScratchState));
+
+    initialize_arena(&debug->arena,
+                     memory->debug_size - sizeof(DebugState),
+                     (u8 *)memory->debug + sizeof(DebugState));
+
 
     memory->is_initialized = true;
-
-
 
 
     UNUSED(argc);
@@ -395,11 +433,12 @@ int main(int argc, char **argv) {
 
     initialize_SDL();
     initialize_GL();
-    load_resources();
+    load_resources(permanent);
     setup_shader_layouts();
 
 
-    game->dims = (WorldDims){renderer->assets.level.x,renderer->assets.level.y, renderer->assets.level.z_level};
+    game->dims = (WorldDims){game->level.x, game->level.y, game->level.z_level};
+    //permanent->dims = (WorldDims){game->level.x, game->level.y, game->level.z_level};
     printf("dimensions: %d, %d, %d\n",game->dims.x, game->dims.y, game->dims.z_level);
     game->block_size = (WorldDims){24,24,96};
 
@@ -409,7 +448,7 @@ int main(int argc, char **argv) {
 
 
 
-
+    ////
 
     int used_wall_block =0;
     int count_shadow = 0;
@@ -420,7 +459,7 @@ int main(int argc, char **argv) {
         for (u32 y = 0; y< game->dims.y; y++){
             for (u32 x = 0; x< game->dims.x; x++){
                 //renderer->assets.level
-                WorldBlock *b = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z,game->dims.x, game->dims.y)];
+                WorldBlock *b = &game->level.blocks[FLATTEN_3D_INDEX(x,y,z,game->dims.x, game->dims.y)];
 
                 if (b->object == Nothing){
 
@@ -492,7 +531,7 @@ int main(int argc, char **argv) {
                 //if (z+1 < game->dims.z_level-1 && b->object != Nothing) {
                     //printf("%d, %d, %d\n",x,y,z+1);
 
-                WorldBlock *one_above = &renderer->assets.level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,game->dims.x, game->dims.y)];
+                WorldBlock *one_above = &game->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,game->dims.x, game->dims.y)];
 
 
                     //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
@@ -518,8 +557,8 @@ int main(int argc, char **argv) {
     ASSERT(used_wall_block <= 16384);
 
 
-    // sort the game->walls on Z and Y to help openGl with depth testing etc.
-    // this improves frame time from 8ms to 1ms (for 16000 walls)
+    //sort the game->walls on Z and Y to help openGl with depth testing etc.
+    //this improves frame time from 8ms to 1ms (for 16000 walls)
 
     qsort(game->walls, used_wall_block, sizeof(Wall), wallsortfunc);
 
@@ -530,7 +569,7 @@ int main(int argc, char **argv) {
     //u32 j =0;
 
     set_wall_batch_sizes();
-#define ACTOR_BATCH 100
+#define ACTOR_BATCH 1000
 
     game->actor_count = ACTOR_BATCH;
     ASSERT(game->actor_count <= 16384);
@@ -561,18 +600,6 @@ int main(int argc, char **argv) {
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
-    char frameCount[64];
-    char actorCount[64];
-    char wallCount[64];
-    char updateActorBufferDuration[64];
-    char updateActorDuration[64];
-    char sortActorDuration[64];
-    char soaBuildDuration[64];
-
-
-    u64 last_avg_frame_time = 0;
-    u32 avg_frame_time_ticker = 0;
-    u64 running_frame_time = 0;
     float last_frame_time_ms = 1.0f;
 
     maybe_load_libgame();
@@ -616,7 +643,7 @@ int main(int argc, char **argv) {
 
         set_glyph_batch_sizes();
         u64 begin_render_time = SDL_GetPerformanceCounter();
-	maybe_load_libgame();
+        maybe_load_libgame();
 
 
 	BEGIN_PERFORMANCE_COUNTER(main_loop);
@@ -725,7 +752,14 @@ int main(int argc, char **argv) {
         // on the negative side it introduces some fighting Z cases. (flickering!)
         // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
 	BEGIN_PERFORMANCE_COUNTER(actors_sort);
-        qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
+
+    //    qsort, timsort, quick_sort
+    //64k 7.3    4.8      3.7
+
+    //qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
+    Actor_quick_sort(game->actors,  game->actor_count);
+    //Actor_tim_sort(game->actors,  game->actor_count);
+
 	END_PERFORMANCE_COUNTER(actors_sort);
 
 
@@ -734,7 +768,7 @@ int main(int argc, char **argv) {
 
 
 
-
+    func(memory, renderer);
 
 
 
@@ -744,7 +778,7 @@ int main(int argc, char **argv) {
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 
-        render(renderer->window);
+    render(renderer->window);
 	u64 end_render_time = SDL_GetPerformanceCounter();
 	last_frame_time_ms = ((float)(end_render_time - begin_render_time)/freq) * 1000.0f;
 	END_PERFORMANCE_COUNTER(main_loop);

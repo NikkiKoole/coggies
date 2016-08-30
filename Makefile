@@ -2,7 +2,10 @@ SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LFLAGS := $(shell sdl2-config --libs)
 
 
-STRICT = -Werror -Wall
+# temroary lax the compiler for timsort experiment
+# -Wall
+#RELAXED = -Werror
+STRICT = -Werror
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
 		   -Wparentheses -Winit-self -Wswitch-enum -Wstrict-aliasing=2  \
@@ -11,7 +14,7 @@ STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
 SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls -pedantic-errors -Wcast-qual -Wshadow
-WARNINGS = $(STRICT_RPI2)
+WARNINGS = $(-Werror)
 
 
 OBJDIR = ./objs/
@@ -21,7 +24,7 @@ PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
 DEBUG:=-g3
-OPTIMIZE:=-O2
+OPTIMIZE:=
 STD:=-std=gnu99
 
 CC:=gcc
@@ -35,7 +38,8 @@ linux:
 	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 pi:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lEGL -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
+
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

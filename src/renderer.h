@@ -61,7 +61,7 @@ typedef struct {
     Texture sprite;
     Texture palette;
     Texture menlo;
-    LevelData level;
+    //LevelData level;
 
     GLuint xyz_uv_palette;
     GLuint xyz_uv;
@@ -88,8 +88,10 @@ typedef struct DrawBuffer {
     GLuint VAO;
     GLuint VBO;
     GLuint EBO;
+    GLvoid *map_buffer_pointer;
     GLushort indices[MAX_IN_BUFFER * 6];
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
+
 } DrawBuffer;
 
 

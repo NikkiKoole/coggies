@@ -1,69 +1,10 @@
 
 
 * Currently doing / Upcoming
-
-- [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
-
-- [ ] Another thing that needs experimenting is the usage of depthbuffer
-  https://www.opengl.org/discussion_boards/showthread.php/153121-Reading-the-Depth-Buffer-Why-so-slow
-  It seems feeding floats (which I do) is by far the slowest, rather use chars or shorts
-
-- [ ] glMapBuffer
-  On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
-  before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
-  My hopes are on this now actuall, I think a triple buffered setup using this will give me the most gains on the pi
-
-  I've verified its not fillrate bound (when i draw much smaller sprites, smaller part of the texture too) my fps is roughly the same.
-  I'd thought it was the size of the data (so that why i started with halfloat), but now i am thinking it must be the driver itself.
-
-  about mapbuffers:
-  http://hacksoflife.blogspot.co.uk/2012/04/beyond-glmapbuffer.html
-  http://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html#demo
-  https://www.raspberrypi.org/forums/viewtopic.php?f=68&t=136093
-  http://stackoverflow.com/questions/7243518/opengl-es-2-0-seeking-vbo-performance-optimisation-tips-for-many-moving-vertic
-
-  this describes a possible solution I want to try
-  http://hacksoflife.blogspot.co.uk/2015/06/glmapbuffer-no-longer-cool.html
-  #+BEGIN_SRC C
-  void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data)
-  {
-   if(offset == 0 && size == size_of_currently_bound_vbo)
-   glBufferData(target,size,NULL,last_buffer_usage);
-   GLvoid * ptr = glMapBuffer(target,GL_WRITE_ONLY);
-   memcpy(ptr, data, size);
-   glUnmapBuffer(target);
-  }
-  #+END_SRC
-
-  So in other words I could try and remake the buffer when its size change (adding or removing actors)
-  Otherwise its just using the ptr to the Mapbuffer
-
-- [ ] single triangle instead of quad trick
-  also look into this:
-  https://www.reddit.com/r/opengl/comments/1kjsr9/how_to_render_2d_objects_using_2_triangles_for_a/
-  You can often get away with using a single triangle with twice the width and height of the intended sprite. This may be faster if you have a lot of sprites. Crappy ASCII art follows:
-  more info: https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
-  mm ok, that is unrelated to drawing many little quads, its on 1 quad that covers the whole screen.
-  I dont know about this, seems not very usefull.
-
-  *
-  | \
-  |   \
-  |     \
-  +------*
-  |      | \
-  |      |   \
-  |      |     \
-  +------+------*
-
-- [ ] filling the vertice arrays on CPU side
-  on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
-  try to optimize this, first by helping the compiler, (no function calls, setting up varibale more strict)
-  and maybe afterwards by trying out SIMD / NEON to fill that data.
-  https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
-
-  see2 -> neon (so i can build some nice macros)
-  http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
+  - [ ] use memory scheme
+  - [ ] add debug memory too
+  - [ ] move actors and etc in gamelib code
+  - [ ] start with pathfinder
 
 
 * Todo
@@ -177,6 +118,39 @@
     Ok half float is being used, sadly it doenst really has much effect, only when buffers are really large, and framerate is down to 100ms on rpi anyway
     then it does save 10/20% compared to glFloat ah well.. atleast my meory usage is down with 50%
 
+  - [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
+
+  - [ ] Another thing that needs experimenting is the usage of depthbuffer
+    https://www.opengl.org/discussion_boards/showthread.php/153121-Reading-the-Depth-Buffer-Why-so-slow
+    It seems feeding floats (which I do) is by far the slowest, rather use chars or shorts
+
+  - [ ] single triangle instead of quad trick
+    also look into this:
+    https://www.reddit.com/r/opengl/comments/1kjsr9/how_to_render_2d_objects_using_2_triangles_for_a/
+    You can often get away with using a single triangle with twice the width and height of the intended sprite. This may be faster if you have a lot of sprites. Crappy ASCII art follows:
+    more info: https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
+    mm ok, that is unrelated to drawing many little quads, its on 1 quad that covers the whole screen.
+    I dont know about this, seems not very usefull.
+
+    *
+    | \
+    |   \
+    |     \
+    +------*
+    |      | \
+    |      |   \
+    |      |     \
+    +------+------*
+
+   - [ ] filling the vertice arrays on CPU side
+     on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
+    try to optimize this, first by helping the compiler, (no function calls, setting up varibale more strict)
+    and maybe afterwards by trying out SIMD / NEON to fill that data.
+    https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
+
+    see2 -> neon (so i can build some nice macros)
+    http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
+
 - [-] game play stuff
   - [-] pathfinder
     Next to hooking it in, the current pathfinder code also needs some dirty list (to help cleaning the data quickly) and maybe some notion of keys (to help actors not look in rooms they shouldnt be in)
@@ -191,8 +165,37 @@
 
 * Done
 
-- [X] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
+- [X] glMapBuffer
+  On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
+  before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
+  My hopes are on this now actuall, I think a triple buffered setup using this will give me the most gains on the pi
 
+  I've verified its not fillrate bound (when i draw much smaller sprites, smaller part of the texture too) my fps is roughly the same.
+  I'd thought it was the size of the data (so that why i started with halfloat), but now i am thinking it must be the driver itself.
+
+  about mapbuffers:
+  http://hacksoflife.blogspot.co.uk/2012/04/beyond-glmapbuffer.html
+  http://www.bfilipek.com/2015/01/persistent-mapped-buffers-in-opengl.html#demo
+  https://www.raspberrypi.org/forums/viewtopic.php?f=68&t=136093
+  http://stackoverflow.com/questions/7243518/opengl-es-2-0-seeking-vbo-performance-optimisation-tips-for-many-moving-vertic
+
+  this describes a possible solution I want to try
+  http://hacksoflife.blogspot.co.uk/2015/06/glmapbuffer-no-longer-cool.html
+  #+BEGIN_SRC C
+  void glBufferSubData(GLenum target, GLintptr offset, GLsizeiptr size, const GLvoid * data)
+  {
+   if(offset == 0 && size == size_of_currently_bound_vbo)
+   glBufferData(target,size,NULL,last_buffer_usage);
+   GLvoid * ptr = glMapBuffer(target,GL_WRITE_ONLY);
+   memcpy(ptr, data, size);
+   glUnmapBuffer(target);
+  }
+  #+END_SRC
+
+  So in other words I could try and remake the buffer when its size change (adding or removing actors)
+  Otherwise its just using the ptr to the Mapbuffer
+
+- [X] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
 
 - [X] enable differnt kind of shaders for various parts:
   - xy
