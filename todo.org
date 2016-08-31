@@ -1,6 +1,7 @@
 
 
 * Currently doing / Upcoming
+  - [ ] move perf dict
   - [ ] use memory scheme
   - [ ] add debug memory too
   - [ ] move actors and etc in gamelib code

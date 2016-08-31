@@ -30,16 +30,6 @@
 */
 
 
-
-//RenderState _rstate;
-//RenderState *renderer = &_rstate;
-
-//PermanentState _gstate;
-//PermanentState *game = &_gstate;
-
-PerfDict _p_dict;
-PerfDict *perf_dict = &_p_dict;
-
 ShaderLayout debug_text_layout;
 ShaderLayout actors_layout;
 ShaderLayout walls_layout;
@@ -256,6 +246,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
+        printf("adress of batch: %p\n", batch);
         u32 count = batch->count; //permanent->actor_count;
 
 	for (u32 i = 0; i < count * number_to_do; i += number_to_do) {
@@ -386,8 +377,8 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
 
 
-void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer);
-void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer){
+void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug);
+void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
 
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
@@ -580,8 +571,8 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
 
 
-void render_actors(PermanentState *permanent,  RenderState *renderer);
-void render_actors(PermanentState *permanent, RenderState *renderer) {
+void render_actors(PermanentState *permanent,  RenderState *renderer, DebugState *debug);
+void render_actors(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
 
      // this part needs to be repeated in all render loops (To use specific shader programs)
     glUseProgram(renderer->assets.xyz_uv_palette);
@@ -596,7 +587,7 @@ void render_actors(PermanentState *permanent, RenderState *renderer) {
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
     // end this part needs to be repeated
 
-    update_and_draw_actor_vertices(permanent, renderer);
+    update_and_draw_actor_vertices(permanent, renderer, debug);
 
 
 
@@ -630,6 +621,7 @@ void render_walls(PermanentState *permanent, RenderState *renderer) {
 #endif
 
 #ifdef GL3
+        ASSERT(batch->VAO);
         glBindVertexArray(batch->VAO);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
@@ -716,7 +708,13 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
 
 
 
-void render(PermanentState *permanent, RenderState *renderer) {
+void render(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
+    if (renderer->needs_prepare == 1) {
+        prepare_renderer(permanent, renderer);
+        renderer->needs_prepare = 0;
+    }
+
+
     BEGIN_PERFORMANCE_COUNTER(render_func);
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -730,7 +728,7 @@ void render(PermanentState *permanent, RenderState *renderer) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    render_actors(permanent, renderer);
+    render_actors(permanent, renderer, debug);
     render_walls(permanent, renderer);
     glDisable(GL_DEPTH_TEST);
     render_text(permanent, renderer);

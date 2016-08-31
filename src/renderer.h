@@ -106,12 +106,12 @@ typedef struct RenderState {
     int used_actor_batches;
     DrawBuffer glyphs[2];
     int used_glyph_batches;
-
+    int needs_prepare;
 } RenderState;
 
 
 void setup_shader_layouts(void);
-void render(PermanentState *permanent, RenderState *renderer);
+void render(PermanentState *permanent, RenderState *renderer, DebugState *debug);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
 void prepare_renderer(PermanentState *permanent, RenderState *renderer);

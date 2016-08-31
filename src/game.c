@@ -1,7 +1,8 @@
-#include "SDL.h"
+
 #include <stdio.h>
 #include "memory.h"
 #include "renderer.h"
+#include "random.h"
 
 void game_update_and_render(Memory* memory,  RenderState *renderer);
 
@@ -17,6 +18,22 @@ typedef struct {
     int x_pos;
     int y_pos;
 } BlockTextureAtlasPosition;
+
+internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f));
+    renderer->used_actor_batches = used_batches;
+
+    if (used_batches == 1) {
+        renderer->actors[0].count = permanent->actor_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches - 1; i++) {
+            renderer->actors[i].count = MAX_IN_BUFFER;
+        }
+        renderer->actors[used_batches - 1].count = permanent->actor_count % MAX_IN_BUFFER;
+    } else {
+        renderer->used_actor_batches = 0;
+    }
+}
 
 internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) {
     u32 used_batches = ceil(permanent->wall_count / 2048.0f);
@@ -44,6 +61,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
     DebugState *debug = (DebugState *)memory->debug;
 
     if (memory->is_initialized == false) {
+
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         printf("blocktotal %d\n", BlockTotal);
 
@@ -78,9 +96,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         for (u32 z = 0; z < permanent->dims.z_level ; z++){
             for (u32 y = 0; y< permanent->dims.y; y++){
                 for (u32 x = 0; x< permanent->dims.x; x++){
-                    //renderer->assets.level
                     WorldBlock *b = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z,permanent->dims.x, permanent->dims.y)];
-
                     if (b->object == Nothing){
 
                     }
@@ -114,9 +130,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
                         permanent->walls[used_wall_block].y = y * permanent->block_size.y;
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
-
                     }
-
 
                     if (b->object == Floor){
                         permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
@@ -126,8 +140,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
                         used_wall_block++;
                         used_floors++;
                     }
-
-
 
                     if (b->object == WallBlock){
                         permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
@@ -144,32 +156,17 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                     }
-
-
-
                     // Shadow
-                    //if (z+1 < permanent->dims.z_level-1 && b->object != Nothing) {
-                    //printf("%d, %d, %d\n",x,y,z+1);
-
                     WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)];
 
-
-                    //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
                     if (one_above->object == Floor && z+1 < permanent->dims.z_level){
-                        //if (z >= 0) {
                         count_shadow++;
-                        //printf("%d, %d, %d, ..... index: %d \n",x,y,z, FLATTEN_3D_INDEX(x,y,(z_up),permanent->dims.x, permanent->dims.y));
-                        //}
-
                         permanent->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
                         permanent->walls[used_wall_block].y = y * permanent->block_size.y;
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
-
                     }
-                    //}
-
                 }
             }
         }
@@ -177,9 +174,29 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         qsort(permanent->walls, used_wall_block, sizeof(Wall), wallsortfunc);
 
         set_wall_batch_sizes(permanent, renderer);
-        memory->is_initialized = true;
+
         printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
-        //        prepare_renderer(permanent, renderer);
+        set_wall_batch_sizes(permanent, renderer);
+        renderer->needs_prepare = 1;
+
+        for (u32 i = 0; i < 1000; i++) {
+            permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;
+            permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
+            permanent->actors[i].z = rand_int(0) * permanent->block_size.z_level;
+            permanent->actors[i].frame = rand_int(4);
+            float speed = 1; //10 + rand_int(10); // px per seconds
+            permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].palette_index = rand_float();
+        }
+
+        set_actor_batch_sizes(permanent, renderer);
+
+
+
+
+        memory->is_initialized = true;
     }
+
 
 }

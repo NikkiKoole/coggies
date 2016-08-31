@@ -5,6 +5,7 @@ SDL_LFLAGS := $(shell sdl2-config --libs)
 # temroary lax the compiler for timsort experiment
 # -Wall
 #RELAXED = -Werror
+
 STRICT = -Werror
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
@@ -23,13 +24,15 @@ LIBRARY_NAME := gamelibrary.so
 PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
+#-fsanitize=address use this to find overflow bugs etc, sgenv
 DEBUG:=-g3
-OPTIMIZE:=
+
+OPTIMIZE:=-O3
 STD:=-std=gnu99
 
 CC:=gcc
 
-BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c
+BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c src/game.c
 
 osx:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
@@ -41,8 +44,9 @@ pi:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lEGL -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 
+# dont forget, renderer.o is needed here
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	${CC} -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} -fPIC src/game.c
-	${CC} -shared -o $(LIBRARY_NAME) game.o  $(SDL_LFLAGS)
+	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/game.c src/random.c
+	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) game.o random.o
 	mv *.o $(OBJDIR)

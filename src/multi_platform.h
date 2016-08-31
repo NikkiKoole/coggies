@@ -1,3 +1,6 @@
+#ifndef MULTI_PLATFORM_H
+#define MULTI_PLATFORM_H
+
 #ifdef LINUX
 #define getResourcePath() "./resources/"
 #define GL3
@@ -42,3 +45,5 @@
 
 #include "SDL.h"
 #include "SDL_mixer.h"
+
+#endif

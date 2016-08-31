@@ -58,7 +58,7 @@ typedef struct {
 } LevelData;
 
 #define BEGIN_PERFORMANCE_COUNTER(name) u64 name##_begin = SDL_GetPerformanceCounter()
-#define END_PERFORMANCE_COUNTER(name)  u64 name##_end = SDL_GetPerformanceCounter();perf_dict_set(perf_dict, #name, name##_end - name##_begin);
+#define END_PERFORMANCE_COUNTER(name)  u64 name##_end = SDL_GetPerformanceCounter();perf_dict_set(&debug->perf_dict, #name, name##_end - name##_begin);
 
 
 
@@ -103,6 +103,7 @@ typedef struct {
 
 typedef struct {
     MemoryArena arena;
+    PerfDict perf_dict;
 } DebugState;
 
 typedef struct {
