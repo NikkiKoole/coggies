@@ -111,10 +111,10 @@ typedef struct RenderState {
 
 
 void setup_shader_layouts(void);
-void render(SDL_Window *window);
+void render(PermanentState *permanent, RenderState *renderer);
 GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath);
 void initialize_GL(void);
-void prepare_renderer(void);
+void prepare_renderer(PermanentState *permanent, RenderState *renderer);
 
 
 void make_texture(Texture *t, const char *path);

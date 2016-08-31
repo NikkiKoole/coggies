@@ -31,11 +31,11 @@
 
 
 
-RenderState _rstate;
-RenderState *renderer = &_rstate;
+//RenderState _rstate;
+//RenderState *renderer = &_rstate;
 
-PermanentState _gstate;
-PermanentState *game = &_gstate;
+//PermanentState _gstate;
+//PermanentState *game = &_gstate;
 
 PerfDict _p_dict;
 PerfDict *perf_dict = &_p_dict;
@@ -239,29 +239,29 @@ void initialize_GL(void) {
 /*     return ((a2->y) - (b2->y)); */
 /* } */
 
-void prepare_renderer(void) {
+void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    //int real_world_height = game->dims.z_level * game->block_size.z_level;
-    int real_world_depth = game->dims.y * (game->block_size.y);
+    //int real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
+    int real_world_depth = permanent->dims.y * (permanent->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
 
-    int offset_x_blocks = game->x_view_offset;
-    int offset_y_blocks = game->y_view_offset;
+    int offset_x_blocks = permanent->x_view_offset;
+    int offset_y_blocks = permanent->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
     int number_to_do = walls_layout.values_per_quad;
 
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        u32 count = batch->count; //game->actor_count;
+        u32 count = batch->count; //permanent->actor_count;
 
 	for (u32 i = 0; i < count * number_to_do; i += number_to_do) {
             int prepare_index = i / number_to_do;
             prepare_index += (wall_batch_index * 2048);
-            Wall data = game->walls[prepare_index];
+            Wall data = permanent->walls[prepare_index];
             float scale = 1;
             float wallX = data.frame * 24;
 
@@ -386,21 +386,21 @@ void prepare_renderer(void) {
 
 
 
-void update_and_draw_actor_vertices(void);
-void update_and_draw_actor_vertices(void){
+void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer);
+void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer){
 
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
     float actor_texture_size = renderer->assets.sprite.width;
-    //float real_world_height = game->dims.z_level * game->block_size.z_level;
-    float real_world_depth = game->dims.y * game->block_size.y;
+    //float real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
+    float real_world_depth = permanent->dims.y * permanent->block_size.y;
 
     int number_to_do = actors_layout.values_per_quad;
 
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        int count = batch->count; //game->actor_count;
+        int count = batch->count; //permanent->actor_count;
 
         /* glBindVertexArray(batch->VAO); */
         /* glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
@@ -412,7 +412,7 @@ void update_and_draw_actor_vertices(void){
             //            u64 begin_loop = SDL_GetPerformanceCounter();
             int prepare_index = i / number_to_do;
             prepare_index += (actor_batch_index * 2048);
-            Actor data = game->actors[prepare_index];
+            Actor data = permanent->actors[prepare_index];
 
 
             //printf("in render is actor float?  %f \n", data.y);
@@ -424,10 +424,10 @@ void update_and_draw_actor_vertices(void){
             const float offset_toget_actor_ontop_of_floor = 24.0f / real_world_depth;
             const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
 
-            const float tempX = round(data.x + game->x_view_offset);
-            const float tempY = round(((data.z) - (data.y) / 2.0f) + game->y_view_offset);
-            //tempX += game->x_view_offset;
-            //tempY += game->y_view_offset;
+            const float tempX = round(data.x + permanent->x_view_offset);
+            const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
+            //tempX += permanent->x_view_offset;
+            //tempY += permanent->y_view_offset;
 
             const float x = (tempX / screenWidth) * 2.0f - 1.0f;
             const float y = (tempY / screenHeight) * 2.0f - 1.0f;
@@ -580,8 +580,8 @@ void update_and_draw_actor_vertices(void){
 
 
 
-void render_actors(void);
-void render_actors(void) {
+void render_actors(PermanentState *permanent,  RenderState *renderer);
+void render_actors(PermanentState *permanent, RenderState *renderer) {
 
      // this part needs to be repeated in all render loops (To use specific shader programs)
     glUseProgram(renderer->assets.xyz_uv_palette);
@@ -596,7 +596,7 @@ void render_actors(void) {
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
     // end this part needs to be repeated
 
-    update_and_draw_actor_vertices();
+    update_and_draw_actor_vertices(permanent, renderer);
 
 
 
@@ -604,8 +604,9 @@ void render_actors(void) {
 
 
 
-void render_walls(void);
-void render_walls(void) {
+void render_walls(PermanentState *permanent,  RenderState *renderer);
+void render_walls(PermanentState *permanent, RenderState *renderer) {
+    UNUSED(permanent);
     glUseProgram(renderer->assets.xyz_uv);
 
     // Bind Textures using texture units
@@ -637,8 +638,8 @@ void render_walls(void) {
     }
 }
 
-void render_text(void);
-void render_text(void) {
+void render_text(PermanentState *permanent, RenderState *renderer);
+void render_text(PermanentState *permanent, RenderState *renderer) {
     // Draw FONTS
     {
 	glUseProgram(renderer->assets.xy_uv);
@@ -662,7 +663,7 @@ void render_text(void) {
             for (int i = 0; i < count * number_to_do; i += number_to_do) {
                 int prepare_index = i / number_to_do;
                 prepare_index += (glyph_batch_index * 2048);
-                Glyph data = game->glyphs[prepare_index];
+                Glyph data = permanent->glyphs[prepare_index];
                 r32 scale = 1;
                 float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
                 float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
@@ -715,7 +716,7 @@ void render_text(void) {
 
 
 
-void render(SDL_Window *window) {
+void render(PermanentState *permanent, RenderState *renderer) {
     BEGIN_PERFORMANCE_COUNTER(render_func);
 
     glClearColor(0.3f, 0.3f, 0.3f, 1.0f);
@@ -729,15 +730,15 @@ void render(SDL_Window *window) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    render_actors();
-    render_walls();
+    render_actors(permanent, renderer);
+    render_walls(permanent, renderer);
     glDisable(GL_DEPTH_TEST);
-    render_text();
+    render_text(permanent, renderer);
 
     CHECK();
     END_PERFORMANCE_COUNTER(render_func);
 
     BEGIN_PERFORMANCE_COUNTER(swap_window);
-    SDL_GL_SwapWindow(window);
+    SDL_GL_SwapWindow(renderer->window);
     END_PERFORMANCE_COUNTER(swap_window);
 }

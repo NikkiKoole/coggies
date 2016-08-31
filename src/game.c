@@ -74,7 +74,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         int count_shadow = 0;
         int used_floors = 0;
         int wall_count =0;
-        printf("===> %d, %d, %d\n", permanent->dims.z_level, permanent->dims.y, permanent->dims.x);
+
         for (u32 z = 0; z < permanent->dims.z_level ; z++){
             for (u32 y = 0; y< permanent->dims.y; y++){
                 for (u32 x = 0; x< permanent->dims.x; x++){
@@ -179,6 +179,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         set_wall_batch_sizes(permanent, renderer);
         memory->is_initialized = true;
         printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
+        //        prepare_renderer(permanent, renderer);
     }
 
 }

@@ -8,23 +8,20 @@
 
 #include <math.h>
 
-
-
-
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
-// note the AB possibly have to be swapped
 #define SORT_CMP(b, a) ((((a).y*16384) - (a).z ) - ( ((b).y*16384) - (b).z))
-//#define SORT_CMP(a, b) ((a).y - (b).y)
 #include "sort_common.h"
-
 #include "sort.h"
 
-void (*func)(Memory *, RenderState *renderer);
+
+
+
+void (*func)(Memory * memory, RenderState *renderer);
 //void (*func)(void);
 
-extern RenderState *renderer;
-extern PermanentState *game;
+//extern RenderState *renderer;
+//extern PermanentState *game;
 extern PerfDict *perf_dict;
 
 
@@ -41,7 +38,7 @@ extern PerfDict *perf_dict;
 
 
 
-internal void initialize_SDL(void) {
+internal void initialize_SDL(RenderState *renderer) {
     int error = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
     if (error < 0) {
         printf("%d %s\n", error, SDL_GetError());
@@ -102,8 +99,8 @@ internal int event_filter(void *userData, SDL_Event *event) {
 }
 
 
-internal void load_resources(PermanentState *permanent) {
-    resource_level(permanent, &game->level, "levels/test4.txt");
+internal void load_resources(PermanentState *permanent, RenderState *renderer) {
+    resource_level(permanent, &permanent->level, "levels/test4.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
@@ -128,64 +125,64 @@ internal void load_resources(PermanentState *permanent) {
     resource_wav(&renderer->assets.wav1, "wav/scratch.wav");
 }
 
-internal void quit(void) {
+internal void quit(RenderState *renderer) {
     SDL_DestroyWindow(renderer->window);
     renderer->window = NULL;
     SDL_Quit();
 }
 
-internal void update_frame(void *param) {
-    render((SDL_Window *)param);
-}
+/* internal void update_frame(void *param) { */
+/*     render((SDL_Window *)param); */
+/* } */
 
 
 
 
 // TODO generalise these three into a reusable function
-internal void set_wall_batch_sizes(void) {
-    u32 used_batches = ceil(game->wall_count / 2048.0f);
+internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->wall_count / 2048.0f);
     renderer->used_wall_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->walls[0].count = game->wall_count;
+        renderer->walls[0].count = permanent->wall_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
             renderer->walls[i].count = 2048;
         }
-        renderer->walls[used_batches-1].count = game->wall_count % 2048;
+        renderer->walls[used_batches-1].count = permanent->wall_count % 2048;
     } else {
         renderer->used_wall_batches = 0;
     }
 }
 
-internal void set_actor_batch_sizes(void) {
-    u32 used_batches = ceil(game->actor_count / (MAX_IN_BUFFER*1.0f));
+internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER*1.0f));
     renderer->used_actor_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->actors[0].count = game->actor_count;
+        renderer->actors[0].count = permanent->actor_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
             renderer->actors[i].count = MAX_IN_BUFFER;
         }
-        renderer->actors[used_batches-1].count = game->actor_count % MAX_IN_BUFFER;
+        renderer->actors[used_batches-1].count = permanent->actor_count % MAX_IN_BUFFER;
     } else {
         renderer->used_actor_batches = 0;
     }
 }
 
-internal void set_glyph_batch_sizes(void) {
-    u32 used_batches = ceil(game->glyph_count / 2048.0f);
+internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->glyph_count / 2048.0f);
     renderer->used_glyph_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->glyphs[0].count = game->glyph_count;
+        renderer->glyphs[0].count = permanent->glyph_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
             renderer->glyphs[i].count = 2048;
         }
 	printf("%d array out bounds glyphs\n", used_batches-1);
-        renderer->glyphs[used_batches-1].count = game->glyph_count % 2048;
+        renderer->glyphs[used_batches-1].count = permanent->glyph_count % 2048;
     } else {
         renderer->used_glyph_batches = 0;
     }
@@ -193,9 +190,9 @@ internal void set_glyph_batch_sizes(void) {
 
 
 
-internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
-    u32 base = game->glyph_count;
-    Glyph * g =  &game->glyphs[base + offset];
+internal void draw_glyph(PermanentState * permanent, u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
+    u32 base = permanent->glyph_count;
+    Glyph * g =  &permanent->glyphs[base + offset];
     g->x = x;
     g->y = y;
     g->sx = sx;
@@ -207,7 +204,7 @@ internal void draw_glyph(u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h)
 u32 debug_text_x = 5;
 u32 debug_text_y = 5;
 
-internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
+internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font, PermanentState *permanent) {
     UNUSED(str);UNUSED(x);UNUSED(y);UNUSED(font);
 
     u32 currentY = y;
@@ -233,7 +230,7 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
         //currentX += font->chars[(u8)(str[i])].xadvance;
         BM_Glyph glyph = font->chars[(u8)(str[i])];
 
-        draw_glyph(drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
+        draw_glyph(permanent, drawn, currentX+glyph.xoffset, currentY+glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
 
 
 	currentX += (glyph.xadvance);
@@ -247,13 +244,13 @@ internal u32 draw_text(char* str, u32 x, u32 y, BM_Font *font) {
 
 
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
-internal void print(const char *text, ...) {
+internal void print(PermanentState *permanent, RenderState *renderer, const char *text, ...) {
     char buffer[999];
     va_list va;
     va_start(va, text);
     vsprintf(buffer, text, va);
     va_end(va);
-    game->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font);
+    permanent->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font, permanent);
 }
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
 
@@ -261,18 +258,18 @@ internal void print(const char *text, ...) {
 
 
 
-internal void center_view(void) {
+internal void center_view(PermanentState *permanent, RenderState *renderer) {
     // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
 
-    int real_world_width = game->dims.x * game->block_size.x;
-    int real_world_depth = game->dims.y * game->block_size.y/2;
-    int real_world_height = game->dims.z_level * game->block_size.z_level;
+    int real_world_width = permanent->dims.x * permanent->block_size.x;
+    int real_world_depth = permanent->dims.y * permanent->block_size.y/2;
+    int real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
 
     s32 offset_x_blocks = (renderer->view.width - real_world_width) / 2;
     s32 offset_y_blocks = (renderer->view.height - (real_world_height+real_world_depth)) / 2;
 
-    game->x_view_offset = offset_x_blocks;
-    game->y_view_offset = real_world_depth + offset_y_blocks;
+    permanent->x_view_offset = offset_x_blocks;
+    permanent->y_view_offset = real_world_depth + offset_y_blocks;
 
 }
 
@@ -333,7 +330,7 @@ internal void maybe_load_libgame(void)
                 func = stub;
             } else {
             //func = (void (*)(void)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
-                func = (void (*)(Memory *, RenderState *renderer)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
+                func = (void (*)(Memory *memory, RenderState *renderer)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
                 if (func == NULL) {
                     printf("couldnt find: %s, error: %s\n",libgame.fn_name, SDL_GetError());
                 } else {
@@ -408,6 +405,9 @@ int main(int argc, char **argv) {
     DebugState *debug = (DebugState *) memory->debug;
 
 
+    RenderState _rstate;
+    RenderState *renderer = &_rstate;
+
 
     initialize_arena(&permanent->arena,
                      memory->permanent_size - sizeof(PermanentState),
@@ -431,22 +431,22 @@ int main(int argc, char **argv) {
     renderer->view.width = 1920; //1800;
     renderer->view.height = 900;
 
-    initialize_SDL();
+    initialize_SDL(renderer);
     initialize_GL();
-    load_resources(permanent);
+    load_resources(permanent, renderer);
     setup_shader_layouts();
 
 
-    game->dims = (WorldDims){game->level.x, game->level.y, game->level.z_level};
-    //permanent->dims = (WorldDims){game->level.x, game->level.y, game->level.z_level};
-    printf("dimensions: %d, %d, %d\n",game->dims.x, game->dims.y, game->dims.z_level);
-    game->block_size = (WorldDims){24,24,96};
+    permanent->dims = (WorldDims){permanent->level.x, permanent->level.y, permanent->level.z_level};
+    //permanent->dims = (WorldDims){permanent->level.x, permanent->level.y, permanent->level.z_level};
+    printf("dimensions: %d, %d, %d\n",permanent->dims.x, permanent->dims.y, permanent->dims.z_level);
+    permanent->block_size = (WorldDims){24,24,96};
 
-    center_view();
-
-
+    center_view(permanent, renderer);
 
 
+
+#if 1
 
     ////
 
@@ -455,54 +455,54 @@ int main(int argc, char **argv) {
     int used_floors = 0;
     int wall_count =0;
 
-    for (u32 z = 0; z < game->dims.z_level ; z++){
-        for (u32 y = 0; y< game->dims.y; y++){
-            for (u32 x = 0; x< game->dims.x; x++){
+    for (u32 z = 0; z < permanent->dims.z_level ; z++){
+        for (u32 y = 0; y< permanent->dims.y; y++){
+            for (u32 x = 0; x< permanent->dims.x; x++){
                 //renderer->assets.level
-                WorldBlock *b = &game->level.blocks[FLATTEN_3D_INDEX(x,y,z,game->dims.x, game->dims.y)];
+                WorldBlock *b = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z,permanent->dims.x, permanent->dims.y)];
 
                 if (b->object == Nothing){
 
                 }
                 if (b->object == StairsUp1N || b->object == StairsUp2N || b->object == StairsUp3N || b->object == StairsUp4N) {
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
 
                 }
                 if (b->object == StairsUp1S || b->object == StairsUp2S || b->object == StairsUp3S || b->object == StairsUp4S) {
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
 
                 }
                 if (b->object == StairsUp1E || b->object == StairsUp2E || b->object == StairsUp3E || b->object == StairsUp4E) {
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
 
                 }
                 if (b->object == StairsUp1W || b->object == StairsUp2W || b->object == StairsUp3W || b->object == StairsUp4W) {
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
 
                 }
 
 
                 if (b->object == Floor){
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
                     used_floors++;
                 }
@@ -510,41 +510,41 @@ int main(int argc, char **argv) {
 
 
                 if (b->object == WallBlock){
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
                     wall_count++;
                 }
                 if (b->object == Ladder){
-                    game->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                    game->walls[used_wall_block].x = x * game->block_size.x;
-                    game->walls[used_wall_block].y = y * game->block_size.y;
-                    game->walls[used_wall_block].z = z * game->block_size.z_level;
+                    permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                    permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                    permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                    permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                     used_wall_block++;
                 }
 
 
 
                 // Shadow
-                //if (z+1 < game->dims.z_level-1 && b->object != Nothing) {
+                //if (z+1 < permanent->dims.z_level-1 && b->object != Nothing) {
                     //printf("%d, %d, %d\n",x,y,z+1);
 
-                WorldBlock *one_above = &game->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,game->dims.x, game->dims.y)];
+                WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)];
 
 
                     //if (one_above->object == Floor || (one_above->object >=StairsUp1N && one_above->object <= StairsUp4W)) {
-                    if (one_above->object == Floor && z+1 < game->dims.z_level){
+                    if (one_above->object == Floor && z+1 < permanent->dims.z_level){
                         //if (z >= 0) {
                         count_shadow++;
-                        //printf("%d, %d, %d, ..... index: %d \n",x,y,z, FLATTEN_3D_INDEX(x,y,(z_up),game->dims.x, game->dims.y));
+                        //printf("%d, %d, %d, ..... index: %d \n",x,y,z, FLATTEN_3D_INDEX(x,y,(z_up),permanent->dims.x, permanent->dims.y));
                             //}
 
-                        game->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
-                        game->walls[used_wall_block].x = x * game->block_size.x;
-                        game->walls[used_wall_block].y = y * game->block_size.y;
-                        game->walls[used_wall_block].z = z * game->block_size.z_level;
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
 
                     }
@@ -560,34 +560,34 @@ int main(int argc, char **argv) {
     //sort the game->walls on Z and Y to help openGl with depth testing etc.
     //this improves frame time from 8ms to 1ms (for 16000 walls)
 
-    qsort(game->walls, used_wall_block, sizeof(Wall), wallsortfunc);
+    qsort(permanent->walls, used_wall_block, sizeof(Wall), wallsortfunc);
 
 
     printf("shadow casters (floor one above) : %d, floor count:%d , wall count: %d\n", count_shadow, used_floors, wall_count);
 
-    game->wall_count = used_wall_block;
+    permanent->wall_count = used_wall_block;
     //u32 j =0;
-
-    set_wall_batch_sizes();
+#endif
+    set_wall_batch_sizes(permanent, renderer);
 #define ACTOR_BATCH 1000
 
-    game->actor_count = ACTOR_BATCH;
-    ASSERT(game->actor_count <= 16384);
-    set_actor_batch_sizes();
+    permanent->actor_count = ACTOR_BATCH;
+    ASSERT(permanent->actor_count <= 16384);
+    set_actor_batch_sizes(permanent, renderer);
 
 
-    for (u32 i = 0; i< game->actor_count; i++) {
-        game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
-        game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
-        game->actors[i].z =  rand_int(0) * game->block_size.z_level;
-        game->actors[i].frame = rand_int(4);
+    for (u32 i = 0; i< permanent->actor_count; i++) {
+        permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;;
+        permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
+        permanent->actors[i].z =  rand_int(0) * permanent->block_size.z_level;
+        permanent->actors[i].frame = rand_int(4);
         float speed = 1;//10 + rand_int(10); // px per seconds
-        game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-        game->actors[i].palette_index = rand_float();
+        permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+        permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+        permanent->actors[i].palette_index = rand_float();
     }
 
-    prepare_renderer();
+    //prepare_renderer(permanent, renderer);
 
     Mix_PlayChannel(-1, renderer->assets.wav1, 0);
 
@@ -595,14 +595,15 @@ int main(int argc, char **argv) {
     SDL_Event e;
 
 #ifdef IOS
-    SDL_iPhoneSetAnimationCallback(renderer->Window, 1, update_frame, renderer->Window);
-    SDL_AddEventWatch(event_filter, NULL);
+    //SDL_iPhoneSetAnimationCallback(renderer->Window, 1, update_frame, renderer->Window);
+    //SDL_AddEventWatch(event_filter, NULL);
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
     float last_frame_time_ms = 1.0f;
 
     maybe_load_libgame();
+    prepare_renderer(permanent, renderer);
     u64 freq = SDL_GetPerformanceFrequency();
     int ticker = 0;
     PerfDict clone;
@@ -612,8 +613,8 @@ int main(int argc, char **argv) {
 
 	ticker++;
         debug_text_y  = 5;
-        game->glyph_count = 0;
-        print("%.2f ms\n", (float)last_frame_time_ms);
+        permanent->glyph_count = 0;
+        print(permanent, renderer, "%.2f ms\n", (float)last_frame_time_ms);
 	//printf("%.2f ms\n", (float)last_frame_time_ms);
         if (ticker == 60) {
             perf_dict_sort_clone(perf_dict, &clone);
@@ -628,7 +629,7 @@ int main(int argc, char **argv) {
             float max = ((float)(e->max/(float)freq)* 1000.0f);
 
             if (e->times_counted > 0) {
-                print("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
+                print(permanent, renderer, "%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
 		//printf("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
             } else {
                 break;
@@ -641,7 +642,7 @@ int main(int argc, char **argv) {
 
 
 
-        set_glyph_batch_sizes();
+        set_glyph_batch_sizes(permanent, renderer);
         u64 begin_render_time = SDL_GetPerformanceCounter();
         maybe_load_libgame();
 
@@ -654,18 +655,18 @@ int main(int argc, char **argv) {
             }
             if (keys[SDL_SCANCODE_Z]) {
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
-                    if (game->actor_count < (2048 * 32) - ACTOR_BATCH) {
-                        actor_add(game);
-                        u32 i = game->actor_count;
-                        game->actors[i].x = rand_int(game->dims.x) * game->block_size.x;;
-                        game->actors[i].y = rand_int(game->dims.y) * game->block_size.y;
-                        game->actors[i].z =  rand_int(0) * game->block_size.z_level;//rand_int(game->dims.z_level) * game->block_size.z_level;
-                        game->actors[i].frame = rand_int(4);
+                    if (permanent->actor_count < (2048 * 32) - ACTOR_BATCH) {
+                        actor_add(permanent);
+                        u32 i = permanent->actor_count;
+                        permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;;
+                        permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
+                        permanent->actors[i].z =  rand_int(0) * permanent->block_size.z_level;//rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
+                        permanent->actors[i].frame = rand_int(4);
                         float speed = 40 + rand_int(10); // px per seconds
-                        game->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-                        game->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-                        game->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
-                        set_actor_batch_sizes();
+                        permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->actors[i].palette_index = (1.0f/16.0f)*rand_int(16);// rand_float();
+                        set_actor_batch_sizes(permanent, renderer);
                     } else {
                         printf("Wont be adding actors reached max already\n");
                     }
@@ -673,41 +674,41 @@ int main(int argc, char **argv) {
 
             }
             if (keys[SDL_SCANCODE_LEFT]) {
-                game->x_view_offset-=24;
-                prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                permanent->x_view_offset-=24;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_RIGHT]) {
-                game->x_view_offset+=24;
-                prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                permanent->x_view_offset+=24;
+                prepare_renderer(permanent, renderer);  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
 
             }
             if (keys[SDL_SCANCODE_UP]) {
-                game->y_view_offset-=12;
-                prepare_renderer(); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-                printf("y offset: %d\n", game->y_view_offset);
+                permanent->y_view_offset-=12;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                printf("y offset: %d\n", permanent->y_view_offset);
 
             }
             if (keys[SDL_SCANCODE_DOWN]) {
-                game->y_view_offset+=12;
-                prepare_renderer();  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-                printf("y offset: %d\n", game->y_view_offset);
+                permanent->y_view_offset+=12;
+                prepare_renderer(permanent, renderer);  // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                printf("y offset: %d\n", permanent->y_view_offset);
 
             }
 
             if (keys[SDL_SCANCODE_X]) {
                 //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
-                    actor_remove(game, rand_int2(0,  game->actor_count-1));
-                    set_actor_batch_sizes();
+                    actor_remove(permanent, rand_int2(0,  permanent->actor_count-1));
+                    set_actor_batch_sizes(permanent, renderer);
                 }
             }
             if (e.type == SDL_WINDOWEVENT) {
                 if (e.window.event == SDL_WINDOWEVENT_RESIZED) {
                     renderer->view.width = e.window.data1;
                     renderer->view.height = e.window.data2;
-                    center_view();
+                    center_view(permanent, renderer);
 
-                    prepare_renderer();
+                    prepare_renderer(permanent, renderer);
                     //glViewport(0, 0, renderer->Width, renderer->Height);
                 }
             }
@@ -715,33 +716,33 @@ int main(int argc, char **argv) {
 
 	BEGIN_PERFORMANCE_COUNTER(actors_update);
         // TODO: plenty of bugs are in this loop, never really cleaned up after
-        for (u32 i = 0; i < game->actor_count; i++) {
-            if (game->actors[i].x <= 0 || game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
-                if (game->actors[i].x < 0) {
-                   game->actors[i].x = 0;
+        for (u32 i = 0; i < permanent->actor_count; i++) {
+            if (permanent->actors[i].x <= 0 || permanent->actors[i].x >= ((permanent->dims.x-1) * permanent->block_size.x)) {
+                if (permanent->actors[i].x < 0) {
+                   permanent->actors[i].x = 0;
                 }
-                if (game->actors[i].x >= ((game->dims.x-1) * game->block_size.x)) {
-                    game->actors[i].x = ((game->dims.x-1) * game->block_size.x);
+                if (permanent->actors[i].x >= ((permanent->dims.x-1) * permanent->block_size.x)) {
+                    permanent->actors[i].x = ((permanent->dims.x-1) * permanent->block_size.x);
                 }
 
-                game->actors[i].dx *= -1.0f;
+                permanent->actors[i].dx *= -1.0f;
             }
-            game->actors[i].x += game->actors[i].dx * (last_frame_time_ms/1000.0f);
+            permanent->actors[i].x += permanent->actors[i].dx * (last_frame_time_ms/1000.0f);
 
-            if (game->actors[i].y <= 0 || game->actors[i].y >= ((game->dims.y-1) * game->block_size.y)) {
-                if (game->actors[i].z < 0) {
-                   game->actors[i].z = 0;
+            if (permanent->actors[i].y <= 0 || permanent->actors[i].y >= ((permanent->dims.y-1) * permanent->block_size.y)) {
+                if (permanent->actors[i].z < 0) {
+                   permanent->actors[i].z = 0;
                 }
-                if (game->actors[i].y > ((game->dims.y-1) * game->block_size.y)) {
-                    game->actors[i].y = ((game->dims.y-1) * game->block_size.y);
+                if (permanent->actors[i].y > ((permanent->dims.y-1) * permanent->block_size.y)) {
+                    permanent->actors[i].y = ((permanent->dims.y-1) * permanent->block_size.y);
                 }
 
-                game->actors[i].dy *= -1.0f;
+                permanent->actors[i].dy *= -1.0f;
 
 
             }
-            game->actors[i].y += game->actors[i].dy *  (last_frame_time_ms/1000.0f);
-            //printf("is it a float: %f \n", game->actors[i].y);
+            permanent->actors[i].y += permanent->actors[i].dy *  (last_frame_time_ms/1000.0f);
+            //printf("is it a float: %f \n", permanent->actors[i].y);
         }
 	END_PERFORMANCE_COUNTER(actors_update);
 
@@ -757,7 +758,7 @@ int main(int argc, char **argv) {
     //64k 7.3    4.8      3.7
 
     //qsort(game->actors,  game->actor_count, sizeof(Actor), actorsortfunc);
-    Actor_quick_sort(game->actors,  game->actor_count);
+    Actor_quick_sort(permanent->actors,  permanent->actor_count);
     //Actor_tim_sort(game->actors,  game->actor_count);
 
 	END_PERFORMANCE_COUNTER(actors_sort);
@@ -778,13 +779,13 @@ int main(int argc, char **argv) {
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 
-    render(renderer->window);
+    render(permanent, renderer);
 	u64 end_render_time = SDL_GetPerformanceCounter();
 	last_frame_time_ms = ((float)(end_render_time - begin_render_time)/freq) * 1000.0f;
 	END_PERFORMANCE_COUNTER(main_loop);
 #endif
 
     }
-    quit();
+    quit(renderer);
     return 1;
 }

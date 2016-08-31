@@ -44,5 +44,5 @@ pi:
 gamelibrary:
 	mkdir -p $(OBJDIR)
 	${CC} -c -I/usr/local/include $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} -fPIC src/game.c
-	${CC} -shared -o $(LIBRARY_NAME) game.o $(SDL_LFLAGS)
+	${CC} -shared -o $(LIBRARY_NAME) game.o  $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
