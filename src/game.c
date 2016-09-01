@@ -4,7 +4,15 @@
 #include "renderer.h"
 #include "random.h"
 
-void game_update_and_render(Memory* memory,  RenderState *renderer);
+
+#define SORT_NAME Actor
+#define SORT_TYPE Actor
+#define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
+#include "sort_common.h"
+#include "sort.h"
+
+
+void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 
 internal int wallsortfunc (const void * a, const void * b)
 {
@@ -52,7 +60,9 @@ internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *rende
 }
 
 
-extern void game_update_and_render(Memory* memory, RenderState *renderer) {
+extern void game_update_and_render(Memory* memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
+    UNUSED(keys);
+    UNUSED(e);
     ASSERT(sizeof(PermanentState) <= memory->permanent_size);
     PermanentState *permanent = (PermanentState *)memory->permanent;
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);
@@ -178,6 +188,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
         set_wall_batch_sizes(permanent, renderer);
         renderer->needs_prepare = 1;
+        //prepare_renderer(permanent, renderer);
 
         for (u32 i = 0; i < 1000; i++) {
             permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;
@@ -193,10 +204,46 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer) {
         set_actor_batch_sizes(permanent, renderer);
 
 
-
-
         memory->is_initialized = true;
     }
 
+
+    BEGIN_PERFORMANCE_COUNTER(actors_update);
+    // TODO: plenty of bugs are in this loop, never really cleaned up after
+    for (u32 i = 0; i < permanent->actor_count; i++) {
+        if (permanent->actors[i].x <= 0 || permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+            if (permanent->actors[i].x < 0) {
+                permanent->actors[i].x = 0;
+            }
+            if (permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+                permanent->actors[i].x = ((permanent->dims.x - 1) * permanent->block_size.x);
+            }
+
+            permanent->actors[i].dx *= -1.0f;
+        }
+        permanent->actors[i].x += permanent->actors[i].dx * (last_frame_time_seconds);
+
+        if (permanent->actors[i].y <= 0 || permanent->actors[i].y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
+            if (permanent->actors[i].z < 0) {
+                permanent->actors[i].z = 0;
+            }
+            if (permanent->actors[i].y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
+                permanent->actors[i].y = ((permanent->dims.y - 1) * permanent->block_size.y);
+            }
+
+            permanent->actors[i].dy *= -1.0f;
+        }
+        permanent->actors[i].y += permanent->actors[i].dy * (last_frame_time_seconds);
+        //printf("is it a float: %f \n", permanent->actors[i].y);
+    }
+    END_PERFORMANCE_COUNTER(actors_update);
+
+    BEGIN_PERFORMANCE_COUNTER(actors_sort);
+    //    qsort, timsort, quick_sort
+    //64k 7.3    4.8      3.7
+    //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
+    Actor_quick_sort(permanent->actors, permanent->actor_count);
+    //Actor_tim_sort(game->actors,  game->actor_count);
+    END_PERFORMANCE_COUNTER(actors_sort);
 
 }

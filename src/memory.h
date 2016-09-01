@@ -11,7 +11,7 @@
 #define GIGABYTES(value) (MEGABYTES(value) * 1024LL)
 #define TERABYTES(value) (GIGABYTES(value) * 1024LL)
 
-#define PERF_DICT_SIZE 64
+#define PERF_DICT_SIZE 1024
 typedef struct  {
     const char* key;
     int times_counted;
@@ -22,7 +22,7 @@ typedef struct  {
 
 typedef struct {
     PerfDictEntry data[PERF_DICT_SIZE];
-} PerfDict;;
+} PerfDict;
 
 
 

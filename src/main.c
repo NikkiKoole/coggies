@@ -8,16 +8,17 @@
 
 #include <math.h>
 
-#define SORT_NAME Actor
-#define SORT_TYPE Actor
-#define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
-#include "sort_common.h"
-#include "sort.h"
 
 
 
 
-void (*func)(Memory *memory, RenderState *renderer);
+void (*func)(Memory *memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
+
+typedef struct {
+    PermanentState * permanent;
+    RenderState * renderer;
+    DebugState * debug;
+} IOSCallbackParams;
 
 
 #define SDL_ASSERT(expression)                                                                                               \
@@ -126,11 +127,11 @@ internal void quit(RenderState *renderer) {
     SDL_Quit();
 }
 
-/* internal void update_frame(void *param) { */
-/*     render((SDL_Window *)param); */
-/* } */
-
-
+internal void update_frame(void *param) {
+    IOSCallbackParams *p = (IOSCallbackParams *) param;
+    render(p->permanent, p->renderer, p->debug);
+    //render((SDL_Window *)param);
+}
 
 
 // TODO generalise these three into a reusable function
@@ -243,6 +244,8 @@ internal u32 draw_text(char *str, u32 x, u32 y, BM_Font *font, PermanentState *p
 
 #pragma GCC diagnostic ignored "-Wformat-nonliteral"
 internal void print(PermanentState *permanent, RenderState *renderer, const char *text, ...) {
+    ASSERT(permanent != NULL && renderer != NULL);
+
     char buffer[999];
     va_list va;
     va_start(va, text);
@@ -299,14 +302,27 @@ Shared_Library libgame = {
     .size = 0,
     .fn_name = "game_update_and_render"};
 
-internal void stub(Memory *memory, RenderState *renderer) {
+internal void stub(Memory *memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
     UNUSED(memory);
     UNUSED(renderer);
-
+    UNUSED(last_frame_time_seconds);
+    UNUSED(keys);
+    UNUSED(e);
     SDL_Delay(1);
 }
 
-internal void maybe_load_libgame(void) {
+
+PerfDict clone;
+int ticker = 0;
+
+internal void reset_debug_performance_components(DebugState *debug) {
+    perf_dict_sort_clone(&debug->perf_dict, &clone);
+    perf_dict_reset(&debug->perf_dict);
+    ticker = 0;
+
+}
+
+internal void maybe_load_libgame(DebugState *debug) {
     stat(libgame.name, &libgame.stats);
     if (libgame.stats.st_ino != libgame.id) {
         if ((intmax_t)libgame.stats.st_size > 0 && libgame.stats.st_nlink > 0) {
@@ -322,11 +338,13 @@ internal void maybe_load_libgame(void) {
                 func = stub;
             } else {
                 //func = (void (*)(void)) SDL_LoadFunction(libgame.handle, libgame.fn_name);
-                func = (void (*)(Memory *memory, RenderState *renderer))SDL_LoadFunction(libgame.handle, libgame.fn_name);
+                func = (void (*)(Memory *memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e))SDL_LoadFunction(libgame.handle, libgame.fn_name);
                 if (func == NULL) {
                     printf("couldnt find: %s, error: %s\n", libgame.fn_name, SDL_GetError());
                 } else {
                     printf("succes loading libgame timestamp: %d \n", SDL_GetTicks());
+                    //perf_dict_reset(&debug->perf_dict);
+                    reset_debug_performance_components(debug);
                 }
             }
         }
@@ -382,7 +400,6 @@ int main(int argc, char **argv) {
                      memory->debug_size - sizeof(DebugState),
                      (u8 *)memory->debug + sizeof(DebugState));
 
-
     memory->is_initialized = false;
 
 
@@ -395,7 +412,7 @@ int main(int argc, char **argv) {
     initialize_SDL(renderer);
     initialize_GL();
     load_resources(permanent, renderer);
-    setup_shader_layouts();
+    setup_shader_layouts(renderer);
 
     permanent->dims = (WorldDims){permanent->level.x, permanent->level.y, permanent->level.z_level};
     permanent->block_size = (WorldDims){24, 24, 96};
@@ -405,7 +422,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 1000
+#define ACTOR_BATCH 1
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);
@@ -416,58 +433,71 @@ int main(int argc, char **argv) {
     SDL_Event e;
 
 #ifdef IOS
-//SDL_iPhoneSetAnimationCallback(renderer->Window, 1, update_frame, renderer->Window);
-//SDL_AddEventWatch(event_filter, NULL);
+    IOSCallbackParams p = (IOSCallbackParams){permanent, renderer, debug};
+    SDL_iPhoneSetAnimationCallback(renderer->window, 1, update_frame, &p);
+    SDL_AddEventWatch(event_filter, NULL);
 #endif
 
     const u8 *keys = SDL_GetKeyboardState(NULL);
     float last_frame_time_ms = 1.0f;
 
-    maybe_load_libgame();
+
+
+    maybe_load_libgame(debug);
     prepare_renderer(permanent, renderer);
     u64 freq = SDL_GetPerformanceFrequency();
-    int ticker = 0;
-    PerfDict clone;
-    perf_dict_sort_clone(&debug->perf_dict, &clone);
+
     while (!wants_to_quit) {
         ticker++;
         debug_text_y = 5;
         permanent->glyph_count = 0;
         print(permanent, renderer, "%.2f ms\n", (float)last_frame_time_ms);
-        //printf("%.2f ms\n", (float)last_frame_time_ms);
-        if (ticker == 60) {
-            perf_dict_sort_clone(&debug->perf_dict, &clone);
-            ticker = 0;
-            perf_dict_reset(&debug->perf_dict);
-        }
 
+        if (ticker == 60) {
+            reset_debug_performance_components(debug);
+        }
         for (int i = 0; i < PERF_DICT_SIZE; i++) {
             PerfDictEntry *e = &clone.data[i];
             float averaged = ((float)(e->total_time / (float)freq) * 1000.0f) / 60;
             float min = ((float)(e->min / (float)freq) * 1000.0f);
             float max = ((float)(e->max / (float)freq) * 1000.0f);
 
-            if (e->times_counted > 0) {
+            if (e->times_counted >= 60) {
+                ASSERT(e->key != NULL);
                 print(permanent, renderer, "%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max, e->times_counted / 60);
-                //printf("%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max,e->times_counted/60);
             } else {
                 break;
             }
         }
 
-
-
-
         set_glyph_batch_sizes(permanent, renderer);
         u64 begin_render_time = SDL_GetPerformanceCounter();
-        maybe_load_libgame();
+        maybe_load_libgame(debug);
 
 
         BEGIN_PERFORMANCE_COUNTER(main_loop);
+
+        // INPUT
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {
                 wants_to_quit = true;
+            }
+            if (keys[SDL_SCANCODE_LEFT]) {
+                permanent->x_view_offset -= 24;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+            }
+            if (keys[SDL_SCANCODE_RIGHT]) {
+                permanent->x_view_offset += 24;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+            }
+            if (keys[SDL_SCANCODE_UP]) {
+                permanent->y_view_offset -= 12;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+            }
+            if (keys[SDL_SCANCODE_DOWN]) {
+                permanent->y_view_offset += 12;
+                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_Z]) {
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
@@ -489,27 +519,7 @@ int main(int argc, char **argv) {
                     }
                 }
             }
-            if (keys[SDL_SCANCODE_LEFT]) {
-                permanent->x_view_offset -= 24;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-            }
-            if (keys[SDL_SCANCODE_RIGHT]) {
-                permanent->x_view_offset += 24;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-            }
-            if (keys[SDL_SCANCODE_UP]) {
-                permanent->y_view_offset -= 12;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-                printf("y offset: %d\n", permanent->y_view_offset);
-            }
-            if (keys[SDL_SCANCODE_DOWN]) {
-                permanent->y_view_offset += 12;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
-                printf("y offset: %d\n", permanent->y_view_offset);
-            }
-
             if (keys[SDL_SCANCODE_X]) {
-                //printf("Want to remove an actor rand between 0-4  %d !\n", rand_int2(0, 4));
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
                     actor_remove(permanent, rand_int2(0, permanent->actor_count - 1));
                     set_actor_batch_sizes(permanent, renderer);
@@ -520,61 +530,13 @@ int main(int argc, char **argv) {
                     renderer->view.width = e.window.data1;
                     renderer->view.height = e.window.data2;
                     center_view(permanent, renderer);
-
                     prepare_renderer(permanent, renderer);
-                    //glViewport(0, 0, renderer->Width, renderer->Height);
                 }
             }
         }
+        // END INPUT
 
-        BEGIN_PERFORMANCE_COUNTER(actors_update);
-        // TODO: plenty of bugs are in this loop, never really cleaned up after
-        for (u32 i = 0; i < permanent->actor_count; i++) {
-            if (permanent->actors[i].x <= 0 || permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-                if (permanent->actors[i].x < 0) {
-                    permanent->actors[i].x = 0;
-                }
-                if (permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-                    permanent->actors[i].x = ((permanent->dims.x - 1) * permanent->block_size.x);
-                }
-
-                permanent->actors[i].dx *= -1.0f;
-            }
-            permanent->actors[i].x += permanent->actors[i].dx * (last_frame_time_ms / 1000.0f);
-
-            if (permanent->actors[i].y <= 0 || permanent->actors[i].y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
-                if (permanent->actors[i].z < 0) {
-                    permanent->actors[i].z = 0;
-                }
-                if (permanent->actors[i].y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
-                    permanent->actors[i].y = ((permanent->dims.y - 1) * permanent->block_size.y);
-                }
-
-                permanent->actors[i].dy *= -1.0f;
-            }
-            permanent->actors[i].y += permanent->actors[i].dy * (last_frame_time_ms / 1000.0f);
-            //printf("is it a float: %f \n", permanent->actors[i].y);
-        }
-        END_PERFORMANCE_COUNTER(actors_update);
-
-
-
-
-        // sorting the actors is less profitable(because it runs every frame), it does however improve the speed from  6ms to 3.5ms for 16K actors (almost 100%)
-        // on the negative side it introduces some fighting Z cases. (flickering!)
-        // TODO: it might be nice to check the results of other sort algos https://github.com/swenson/sort
-        BEGIN_PERFORMANCE_COUNTER(actors_sort);
-
-        //    qsort, timsort, quick_sort
-        //64k 7.3    4.8      3.7
-
-        //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
-        Actor_quick_sort(permanent->actors, permanent->actor_count);
-        //Actor_tim_sort(game->actors,  game->actor_count);
-
-        END_PERFORMANCE_COUNTER(actors_sort);
-
-        func(memory, renderer);
+        func(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 

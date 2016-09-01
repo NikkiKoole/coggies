@@ -1,14 +1,12 @@
 
 
 * Currently doing / Upcoming
-  - [ ] move perf dict
-  - [ ] use memory scheme
-  - [ ] add debug memory too
-  - [ ] move actors and etc in gamelib code
+  - [ ] before the pathfinder, we need some debug lines (colored lines r/g/b for showing 3d paths that are found)
   - [ ] start with pathfinder
 
 
 * Todo
+- [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
 - [ ] update the pathfinder code
   - add tests (unit tests for functions and a collection of paths that need finding)
   - have it compile with superstrict warnings set
@@ -35,8 +33,8 @@
   - [X] scp commands
   - [ ] enable it
 
-- [-] hot code reloading (static memory block)
-  - [ ] build state struct that remains intact after reloading the lib
+- [X] hot code reloading (static memory block)
+  - [X] build state struct that remains intact after reloading the lib
   - [X] makefile command to build so library
   - [X] loading of a lib
   - [X] memory sheme
@@ -102,7 +100,7 @@
       Also I've updated/upgraded my rpi. at what point the issue was solved is hard to say...
   - [X] Linux
 
-- [X] optimize
+- [-] optimize
   on the rpi I can only draw 1000 actors and 1000 walls, more then that I go under 60fps.
   - I could improve it a little bit (I think) by making my VBO's smaller (zindex and palette index could go with some work)
   - I could get rid of the Z's and do manual sorting instead of depth func testing.
@@ -143,14 +141,14 @@
     |      |     \
     +------+------*
 
-   - [ ] filling the vertice arrays on CPU side
-     on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
-    try to optimize this, first by helping the compiler, (no function calls, setting up varibale more strict)
-    and maybe afterwards by trying out SIMD / NEON to fill that data.
-    https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
+  - [ ] filling the vertice arrays on CPU side
+    on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
+   try to optimize this, first by helping the compiler, (no function calls, setting up varibale more strict)
+   and maybe afterwards by trying out SIMD / NEON to fill that data.
+   https://software.intel.com/en-us/articles/creating-a-particle-system-with-streaming-simd-extensions
 
-    see2 -> neon (so i can build some nice macros)
-    http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
+   see2 -> neon (so i can build some nice macros)
+   http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
 
 - [-] game play stuff
   - [-] pathfinder

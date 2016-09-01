@@ -30,9 +30,6 @@
 */
 
 
-ShaderLayout debug_text_layout;
-ShaderLayout actors_layout;
-ShaderLayout walls_layout;
 
 typedef struct {
     float x;
@@ -57,22 +54,22 @@ typedef struct {
 
 
 
-void setup_shader_layouts(void) {
-    debug_text_layout.elements[0] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xy"} ;
-    debug_text_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
-    debug_text_layout.values_per_quad = (2 + 2) * 4;
-    debug_text_layout.element_count = 2;
+void setup_shader_layouts(RenderState *renderer) {
+    renderer->debug_text_layout.elements[0] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xy"} ;
+    renderer->debug_text_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    renderer->debug_text_layout.values_per_quad = (2 + 2) * 4;
+    renderer->debug_text_layout.element_count = 2;
 
-    actors_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
-    actors_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
-    actors_layout.elements[2] = (ShaderLayoutElement) {1, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "palette"} ;
-    actors_layout.values_per_quad = (3 + 2 + 1) * 4;
-    actors_layout.element_count = 3;
+    renderer->actors_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
+    renderer->actors_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    renderer->actors_layout.elements[2] = (ShaderLayoutElement) {1, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "palette"} ;
+    renderer->actors_layout.values_per_quad = (3 + 2 + 1) * 4;
+    renderer->actors_layout.element_count = 3;
 
-    walls_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
-    walls_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
-    walls_layout.values_per_quad = (3 + 2) * 4;
-    walls_layout.element_count = 2;
+    renderer->walls_layout.elements[0] = (ShaderLayoutElement) {3, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "xyz"} ;
+    renderer->walls_layout.elements[1] = (ShaderLayoutElement) {2, GL_FLOAT_TYPE, sizeof(VERTEX_FLOAT_TYPE), "uv"} ;
+    renderer->walls_layout.values_per_quad = (3 + 2) * 4;
+    renderer->walls_layout.element_count = 2;
 }
 
 
@@ -242,11 +239,11 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     int offset_y_blocks = permanent->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
-    int number_to_do = walls_layout.values_per_quad;
+    int number_to_do = renderer->walls_layout.values_per_quad;
+    ASSERT(number_to_do > 0);
 
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
-        printf("adress of batch: %p\n", batch);
         u32 count = batch->count; //permanent->actor_count;
 
 	for (u32 i = 0; i < count * number_to_do; i += number_to_do) {
@@ -319,7 +316,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
 #endif
 #ifdef GL3
-        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
+        makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &renderer->walls_layout);
 #endif
     }
 
@@ -342,7 +339,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
 #endif
 #ifdef GL3
-        makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
+        makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
     }
 
@@ -369,7 +366,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
             makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &debug_text_layout);
 #endif
 #ifdef GL3
-            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &debug_text_layout);
+            makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
 #endif
         }
     }
@@ -386,7 +383,8 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
     //float real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
     float real_world_depth = permanent->dims.y * permanent->block_size.y;
 
-    int number_to_do = actors_layout.values_per_quad;
+    int number_to_do = renderer->actors_layout.values_per_quad;
+    ASSERT(number_to_do > 0);
 
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
@@ -640,10 +638,9 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
         glUniform1i(glGetUniformLocation(renderer->assets.xy_uv, "sprite_atlas"), 0);
         CHECK();
 
-
-
         int texture_size = renderer->assets.menlo.width;
-        int number_to_do = debug_text_layout.values_per_quad;
+        int number_to_do = renderer->debug_text_layout.values_per_quad;
+        ASSERT(number_to_do > 0);
 
         for (int glyph_batch_index = 0; glyph_batch_index < renderer->used_glyph_batches; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];

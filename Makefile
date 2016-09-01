@@ -24,8 +24,8 @@ LIBRARY_NAME := gamelibrary.so
 PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
-#-fsanitize=address use this to find overflow bugs etc, sgenv
-DEBUG:=-g3
+#-fsanitize=address use this to find overflow bugs etc, segv errors
+DEBUG:=-g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:=-O3
 STD:=-std=gnu99
@@ -44,9 +44,9 @@ pi:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lEGL -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 
-# dont forget, renderer.o is needed here
+
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/game.c src/random.c
-	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) game.o random.o
+	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/game.c src/random.c src/renderer.c src/memory.c
+	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) game.o random.o renderer.o memory.o -lglew -framework OpenGL  $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
