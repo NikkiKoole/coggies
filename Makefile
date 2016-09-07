@@ -1,12 +1,7 @@
 SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LFLAGS := $(shell sdl2-config --libs)
 
-
-# temroary lax the compiler for timsort experiment
-# -Wall
-#RELAXED = -Werror
-
-STRICT = -Werror
+STRICT = -Werror -Wall
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
 		   -Wparentheses -Winit-self -Wswitch-enum -Wstrict-aliasing=2  \
@@ -24,7 +19,7 @@ LIBRARY_NAME := gamelibrary.so
 PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
-#-fsanitize=address use this to find overflow bugs etc, segv errors
+
 DEBUG:=-g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:=-O3

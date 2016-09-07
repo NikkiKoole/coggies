@@ -1,6 +1,7 @@
 
 
 * Currently doing / Upcoming
+  - [ ] before the pathfinder the levels need to be complete stairs/ladders
   - [ ] before the pathfinder, we need some debug lines (colored lines r/g/b for showing 3d paths that are found)
   - [ ] start with pathfinder
 

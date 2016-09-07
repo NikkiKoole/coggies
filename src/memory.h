@@ -111,7 +111,7 @@ typedef struct {
     u16 y;
     u16 z;
     u16 frame;
-} Wall;
+} Wall; //64
 
 typedef struct {
     r32 x;
@@ -120,8 +120,8 @@ typedef struct {
     u16 frame;
     s16 dx;
     s16 dy;
-    float palette_index;
-} Actor;
+    r32 palette_index;
+} Actor; //176
 
 typedef struct {
     u16 x;
@@ -130,8 +130,13 @@ typedef struct {
     u16 sy;
     u16 w;
     u16 h;
-} Glyph;
+} Glyph; //96
 
+typedef struct {
+    u16 x1, y1, z1;
+    u16 x2, y2, z2;
+    r32 r,g,b;
+} ColoredLine; //198
 
 typedef struct {
     u32 x;
@@ -142,15 +147,24 @@ typedef struct {
 typedef struct {
     MemoryArena arena;
     LevelData level;
+
     Wall walls[16384];
     u32 wall_count;
+
     Actor actors[16384*4];
     u32 actor_count;
+
     Glyph glyphs[16384];
     u32 glyph_count;
+
+    ColoredLine colored_lines[16384];
+    u32 colored_line_count;
+
     ///
     s32 x_view_offset;
     s32 y_view_offset;
+
+
     /////
     WorldDims dims;
     WorldDims block_size;

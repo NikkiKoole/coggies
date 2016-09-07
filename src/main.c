@@ -32,8 +32,35 @@ typedef struct {
         exit(0);                                                                                                             \
     }
 
+internal void SetSDLIcon(SDL_Window* window)
+{
+    // this will "paste" the struct my_icon into this function
+    #include "icon.c"
+
+    // these masks are needed to tell SDL_CreateRGBSurface(From)
+    // to assume the data it gets is byte-wise RGB(A) data
+    Uint32 rmask, gmask, bmask, amask;
+#if SDL_BYTEORDER == SDL_BIG_ENDIAN
+    int shift = (my_icon.bytes_per_pixel == 3) ? 8 : 0;
+    rmask = 0xff000000 >> shift;
+    gmask = 0x00ff0000 >> shift;
+    bmask = 0x0000ff00 >> shift;
+    amask = 0x000000ff >> shift;
+#else // little endian, like x86
+    rmask = 0x000000ff;
+    gmask = 0x0000ff00;
+    bmask = 0x00ff0000;
+    amask = (icon.bytes_per_pixel == 3) ? 0 : 0xff000000;
+#endif
+    SDL_Surface* my_icon = SDL_CreateRGBSurfaceFrom((void*)icon.pixel_data, icon.width,
+    icon.height, icon.bytes_per_pixel*8, icon.bytes_per_pixel*icon.width,
+    rmask, gmask, bmask, amask);
+
+    SDL_SetWindowIcon(window, my_icon);
+    SDL_FreeSurface(my_icon);
 
 
+}
 internal void initialize_SDL(RenderState *renderer) {
     int error = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
     if (error < 0) {
@@ -72,7 +99,7 @@ internal void initialize_SDL(RenderState *renderer) {
     SDL_ASSERT(renderer->context != NULL);
 
 #ifndef IOS
-
+    SetSDLIcon(renderer->window);
     SDL_ASSERT(SDL_GL_SetSwapInterval(0) >= 0);
 #endif
 }
@@ -107,6 +134,7 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
 #ifdef GL3
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GL330.vert", "shaders/xyz_uv_palette.GL330.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GL330.vert", "shaders/xyz_uv.GL330.frag");
+    resource_shader(&renderer->assets.xyz_rgb, "shaders/xyz_rgb.GL330.vert", "shaders/xyz_rgb.GL330.frag");
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GL330.vert", "shaders/xy_uv.GL330.frag");
 
 #endif
@@ -183,7 +211,21 @@ internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *rend
         renderer->used_glyph_batches = 0;
     }
 }
+internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->colored_line_count / (MAX_IN_BUFFER * 1.0f));
+    renderer->used_colored_lines_batches = used_batches;
 
+    if (used_batches == 1) {
+        renderer->colored_lines[0].count = permanent->colored_line_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches - 1; i++) {
+            renderer->colored_lines[i].count = MAX_IN_BUFFER;
+        }
+        renderer->colored_lines[used_batches - 1].count = permanent->colored_line_count % MAX_IN_BUFFER;
+    } else {
+        renderer->used_colored_lines_batches = 0;
+    }
+}
 
 
 internal void draw_glyph(PermanentState *permanent, u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
@@ -363,7 +405,7 @@ int main(int argc, char **argv) {
     //reserve_memory(memory);
 
     void *base_address = (void *)GIGABYTES(0);
-    memory->permanent_size = MEGABYTES(16);
+    memory->permanent_size = MEGABYTES(32);
     memory->scratch_size = MEGABYTES(16);
     memory->debug_size = MEGABYTES(16);
 
@@ -407,7 +449,7 @@ int main(int argc, char **argv) {
     UNUSED(argv);
 
     renderer->view.width = 1920; //1800;
-    renderer->view.height = 900;
+    renderer->view.height = 1080;
 
     initialize_SDL(renderer);
     initialize_GL();
@@ -422,7 +464,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 1
+#define ACTOR_BATCH 1000
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);

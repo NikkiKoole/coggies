@@ -8,8 +8,11 @@
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
 #define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
-#include "sort_common.h"
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunused-function"
 #include "sort.h"
+#pragma GCC diagnostic pop
 
 
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
@@ -56,6 +59,21 @@ internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *rende
         renderer->walls[used_batches-1].count = permanent->wall_count % 2048;
     } else {
         renderer->used_wall_batches = 0;
+    }
+}
+internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->colored_line_count / (MAX_IN_BUFFER * 1.0f));
+    renderer->used_colored_lines_batches = used_batches;
+
+    if (used_batches == 1) {
+        renderer->colored_lines[0].count = permanent->colored_line_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches - 1; i++) {
+            renderer->colored_lines[i].count = MAX_IN_BUFFER;
+        }
+        renderer->colored_lines[used_batches - 1].count = permanent->colored_line_count % MAX_IN_BUFFER;
+    } else {
+        renderer->used_colored_lines_batches = 0;
     }
 }
 
@@ -202,6 +220,20 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
 
         set_actor_batch_sizes(permanent, renderer);
+
+        for (u32 i = 0; i< 4000; i++) {
+            permanent->colored_lines[i].x1 = rand_int(permanent->dims.x) * permanent->block_size.x;;
+            permanent->colored_lines[i].y1 = rand_int(permanent->dims.y) * permanent->block_size.y;
+            permanent->colored_lines[i].z1 = 0;
+            permanent->colored_lines[i].x2 = rand_int(permanent->dims.x) * permanent->block_size.x;
+            permanent->colored_lines[i].y2 = rand_int(permanent->dims.y) * permanent->block_size.y;
+            permanent->colored_lines[i].z2 = 0;
+            permanent->colored_lines[i].r = rand_float();
+            permanent->colored_lines[i].g = rand_float();
+            permanent->colored_lines[i].b = rand_float();
+        }
+        permanent->colored_line_count = 4000;
+        set_colored_line_batch_sizes(permanent, renderer);
 
 
         memory->is_initialized = true;

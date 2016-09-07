@@ -53,7 +53,8 @@ typedef struct {
 typedef struct {
     ShaderLayoutElement elements[32]; // NOTE 32 attributes to a shader thats plenty right?
     int element_count;
-    int values_per_quad;
+    int values_per_vertex;
+    int values_per_thing;
 } ShaderLayout;
 
 
@@ -64,6 +65,7 @@ typedef struct {
     //LevelData level;
 
     GLuint xyz_uv_palette;
+    GLuint xyz_rgb;
     GLuint xyz_uv;
     GLuint xy_uv;
 
@@ -78,7 +80,7 @@ typedef struct {
     u16 height;
 } ViewPort;
 
-#define VALUES_PER_ELEM 24
+
 #define MAX_IN_BUFFER 2048
 
 typedef struct DrawBuffer {
@@ -91,8 +93,8 @@ typedef struct DrawBuffer {
     GLvoid *map_buffer_pointer;
     GLushort indices[MAX_IN_BUFFER * 6];
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
-
 } DrawBuffer;
+
 
 
 typedef struct RenderState {
@@ -106,10 +108,13 @@ typedef struct RenderState {
     int used_actor_batches;
     DrawBuffer glyphs[2];
     int used_glyph_batches;
+    DrawBuffer colored_lines[2];
+    int used_colored_lines_batches;
     int needs_prepare;
     ShaderLayout debug_text_layout;
     ShaderLayout actors_layout;
     ShaderLayout walls_layout;
+    ShaderLayout colored_lines_layout;
 } RenderState;
 
 
