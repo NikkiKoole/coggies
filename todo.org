@@ -1,9 +1,8 @@
-
-
-* Currently doing / Upcoming
-  - [ ] before the pathfinder the levels need to be complete stairs/ladders
-  - [ ] before the pathfinder, we need some debug lines (colored lines r/g/b for showing 3d paths that are found)
-  - [ ] start with pathfinder
+* Currently doing
+  - [ ] do all memory usage by pushstrcut et all (no predefined arrays no more in permanent)
+  - [ ] use permanent for the grid (using scratch now, dont know why it doenst work)
+  - [ ] clean up path finder grid after path is found (dirty list)
+  - [ ] stairs/ladders
 
 
 * Todo
@@ -13,14 +12,11 @@
   - have it compile with superstrict warnings set
   - add the dirty flag and cleanup routines
   - do the staircases (now stairs are 'ladders')
-
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
   this would mean allocating / or well PUSH_STRUCT calls will need to be feed a string
-
 - [ ] tag memory usage
   I would like to start tagging memory usage with labels like "actors/sprite", "renderer/walls/vbo", "pathfinder/JPS" things like that, so I can during runtime inspect what the memory usage for various pieces is.
   Thinking about it, i dont know how to handle tagging the scratch/transient memory block...
-
 - [-] enable developing on osx, autoupdate rpi in network.
   `fswatch --exclude '\.#'  ./src | xargs -I {} sh -c "cp '{}' ./otherfolder && make"`
   the line above will watch the src folder, when a file changes (except for the Emacs temp # crap) it
@@ -33,18 +29,16 @@
   `sudo apt-get install inotify-tools`
   - [X] scp commands
   - [ ] enable it
-
 - [X] hot code reloading (static memory block)
   - [X] build state struct that remains intact after reloading the lib
   - [X] makefile command to build so library
   - [X] loading of a lib
   - [X] memory sheme
   - [X] filesystem watcher
-
 - [-] build a renderer for my needs
-  - [ ] debug rendering stuff
-    - [ ] lines for pathfinder (to show paths that have ben found (x y z in 3 colors))
-    - [ ] bboxes of objects to check hiotarea and collisions down the line
+  - [-] debug rendering stuff
+    - [X] lines for pathfinder (to show paths that have ben found (x y z in 3 colors))
+    - [ ] bboxes of objects to check hitarea and collisions down the line
   - [ ] visible surface detection
     for the wall parts its a important optimization to not draw all these elements that are totally occluded by other ones.
     keywords, front to back. I have to think a bit more about the data types involved, I solved this before using a dlList to grow the bounding boxes while drawing front->back
@@ -84,7 +78,6 @@
   - [X] make a way you can add or remove actors
   - [X] pallet swapping for multiple looks of actors
   - [X] many static architecture object (walls, floors) that have a depth
-
 - [-] get sdl2 up and running
   - [ ] win32
   - [ ] android
@@ -100,7 +93,6 @@
       I was also under the impression linking to bcmhost and initting and deinitting seemed to solve something too, but that's unrelated at second glance.
       Also I've updated/upgraded my rpi. at what point the issue was solved is hard to say...
   - [X] Linux
-
 - [-] optimize
   on the rpi I can only draw 1000 actors and 1000 walls, more then that I go under 60fps.
   - I could improve it a little bit (I think) by making my VBO's smaller (zindex and palette index could go with some work)
@@ -150,7 +142,6 @@
 
    see2 -> neon (so i can build some nice macros)
    http://codesuppository.blogspot.co.uk/2015/02/sse2neonh-porting-guide-and-header-file.html
-
 - [-] game play stuff
   - [-] pathfinder
     Next to hooking it in, the current pathfinder code also needs some dirty list (to help cleaning the data quickly) and maybe some notion of keys (to help actors not look in rooms they shouldnt be in)
@@ -164,7 +155,8 @@
 
 
 * Done
-
+- [X] before the pathfinder, we need some debug lines (colored lines r/g/b for showing 3d paths that are found)
+- [X] start with pathfinder
 - [X] glMapBuffer
   On the rpi GL_OES_mapbuffer is supported it seems (https://www.opengl.org/sdk/docs/man2/xhtml/glMapBuffer.xml)
   before I had been trying to use EXT_map_buffer_range, which isnt supported, but I might be able to squeeze a lot more using mapbuffers.
@@ -194,9 +186,7 @@
 
   So in other words I could try and remake the buffer when its size change (adding or removing actors)
   Otherwise its just using the ptr to the Mapbuffer
-
 - [X] My font drawing routines are broken, by accident the original menlo font doenst have x/y offsets so its ok, but the rest is all busted..
-
 - [X] enable differnt kind of shaders for various parts:
   - xy
   - xy_uv           /// plain bitmap font ui
@@ -209,18 +199,14 @@
 
   the makeBuffer/makeBufferPI functions need to know what kind of layout they will build (when various shaders with various vertex usages is used)
   for that I will need to build some helper struct that knows what attributes are used, how large they are, what their location is (core330) or their name (gles2) and what their type is.
-
 - [X] having a better (simpler to use) debug printing on screen
-
 - [X] having a speed profiler for pieces of code
   A think for now a dictionary with strings like 'render/walls' or 'pathfind/clearpaths' etc will suffice, for every entry I keep track of total time (in this frame) and the amount of times
   the code is hit.
   When my memory sheme is in use I want this dict (and more things) to live in a separate memory location, so you end up with a permanent memory block, a scratch memory block and a debug memory block
   about that memory:
-
 - [X] I do want to also start looking into visible surface detection , for just the wall parts
   instead I just sort the walls to help the renderer, it seemed to improves speed by 800%, we'll see later if (if ever) I need to improve it further.
-
 - [X] position items in 3d world
   Then in the renderer this position is being offsetted to center, maybe that offset is the same 'thing' as is being used with panning.
   You can imagine initializing the pan value, so the world is centered at start.
@@ -251,23 +237,18 @@
   Since I don't really feel like computing screen positions in my game code.
   I will keep the data being x,y,z
   OK got some stuff going now, I do still need to fix the depths, and the sorting.
-
 - [X] made a fps counter on screen
-
 - [X] get some json loading/parsing in (DON'T NEED JSON ANYMORE, BINARY with good headers IS EASIER TO WORK WITH)
   needed for texture atlasses generated by shoebox
   alternatively I could rewrite the outputted json into some custom file format that's exactly right for my c structs, maybe move the json parsing into an external app
   I ended up writing a node app that just creates a binary format of the shoebox js/ json output
   there is one part unclear to me t the moment (spriteSource W, spriteSource H and the other W and H) but I can only know how this works once I start using a lot of sprites
-
 - [X] multiplatform support
   - [X] makefile as simple as possible, screw keeping .o files around
-
 - [X] have some bare bones opengl(es) way of rendering stuff
   - [X] get gl working in sdl2
   - [X] use opengl (3.2) for the desktops
   - [X] use opengles (2.0) for mobile
-
 - [X] JPS PLus pathfinder is broken
   the simplest broken thing was in the cardinal preprocess tests
   if (node->isJumpNode) {  // new situation
@@ -276,9 +257,7 @@
     jumpPointLastSeen = 1;
   }
   code seems fixed, cannot find any broken situations anymore. (keep an eye on it though)
-
 - [X] compile sdl_mixer and sdl 2 for all platforms
-
 - [X] make some sorting (need memory scheme for algorithm) to sort wall parts on their Y position.
   just using qsort seemed to be sweet.
 

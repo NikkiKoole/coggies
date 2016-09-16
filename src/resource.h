@@ -4,6 +4,7 @@
 #include "multi_platform.h"
 #include "SDL_mixer.h"
 #include "memory.h"
+#include "states.h"
 
 #define FLATTEN_3D_INDEX(x,y,z, width, height) ((x) + ((y) * (width)) + ((z) * (width) * (height)))
 

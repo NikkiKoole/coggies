@@ -3,7 +3,7 @@
 #include "memory.h"
 #include "renderer.h"
 #include "random.h"
-
+#include "pathfind.h"
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
@@ -89,7 +89,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     DebugState *debug = (DebugState *)memory->debug;
 
     if (memory->is_initialized == false) {
+        printf("Used at permanent:  %lu\n", permanent->arena.used);
+        permanent->walls = (Wall*) PUSH_ARRAY(&permanent->arena, (16384), Wall);
+        permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
+        permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
+        permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
 
+        printf("used scrathc space (before init): %lu\n", scratch->arena.used);
+        printf("Used at permanent:  %lu\n", permanent->arena.used);
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         printf("blocktotal %d\n", BlockTotal);
 
@@ -119,15 +126,68 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         int used_wall_block =0;
         int count_shadow = 0;
         int used_floors = 0;
+        int used_walls = 0;
         int wall_count =0;
 
+
+        int simplecount =0;
+
+        //printf("level %d,%d,%d \n",permanent->dims.x,permanent->dims.y,permanent->dims.z_level);
         for (u32 z = 0; z < permanent->dims.z_level ; z++){
             for (u32 y = 0; y< permanent->dims.y; y++){
                 for (u32 x = 0; x< permanent->dims.x; x++){
                     WorldBlock *b = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z,permanent->dims.x, permanent->dims.y)];
                     if (b->object == Nothing){
 
+                    } else {
+                        simplecount++;
                     }
+                    switch (b->object){
+                    case Floor:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        used_floors++;
+                        break;
+
+                    case WallBlock:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        used_walls++;
+                        wall_count++;
+                        break;
+
+                    default:
+                        //c = b;
+                        //ASSERT("Problem!" && false);
+                        break;
+                    }
+                        /*
+                    if (b->object == Floor){
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        used_floors++;
+                    }
+
+                    if (b->object == WallBlock){
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        used_walls++;
+                        wall_count++;
+                    }
+
+
                     if (b->object == StairsUp1N || b->object == StairsUp2N || b->object == StairsUp3N || b->object == StairsUp4N) {
                         permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
@@ -160,23 +220,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         used_wall_block++;
                     }
 
-                    if (b->object == Floor){
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                        used_floors++;
-                    }
 
-                    if (b->object == WallBlock){
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                        wall_count++;
-                    }
                     if (b->object == Ladder){
                         permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
@@ -195,20 +239,22 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                     }
+                        */
                 }
             }
         }
+        printf("simple block count : %d, floors:%d, walls:%d\n",simplecount, used_floors, used_walls);
         permanent->wall_count = used_wall_block;
         qsort(permanent->walls, used_wall_block, sizeof(Wall), wallsortfunc);
 
-        set_wall_batch_sizes(permanent, renderer);
+        //set_wall_batch_sizes(permanent, renderer);
 
         printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
         set_wall_batch_sizes(permanent, renderer);
         renderer->needs_prepare = 1;
         //prepare_renderer(permanent, renderer);
 
-        for (u32 i = 0; i < 1000; i++) {
+        for (u32 i = 0; i < 1; i++) {
             permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;
             permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
             permanent->actors[i].z = rand_int(0) * permanent->block_size.z_level;
@@ -221,21 +267,64 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
         set_actor_batch_sizes(permanent, renderer);
 
-        for (u32 i = 0; i< 4000; i++) {
-            permanent->colored_lines[i].x1 = rand_int(permanent->dims.x) * permanent->block_size.x;;
-            permanent->colored_lines[i].y1 = rand_int(permanent->dims.y) * permanent->block_size.y;
-            permanent->colored_lines[i].z1 = 0;
-            permanent->colored_lines[i].x2 = rand_int(permanent->dims.x) * permanent->block_size.x;
-            permanent->colored_lines[i].y2 = rand_int(permanent->dims.y) * permanent->block_size.y;
-            permanent->colored_lines[i].z2 = 0;
-            permanent->colored_lines[i].r = rand_float();
-            permanent->colored_lines[i].g = rand_float();
-            permanent->colored_lines[i].b = rand_float();
+        /* for (u32 i = 0; i< 20; i++) { */
+        /*     permanent->colored_lines[i].x1 = 0; */
+        /*     permanent->colored_lines[i].y1 = i * 20;; */
+        /*     permanent->colored_lines[i].z1 = 0; */
+        /*     permanent->colored_lines[i].x2 = 100; */
+        /*     permanent->colored_lines[i].y2 = i * 20; */
+        /*     permanent->colored_lines[i].z2 = 0; */
+        /*     permanent->colored_lines[i].r = 1.0f; */
+        /*     permanent->colored_lines[i].g = 0; */
+        /*     permanent->colored_lines[i].b = i % 10 == 0 ? 1.0f : 0; */
+        /* } */
+        /* permanent->colored_line_count = 20; */
+
+
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+        // TODO memory for the grid needs to be in the permanent space, currently I am using scratch
+#if 1
+        init_grid(permanent->grid, &permanent->arena, &permanent->level);
+        preprocess_grid(permanent->grid);
+        printf("used scratch space: %lu\n", scratch->arena.used);
+        TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
+
+        grid_node * Start = GetNodeAt(permanent->grid, 1, 1, 0);
+        grid_node * End = GetNodeAt(permanent->grid, 68, 68, 0);
+
+        ASSERT(Start->walkable);
+        ASSERT(End->walkable);
+
+        path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+        path_list * Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
+        //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
+        printf("used scrathc space: %lu\n", scratch->arena.used);
+
+        if (Path) {
+            u32 i = 0;
+
+            path_node * done= Path->Sentinel->Next;
+            while (done->Next != Path->Sentinel) {
+                permanent->colored_lines[i].x1 = done->X * permanent->block_size.x;;
+                permanent->colored_lines[i].y1 = done->Y * permanent->block_size.y;
+                permanent->colored_lines[i].z1 = 0;
+                permanent->colored_lines[i].x2 = done->Next->X * permanent->block_size.x;;
+                permanent->colored_lines[i].y2 = done->Next->Y * permanent->block_size.y;;
+                permanent->colored_lines[i].z2 = 0;
+                permanent->colored_lines[i].r = 0.0f;
+                permanent->colored_lines[i].g = 0.0f;
+                permanent->colored_lines[i].b = 0.0f;
+                done = done->Next;
+                i++;
+            }
+            permanent->colored_line_count = i;
         }
-        permanent->colored_line_count = 4000;
+
+        end_temporary_memory(temp_mem);
+        printf("used scrathc space: %lu\n", scratch->arena.used);
+
         set_colored_line_batch_sizes(permanent, renderer);
-
-
+#endif
         memory->is_initialized = true;
     }
 

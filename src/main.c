@@ -10,7 +10,11 @@
 
 
 
+#define NO_HOT_RELOADING
 
+#ifdef NO_HOT_RELOADING
+void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
+#endif
 
 void (*func)(Memory *memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 
@@ -123,7 +127,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/test4.txt");
+    resource_level(permanent, &permanent->level, "levels/test6.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
@@ -429,7 +433,7 @@ int main(int argc, char **argv) {
     RenderState _rstate;
     RenderState *renderer = &_rstate;
 
-
+    printf("permanent struct size: %lu\n",(sizeof(PermanentState)));
     initialize_arena(&permanent->arena,
                      memory->permanent_size - sizeof(PermanentState),
                      (u8 *)memory->permanent + sizeof(PermanentState));
@@ -443,6 +447,7 @@ int main(int argc, char **argv) {
                      (u8 *)memory->debug + sizeof(DebugState));
 
     memory->is_initialized = false;
+
 
 
     UNUSED(argc);
@@ -483,9 +488,14 @@ int main(int argc, char **argv) {
     const u8 *keys = SDL_GetKeyboardState(NULL);
     float last_frame_time_ms = 1.0f;
 
+#ifdef NO_HOT_RELOADING
+        game_update_and_render(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
+#endif
 
-
+#ifndef NO_HOT_RELOADING
     maybe_load_libgame(debug);
+#endif
+
     prepare_renderer(permanent, renderer);
     u64 freq = SDL_GetPerformanceFrequency();
 
@@ -514,8 +524,9 @@ int main(int argc, char **argv) {
 
         set_glyph_batch_sizes(permanent, renderer);
         u64 begin_render_time = SDL_GetPerformanceCounter();
+#ifndef NO_HOT_RELOADING
         maybe_load_libgame(debug);
-
+#endif
 
         BEGIN_PERFORMANCE_COUNTER(main_loop);
 
@@ -577,8 +588,12 @@ int main(int argc, char **argv) {
             }
         }
         // END INPUT
-
+#ifndef NO_HOT_RELOADING
         func(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
+#endif
+#ifdef NO_HOT_RELOADING
+        game_update_and_render(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
+#endif
 
 #ifndef IOS //IOS is being rendered with the animation callback instead.
 

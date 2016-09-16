@@ -715,7 +715,6 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
 
 void render_lines(PermanentState *permanent, RenderState *renderer);
 void render_lines(PermanentState *permanent, RenderState *renderer) {
-    UNUSED(permanent);
     glUseProgram(renderer->assets.xyz_rgb);
 
 
@@ -747,18 +746,17 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
             const float x2 = (tempX2 / screenWidth) * 2.0f - 1.0f;
             const float y2 = ((tempY2+6) / screenHeight) * 2.0f - 1.0f;
 
-
             batch->vertices[i + 0] = x1;
             batch->vertices[i + 1] = y1;
             batch->vertices[i + 2] = 0.0f;
-            batch->vertices[i + 3] = data.r;
-            batch->vertices[i + 4] = data.g;
+            batch->vertices[i + 3] = ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
+            batch->vertices[i + 4] = ABS(y1 - y2) > 0 ? 1.0f : 0.0f;;
             batch->vertices[i + 5] = data.b;
             batch->vertices[i + 6] = x2;
             batch->vertices[i + 7] = y2;
             batch->vertices[i + 8] = 0.0f;
-            batch->vertices[i + 9] = data.r;
-            batch->vertices[i + 10] = data.g;
+            batch->vertices[i + 9] = ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
+            batch->vertices[i + 10] = ABS(y1 - y2) > 0 ? 1.0f : 0.0f;
             batch->vertices[i + 11] = data.b;
         }
 #ifdef GLES
@@ -773,7 +771,7 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
         //glBufferData(GL_ARRAY_BUFFER, sizeof(batch->vertices), batch->vertices, GL_DYNAMIC_DRAW);
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * number_to_do * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
-        glDrawElements(GL_LINES, batch->count * 2, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_LINES, batch->count * 4, GL_UNSIGNED_SHORT, 0);
         glBindVertexArray(0);
 #endif
     }

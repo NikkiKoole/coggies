@@ -27,7 +27,7 @@ STD:=-std=gnu99
 
 CC:=gcc
 
-BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c src/game.c
+BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c src/game.c src/pathfind.c
 
 osx:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
@@ -42,6 +42,6 @@ pi:
 
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/game.c src/random.c src/renderer.c src/memory.c
-	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) game.o random.o renderer.o memory.o -lglew -framework OpenGL  $(SDL_LFLAGS)
+	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/game.c src/random.c src/renderer.c src/memory.c src/pathfind.c
+	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) game.o random.o renderer.o memory.o pathfind.o -lglew -framework OpenGL  $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)

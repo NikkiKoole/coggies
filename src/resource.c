@@ -428,7 +428,7 @@ internal void read_level(PermanentState * permanent, LevelData * level, World_Si
     level->y = dimensions.y;
     level->z_level = dimensions.z_level;
     level->block_count = dimensions.x * dimensions.y * dimensions.z_level;
-    level->blocks = (WorldBlock*) PUSH_ARRAY(&permanent->arena, (level->block_count), Block);
+    level->blocks = (WorldBlock*) PUSH_ARRAY(&permanent->arena, (level->block_count), WorldBlock);
     printf("reading level : %s \n", path);
     {
         for (int z = 0; z< dimensions.z_level; z++){

@@ -11,6 +11,7 @@
 #define CLAMP(x, lo, hi) MIN((hi), MAX((lo), (x)))
 #define ARRAY_COUNT(array) (sizeof(array) / sizeof(array[0]))
 #define UNUSED(x) (void)(x)
+#define ABS(x)(((x) < 0) ? -(x) : (x))
 
 #define ASSERT(expression)                                                                               \
     if (!(expression)) {                                                                                 \

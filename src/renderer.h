@@ -4,7 +4,7 @@
 #include "multi_platform.h"
 #include "types.h"
 #include "resource.h"
-
+#include "states.h"
 #include "SDL.h"
 #include "SDL_mixer.h"
 
