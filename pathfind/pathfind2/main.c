@@ -43,7 +43,7 @@ int main() {
 
     temp_memory scratch = begin_temporary_memory(&TransState->ScratchArena);
     map_file m;
-    readMapFile("maps/25x5x3.txt", &m);
+    readMapFile("maps/three.txt", &m);
 
     grid * g = PUSH_STRUCT(&TransState->ScratchArena, grid);
     InitGrid(g, &TransState->ScratchArena,  &m);

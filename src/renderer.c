@@ -239,7 +239,8 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 prepare_index += (wall_batch_index * 2048);
                 Wall data = permanent->walls[prepare_index];
                 float scale = 1;
-                float wallX = data.frame * 24;
+                float wallX = data.frame.x_pos * 24;
+                float wallY = data.frame.y_pos * 108;
 
                 float tempX = data.x;
                 float tempY = (data.z) - (data.y) / 2;
@@ -250,7 +251,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float y = (tempY / screenHeight) * 2 - 1.0;
 
                 float wallDepth = -1 * ((float)(data.y) / (float)real_world_depth);
-                float wallY = 0.0f;
+
                 float wallHeight = 108.0f;
 
 
@@ -749,14 +750,14 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
             batch->vertices[i + 0] = x1;
             batch->vertices[i + 1] = y1;
             batch->vertices[i + 2] = 0.0f;
-            batch->vertices[i + 3] = ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
-            batch->vertices[i + 4] = ABS(y1 - y2) > 0 ? 1.0f : 0.0f;;
+            batch->vertices[i + 3] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;
+            batch->vertices[i + 4] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;
             batch->vertices[i + 5] = data.b;
             batch->vertices[i + 6] = x2;
             batch->vertices[i + 7] = y2;
             batch->vertices[i + 8] = 0.0f;
-            batch->vertices[i + 9] = ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
-            batch->vertices[i + 10] = ABS(y1 - y2) > 0 ? 1.0f : 0.0f;
+            batch->vertices[i + 9] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;;//ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
+            batch->vertices[i + 10] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;
             batch->vertices[i + 11] = data.b;
         }
 #ifdef GLES

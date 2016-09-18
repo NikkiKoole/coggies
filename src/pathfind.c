@@ -23,6 +23,9 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
                     g->nodes[i].walkable = 1;
                 } else if (m->blocks[i].object == WallBlock) {
                     g->nodes[i].walkable = 0;
+                } else {
+                    // TODO this is crap
+                    g->nodes[i].walkable = m->blocks[i].object;
                 }
                 g->nodes[i].opened = g->nodes[i].closed = 0;
                 g->nodes[i].parent = NULL;
@@ -41,12 +44,18 @@ grid_node *GetNodeAt(Grid *Grid, int x, int y, int z) {
 internal int GridCanGoUpFrom(Grid *Grid, int x, int y, int z) {
     int from = GetNodeAt(Grid, x, y, z)->walkable;
     int to = GetNodeAt(Grid, x, y, z + 1)->walkable;
-    return ((from == 2 || from == 4) && (to == 3 || to == 4)); // TODO use new blockTypes
+    int result = ((from == LadderUpDown || from == LadderUp) && (to == LadderDown || to == LadderUpDown));
+    if (result) printf("can go up\n");
+    return result; // TODO use new blockTypes
 }
 internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
     int from = GetNodeAt(Grid, x, y, z)->walkable;
     int to = GetNodeAt(Grid, x, y, z - 1)->walkable;
-    return ((from == 3 || from == 4) && (to == 2 || to == 4)); // TODO use new blockTypes
+    int result = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
+    if (result) printf("can go down\n");
+
+    return result;
+        //return ((from == 3 || from == 4) && (to == 2 || to == 4)); // TODO use new blockTypes
 }
 internal inline int InBounds(Grid *Grid, int x, int y, int z) {
     return ((x >= 0 && x < Grid->width) &&
@@ -97,6 +106,7 @@ void preprocess_grid(Grid *g) {
                 int canGoDown = GridCanGoDownFrom(g, x, y, z);
 
                 if (canGoUp || canGoDown) {
+                    //printf("setting up or down as jump at %d, %d, %d\n",x,y,z);
                     node->isJumpNode = 1;
                     if (canGoUp) {
                         node->distance[up] = 1;
@@ -113,6 +123,7 @@ void preprocess_grid(Grid *g) {
                     node->distance[down] = 0;
                 }
 
+                // TODO when neigbouring node is a UP or DOWN I am a jusmp node TOO,
                 if (isJumpNode(g, x, y, z, 0, 1)) {
                     node->isJumpNode = 1;
                 } else if (isJumpNode(g, x, y, z, 0, -1)) {
@@ -121,6 +132,15 @@ void preprocess_grid(Grid *g) {
                     node->isJumpNode = 1;
                 } else if (isJumpNode(g, x, y, z, -1, 0)) {
                     node->isJumpNode = 1;
+                } else {
+                    for (int dx = -1; dx < 1; dx++) {
+                        for (int dy = -1; dy < 1; dy++) {
+                            if (GridCanGoDownFrom(g, x+dx, y+dy, z) || GridCanGoUpFrom(g, x+dx, y+dy, z) ) {
+                                node->isJumpNode = 1;
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -512,7 +532,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
         float givenCost;
         jump_point p = (jump_point){Node->X, Node->Y, Node->Z};
         path_list *path = NULL;
-
+        printf("looking at %d,%d,%d\n", Node->X, Node->Y, Node->Z);
         //DrawGrid(Grid, p, path);
 
         Node->closed = true;
@@ -532,7 +552,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
             dx = Node->X - Parent->X;
             dy = Node->Y - Parent->Y;
             dz = Node->Z - Parent->Z;
-            //printf("parent, delta %d %d %d\n", dx, dy, dz);
+            printf("parent, delta %d %d %d\n", dx, dy, dz);
 
             if (dx && dy) {
                 // diagonal
@@ -558,6 +578,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                 }
             } else if (dz) {
                 //travelling up down.
+
                 if (dz < 0){
                     SET_ALLOWED(travelling_down);
                 } else {
@@ -567,9 +588,10 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
 
             }
         }
-        //printf("Node %d,%d,%d \n",Node->X, Node->Y, Node->Z);
+        printf("Node %d,%d,%d \n",Node->X, Node->Y, Node->Z);
         for (int i = 0; i < allowedSize; i++) {
             int direction = allowed[i];
+printf("direction: %d\n",direction);
             grid_node * Successor = NULL;
             //printf("distance to next jump [%s] : %d\n", names[direction], Node->distance[direction]);
             if ((Node->Z == endNode->Z) &&

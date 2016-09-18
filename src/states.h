@@ -12,10 +12,15 @@ typedef struct {
 } DebugState;
 
 typedef struct {
+    int x_pos;
+    int y_pos;
+} BlockTextureAtlasPosition;
+
+typedef struct {
     u16 x;
     u16 y;
     u16 z;
-    u16 frame;
+    BlockTextureAtlasPosition frame;
 } Wall; //64
 
 typedef struct {
@@ -49,11 +54,12 @@ typedef struct {
     u32 z_level;
 } WorldDims;
 
+
 typedef enum {
     Nothing,
     WallBlock,
     Floor, Grass, Wood, Concrete, Tiles, Carpet,
-    Ladder,
+    LadderUpDown, LadderUp, LadderDown,
     StairsUpMeta,
     StairsFollowUpMeta,
     StairsUp1N, StairsUp2N, StairsUp3N, StairsUp4N,
@@ -109,13 +115,13 @@ typedef struct {
     Wall *walls;//[16384];
     u32 wall_count;
 
-Actor *actors;//[16384*4];
+    Actor *actors;//[16384*4];
     u32 actor_count;
 
-Glyph *glyphs;//[16384];
+    Glyph *glyphs;//[16384];
     u32 glyph_count;
 
-ColoredLine *colored_lines;//[16384];
+    ColoredLine *colored_lines;//[16384];
     u32 colored_line_count;
 
     ///

@@ -10,7 +10,7 @@
 
 
 
-#define NO_HOT_RELOADING
+//#define NO_HOT_RELOADING
 
 #ifdef NO_HOT_RELOADING
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
@@ -127,7 +127,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/test6.txt");
+    resource_level(permanent, &permanent->level, "levels/three_floors.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
@@ -319,10 +319,6 @@ internal void center_view(PermanentState *permanent, RenderState *renderer) {
 }
 
 
-typedef struct {
-    int x_pos;
-    int y_pos;
-} BlockTextureAtlasPosition;
 
 
 internal int wallsortfunc(const void *a, const void *b) {
@@ -488,14 +484,6 @@ int main(int argc, char **argv) {
     const u8 *keys = SDL_GetKeyboardState(NULL);
     float last_frame_time_ms = 1.0f;
 
-#ifdef NO_HOT_RELOADING
-        game_update_and_render(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
-#endif
-
-#ifndef NO_HOT_RELOADING
-    maybe_load_libgame(debug);
-#endif
-
     prepare_renderer(permanent, renderer);
     u64 freq = SDL_GetPerformanceFrequency();
 
@@ -503,8 +491,9 @@ int main(int argc, char **argv) {
         ticker++;
         debug_text_y = 5;
         permanent->glyph_count = 0;
-        print(permanent, renderer, "%.2f ms\n", (float)last_frame_time_ms);
-
+        if (memory->is_initialized) {
+            print(permanent, renderer, "%.2f ms\n", (float)last_frame_time_ms);
+        }
         if (ticker == 60) {
             reset_debug_performance_components(debug);
         }
@@ -524,6 +513,7 @@ int main(int argc, char **argv) {
 
         set_glyph_batch_sizes(permanent, renderer);
         u64 begin_render_time = SDL_GetPerformanceCounter();
+
 #ifndef NO_HOT_RELOADING
         maybe_load_libgame(debug);
 #endif
@@ -588,10 +578,10 @@ int main(int argc, char **argv) {
             }
         }
         // END INPUT
+
 #ifndef NO_HOT_RELOADING
         func(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
-#endif
-#ifdef NO_HOT_RELOADING
+#else
         game_update_and_render(memory, renderer, last_frame_time_ms / 1000.0f, keys, e);
 #endif
 

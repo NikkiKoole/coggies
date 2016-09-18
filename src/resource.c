@@ -483,8 +483,16 @@ internal void read_level(PermanentState * permanent, LevelData * level, World_Si
                         b->object = WallBlock;
                         break;
                     }
+                    case 'S':{
+                        b->object = LadderUp;
+                        break;
+                    }
+                    case 'E':{
+                        b->object = LadderDown;
+                        break;
+                    }
                     case 'Z':{
-                        b->object = Ladder;
+                        b->object = LadderUpDown;
                         break;
                     }
                     case 'U':{

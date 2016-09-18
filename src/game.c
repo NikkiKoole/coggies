@@ -4,6 +4,7 @@
 #include "renderer.h"
 #include "random.h"
 #include "pathfind.h"
+#include "states.h"
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
@@ -25,10 +26,6 @@ internal int wallsortfunc (const void * a, const void * b)
     const Wall *b2 = (const Wall *) b;
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z));
 }
-typedef struct {
-    int x_pos;
-    int y_pos;
-} BlockTextureAtlasPosition;
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
     u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f));
@@ -102,7 +99,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
         texture_atlas_data[Floor]       =  (BlockTextureAtlasPosition){0,0};
         texture_atlas_data[WallBlock]   =  (BlockTextureAtlasPosition){1,0};
-        texture_atlas_data[Ladder]      =  (BlockTextureAtlasPosition){2,0};
+        texture_atlas_data[LadderUpDown]=  (BlockTextureAtlasPosition){2,0};
+        texture_atlas_data[LadderUp]    =  (BlockTextureAtlasPosition){5,1};
+        texture_atlas_data[LadderDown]  =  (BlockTextureAtlasPosition){6,1};
         texture_atlas_data[StairsUp1N]  =  (BlockTextureAtlasPosition){3,0};
         texture_atlas_data[StairsUp2N]  =  (BlockTextureAtlasPosition){4,0};
         texture_atlas_data[StairsUp3N]  =  (BlockTextureAtlasPosition){5,0};
@@ -130,6 +129,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         int wall_count =0;
 
 
+
         int simplecount =0;
 
         //printf("level %d,%d,%d \n",permanent->dims.x,permanent->dims.y,permanent->dims.z_level);
@@ -144,16 +144,15 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     }
                     switch (b->object){
                     case Floor:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
                         permanent->walls[used_wall_block].y = y * permanent->block_size.y;
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                         used_floors++;
                         break;
-
                     case WallBlock:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
                         permanent->walls[used_wall_block].y = y * permanent->block_size.y;
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
@@ -161,7 +160,27 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         used_walls++;
                         wall_count++;
                         break;
-
+                    case LadderUpDown:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        break;
+                    case LadderUp:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        break;
+                    case LadderDown:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        break;
                     default:
                         //c = b;
                         //ASSERT("Problem!" && false);
@@ -289,15 +308,34 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         printf("used scratch space: %lu\n", scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 1, 1, 0);
-        grid_node * End = GetNodeAt(permanent->grid, 68, 68, 0);
+        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 0);
+        grid_node * End = GetNodeAt(permanent->grid, 2, 2, 2);
 
         ASSERT(Start->walkable);
         ASSERT(End->walkable);
 
         path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
-        path_list * Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
+        path_list *Path = NULL;
+        if (PathRaw) {
+            printf("Smoothing path!\n");
+            Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
+        }
         //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
+        //path_list * Path = NULL;
+
+        u64 before = SDL_GetPerformanceCounter();
+        for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) {
+            permanent->grid->nodes[i].f = 0;
+            permanent->grid->nodes[i].g = 0;
+            permanent->grid->nodes[i].h = 0;
+            permanent->grid->nodes[i].opened = 0;
+            permanent->grid->nodes[i].closed = 0;
+            permanent->grid->nodes[i].Next = NULL;
+        }
+        printf("cleaning took: %f", ((SDL_GetPerformanceCounter() - before)/SDL_GetPerformanceFrequency() )*1000.0f);
+
+        //PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+        //Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
         printf("used scrathc space: %lu\n", scratch->arena.used);
 
         if (Path) {
@@ -305,12 +343,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             path_node * done= Path->Sentinel->Next;
             while (done->Next != Path->Sentinel) {
-                permanent->colored_lines[i].x1 = done->X * permanent->block_size.x;;
+                permanent->colored_lines[i].x1 = done->X * permanent->block_size.x;
                 permanent->colored_lines[i].y1 = done->Y * permanent->block_size.y;
-                permanent->colored_lines[i].z1 = 0;
+                permanent->colored_lines[i].z1 = done->Z * permanent->block_size.z_level;
                 permanent->colored_lines[i].x2 = done->Next->X * permanent->block_size.x;;
                 permanent->colored_lines[i].y2 = done->Next->Y * permanent->block_size.y;;
-                permanent->colored_lines[i].z2 = 0;
+                permanent->colored_lines[i].z2 = done->Next->Z * permanent->block_size.z_level;;
                 permanent->colored_lines[i].r = 0.0f;
                 permanent->colored_lines[i].g = 0.0f;
                 permanent->colored_lines[i].b = 0.0f;
