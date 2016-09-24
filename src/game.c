@@ -181,6 +181,28 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                         break;
+                    case StairsUp1N:
+                    case StairsUp1E:
+                    case StairsUp1S:
+                    case StairsUp1W:
+                    case StairsUp2N:
+                    case StairsUp2E:
+                    case StairsUp2S:
+                    case StairsUp2W:
+                    case StairsUp3N:
+                    case StairsUp3E:
+                    case StairsUp3S:
+                    case StairsUp3W:
+                    case StairsUp4N:
+                    case StairsUp4E:
+                    case StairsUp4S:
+                    case StairsUp4W:
+                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
+                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
+                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
+                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
+                        used_wall_block++;
+                        break;
                     default:
                         //c = b;
                         //ASSERT("Problem!" && false);
@@ -308,8 +330,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         printf("used scratch space: %lu\n", scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 0);
-        grid_node * End = GetNodeAt(permanent->grid, 2, 2, 2);
+        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 4);
+        grid_node * End = GetNodeAt(permanent->grid, 2, 2, 0);
 
         ASSERT(Start->walkable);
         ASSERT(End->walkable);

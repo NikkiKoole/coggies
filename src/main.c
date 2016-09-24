@@ -10,7 +10,7 @@
 
 
 
-//#define NO_HOT_RELOADING
+#define NO_HOT_RELOADING
 
 #ifdef NO_HOT_RELOADING
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
@@ -127,7 +127,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/three_floors.txt");
+    resource_level(permanent, &permanent->level, "levels/16_2.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 

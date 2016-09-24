@@ -60,16 +60,13 @@ typedef enum {
     WallBlock,
     Floor, Grass, Wood, Concrete, Tiles, Carpet,
     LadderUpDown, LadderUp, LadderDown,
-    StairsUpMeta,
+    StairsUpMeta, StairsDownMeta,
+    StairsDown1N,StairsDown1E,StairsDown1W,StairsDown1S,
     StairsFollowUpMeta,
     StairsUp1N, StairsUp2N, StairsUp3N, StairsUp4N,
-    StairsDown1N, StairsDown2N, StairsDown3N, StairsDown4N,
     StairsUp1E, StairsUp2E, StairsUp3E, StairsUp4E,
-    StairsDown1E, StairsDown2E, StairsDown3E, StairsDown4E,
     StairsUp1S, StairsUp2S, StairsUp3S, StairsUp4S,
-    StairsDown1S, StairsDown2S, StairsDown3S, StairsDown4S,
     StairsUp1W, StairsUp2W, StairsUp3W, StairsUp4W,
-    StairsDown1W, StairsDown2W, StairsDown3W, StairsDown4W,
     Shaded,
     BlockTotal
 } Block;
@@ -88,7 +85,8 @@ typedef struct {
 
 typedef struct grid_node {
     u8 X, Y, Z;
-    u8 walkable; // 0 is impassible, 1 = walkable, 2 = walkable&going UP too, 3 = walkable& going DOWN too, 4 = walkable* UP/DOWN too.
+    u8 walkable;
+    Block type;
     float g;
     float f;
     float h;

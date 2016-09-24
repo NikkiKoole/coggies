@@ -499,6 +499,10 @@ internal void read_level(PermanentState * permanent, LevelData * level, World_Si
                         b->object = StairsUpMeta;
                         break;
                     }
+                    case 'D':{
+                        b->object = StairsDownMeta;
+                        break;
+                    }
                     case '=':{
                         b->object = StairsFollowUpMeta;
                         break;
@@ -555,11 +559,12 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_north) {
-                            printf("stairs going north found!\n");
+                            //printf("stairs going north found!\n");
                             set_block_at(level, x, y, z, StairsUp1N);
                             set_block_at(level, x, y-1, z, StairsUp2N);
                             set_block_at(level, x, y-2, z, StairsUp3N);
                             set_block_at(level, x, y-3, z, StairsUp4N);
+                            //set_block_at(level, x, y-3, z+1, StairsDown1S);
                         }
                     }
 
@@ -578,40 +583,45 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x+1, y, z, StairsUp2E);
                             set_block_at(level, x+2, y, z, StairsUp3E);
                             set_block_at(level, x+3, y, z, StairsUp4E);
+                            //set_block_at(level, x+3, y, z+1, StairsDown1W);
+
                         }
                     }
                     if (y+4 < level->y) {
                         b32 is_stairs_south = true;
 
                         for (int i = 1; i < 4; i++) {
-                            if (has_block_at(level, x, y+1, z, StairsFollowUpMeta)) {
+                            if (has_block_at(level, x, y+i, z, StairsFollowUpMeta)) {
                             } else{
                                 is_stairs_south = false;
                             }
                         }
                         if (is_stairs_south) {
-                            printf("stairs going south found!\n");
                             set_block_at(level, x, y, z, StairsUp1S);
                             set_block_at(level, x, y+1, z, StairsUp2S);
                             set_block_at(level, x, y+2, z, StairsUp3S);
                             set_block_at(level, x, y+3, z, StairsUp4S);
+                            //set_block_at(level, x, y+3, z+1, StairsDown1N);
+
                         }
                     }
                     if (x-4 >= 0){
                         b32 is_stairs_west = true;
 
                         for (int i = 1; i < 4; i++) {
-                            if (has_block_at(level, x-1, y, z, StairsFollowUpMeta)) {
+                            if (has_block_at(level, x-i, y, z, StairsFollowUpMeta)) {
                             } else{
                                 is_stairs_west = false;
                             }
                         }
                         if (is_stairs_west) {
-                            printf("stairs going south found!\n");
+                            //printf("stairs going west found!\n");
                             set_block_at(level, x, y, z, StairsUp1W);
                             set_block_at(level, x-1, y, z, StairsUp2W);
                             set_block_at(level, x-2, y, z, StairsUp3W);
                             set_block_at(level, x-3, y, z, StairsUp4W);
+                            //set_block_at(level, x-3, y, z+1, StairsDown1E);
+
                         }
                     }
 
