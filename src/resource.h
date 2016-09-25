@@ -6,9 +6,6 @@
 #include "memory.h"
 #include "states.h"
 
-#define FLATTEN_3D_INDEX(x,y,z, width, height) ((x) + ((y) * (width)) + ((z) * (width) * (height)))
-
-
 typedef struct {
     u32 id;
     u16 x;
@@ -40,15 +37,6 @@ typedef struct {
     u8 *pixels;
 } TGA_File;
 
-
-
-typedef struct {
-    int x;
-    int y;
-    int z_level;
-} World_Size;
-
-
 void resource_font(BM_Font *font, const char *path);
 void resource_texture(Texture *t, const char *path);
 void resource_shader(GLuint *shader, const char *vertPath, const char *fragPath);
@@ -56,6 +44,6 @@ void resource_sprite_atlas(const char *path);
 void resource_level(PermanentState *permanent, LevelData *level, const char * path);
 void resource_ogg(Mix_Music **music, const char *path);
 void resource_wav(Mix_Chunk **chunk, const char *path);
-
+//void read_level_str(PermanentState * permanent, LevelData * level, World_Size dimensions, char *str);
 
 #endif

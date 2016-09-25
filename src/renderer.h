@@ -124,9 +124,4 @@ GLuint make_shader_program(const GLchar *vertexPath, const GLchar *fragmentPath)
 void initialize_GL(void);
 void prepare_renderer(PermanentState *permanent, RenderState *renderer);
 
-
-void make_texture(Texture *t, const char *path);
-void make_font(BM_Font *font, const char *path);
-void make_sprite_atlas(const char *path);
-void make_level(LevelData *level, const char *path);
 #endif

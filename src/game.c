@@ -5,6 +5,8 @@
 #include "random.h"
 #include "pathfind.h"
 #include "states.h"
+#include "level.h"
+
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
@@ -330,18 +332,18 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         printf("used scratch space: %lu\n", scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 4);
-        grid_node * End = GetNodeAt(permanent->grid, 2, 2, 0);
+        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 0);
+        grid_node * End = GetNodeAt(permanent->grid, 12, 12, 4);
 
         ASSERT(Start->walkable);
         ASSERT(End->walkable);
 
-        path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
-        path_list *Path = NULL;
-        if (PathRaw) {
-            printf("Smoothing path!\n");
-            Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
-        }
+        path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+        /* path_list *Path = NULL; */
+        /* if (PathRaw) { */
+        /*     printf("Smoothing path!\n"); */
+        /*     Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid); */
+        /* } */
         //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
         //path_list * Path = NULL;
 
