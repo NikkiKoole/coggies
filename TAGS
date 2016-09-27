@@ -1,208 +1,4 @@
 
-pathfind/pathfind2/data_structures.h,865
-#define DATA_STRUCTURES_H2,26
-#define NEW_SLIST(9,179
-#define NEW_SLIST_FREE(14,428
-#define FREE_SLIST(21,801
-#define SLIST_ADDFIRST(27,1072
-#define SLIST_REMOVEFIRST(31,1223
-#define NEW_DLIST(35,1341
-#define NEW_DLIST_FREE(41,1652
-#define DLIST_ADDLAST(49,2087
-#define DLIST_ADDFIRST(55,2338
-#define FREE_DLIST(62,2590
-#define DLIST_INSERTBEFORE(72,2942
-#define DLIST_INSERTAFTER(78,3193
-#define DLIST_REMOVE(84,3444
-#define DLIST_REMOVELAST(88,3595
-#define DLIST_REMOVEFIRST(92,3818
-#define DLIST_PEEKFIRST(96,4041
-#define DLIST_PEEKLAST(99,4142
-#define DLIST_EMPTY(102,4243
-#define SLIST_EMPTY(106,4394
-#define SLIST_PEEKFIRST(109,4495
-#define NEW_HEAP(111,4550
-#define CMP(116,4815
-#define HEAP_PUSH(118,4853
-#define HEAP_PEEKFIRST(129,5474
-#define HEAP_POP(133,5652
-#define HEAP_UPDATE_AT(150,6774
-#define HEAP_UPDATE_ITEM(172,8352
-
-pathfind/pathfind2/main.c,75
-#define CLOCK_MONOTONIC 12,153
-int clock_gettime(14,221
-int main(24,449
-
-pathfind/pathfind2/memory.c,159
-void reserve_memory(7,25
-temp_memory begin_temporary_memory(23,595
-void end_temporary_memory(29,736
-void* push_size_(36,889
-void initialize_arena(56,1555
-
-pathfind/pathfind2/memory.h,864
-#define MEMORY_H2,17
-typedef int8_t s8;11,146
-typedef int16_t s16;12,165
-typedef int32_t s32;13,186
-typedef int64_t s64;14,207
-typedef uint8_t u8;16,229
-typedef uint16_t u16;17,249
-typedef uint32_t u32;18,271
-typedef uint64_t u64;19,293
-typedef float r32;21,316
-typedef double r64;22,335
-typedef bool b32;23,355
-typedef size_t memory_index;25,374
-#define internal 27,404
-#define kilobytes(29,429
-#define megabytes(30,471
-#define gigabytes(31,522
-#define terabytes(32,573
-#define ASSERT(34,625
-typedef struct memory36,793
-} memory;43,952
-typedef struct memory_arena45,963
-} memory_arena;50,1053
-typedef struct temp_memory52,1070
-} temp_memory;56,1147
-typedef struct state 58,1163
-} state;60,1210
-#define PUSH_STRUCT(62,1220
-#define PUSH_ARRAY(63,1293
-#define PUSH_SIZE(64,1380
-typedef struct trans_state72,1702
-} trans_state;75,1762
-
-pathfind/pathfind2/pathfind.c,1751
-void DisplayPreProcessed(6,140
-void DrawGrid(31,958
-#define KNRM 81,2603
-#define KRED 82,2627
-#define KGRN 83,2652
-#define KYEL 84,2677
-#define KBLU 85,2702
-#define KMAG 86,2727
-#define KCYN 87,2752
-#define KWHT 88,2777
-void interpolate(116,3430
-#define setXYZinStruct(145,4003
-path_list * ExpandPath(147,4089
-path_list * SmoothenPath(191,5557
-path_list * BacktrackPath(266,7998
-void InitGrid(288,8700
-float ManHattan(313,9554
-float Octile(317,9626
-InBounds(322,9772
-GridWalkableAt(329,9952
-GetNodeAt(334,10128
-int GridCanGoUpFrom(338,10254
-int GridCanGoDownFrom(344,10511
-inline static grid_node* HeapPop(351,10767
-gridGetNeighbors(358,10933
-path_list* FindPathAStar(436,12974
-jump_diagonally_if_no_obstacles(504,15116
-jump_never_diagonally(555,16806
-find_neighbors_diagonally_if_no_obstacles(597,18276
-find_neighbors_never_diagonally(693,21895
-#define JUMP_ALWAYS_DIAGONALLY(753,23876
-jump_always_diagonally(794,26887
-#define FIND_NEIGHBORS_ALWAYS_DIAGONALLY_IF_PARENT 804,27183
-find_neighbors_always_diagonally(875,31754
-jump_if_at_most_one_obstacle(902,32687
-find_neighbors_if_at_most_one_obstacle(918,33171
-void identifySuccessors(944,34070
-path_list * FindPathJPS(994,35820
-static inline int isJumpNode(1047,37646
-#define isWall(1056,38011
-#define isEmpty(1058,38062
-void PreProcessGrid(1060,38113
-#define SET_ALLOWED(1340,49289
-#define IS_CARDINAL(1342,49397
-grid_node * getNodeGivenDirectionDiagonalHack(1345,49555
-grid_node * getNodeGivenDirectionAndDistance(1370,50216
-grid_node * getNodeGivenDirection(1414,51372
-jump_direction getDirection(1421,51603
-static inline int diffXY(1459,52563
-static inline int otherIsInGeneralDirectionOfDiagonal(1467,52787
-path_list * FindPathPlus(1482,53299
-
-pathfind/pathfind2/pathfind.h,1615
-#define PATHFIND_H2,19
-#define JPS_PLUS6,60
-#define SQRT2_OVER_1 8,78
-#define SQRT2 9,119
-#define NODE_EQUALS(10,152
-#define MAX(11,257
-#define MIN(12,299
-#define ABS(13,341
-#define FLATTEN_3D_INDEX(15,381
-#define PUSH_NEIGHBOR(17,468
-#define FIND_NEIGHBORS_NORTH_SOUTH(31,1386
-#define FIND_NEIGHBORS_EAST_WEST(40,1883
-#define FIND_NEIGHBORS_UP_DOWN(49,2348
-#define PUSH_COORD(61,2816
-} map_file;84,3775
-typedef struct path_node 86,3788
-} path_node;90,3889
-typedef struct path_list 92,3903
-} path_list;94,3956
-typedef struct grid_node 96,3970
-} grid_node;112,4495
-typedef struct grid_node_list 114,4509
-} grid_node_list;116,4566
-} grid_node_heap;122,4653
-typedef struct grid 124,4672
-} grid;129,4762
-typedef enum diagonal_movement 131,4771
-    Never,132,4804
-    OnlyWhenNoObstacles,133,4815
-    IfAtMostOneObstacle,134,4840
-    Always135,4865
-} diagonal_movement;136,4876
-typedef struct neighbor 138,4898
-} neighbor;142,4997
-typedef struct neighbor_list 144,5010
-} neighbor_list;147,5087
-typedef struct jump_point 149,5105
-} jump_point;151,5150
-typedef struct coord2d 154,5166
-} coord2d;159,5267
-typedef struct coord_list 161,5279
-} coord_list;164,5351
-typedef jump_point (*jump_func)jump_func168,5368
-typedef neighbor_list * (*find_neighbors_func)find_neighbors_func169,5452
-typedef struct JPS 171,5571
-} JPS;174,5652
-typedef enum jump_direction 176,5660
-    north,177,5690
-    east,178,5701
-    south,179,5711
-    west,180,5722
-    ne,181,5732
-    se,182,5740
-    sw,183,5748
-    nw,184,5756
-    up,185,5764
-    down,186,5772
-} jump_direction;187,5782
-
-pathfind/pathfind2/pool.c,226
-int clock_gettime(8,140
-typedef struct entity 33,806
-} entity;36,857
-typedef struct entity_pool 38,868
-} entity_pool;42,949
-void swap(44,965
-entity* get_item(50,1123
-void return_item_at_index(59,1333
-int main(75,1994
-
-pathfind/pathfind2/readMap.c,51
-void readMapString(2,1
-void readMapFile(102,3126
-
 spec/c89spec.h,1228
 #define C89SPEC_H_SC604JRD29,1306
 #define C89SPEC_PROFILE_THRESHOLD 33,1449
@@ -273,14 +69,14 @@ src/data_structures.h,865
 #define HEAP_UPDATE_ITEM(172,8352
 
 src/game.c,295
-#define SORT_NAME 11,145
-#define SORT_TYPE 12,169
-#define SORT_CMP(13,193
-internal int wallsortfunc 23,529
-internal void set_actor_batch_sizes(32,842
-internal void set_wall_batch_sizes(48,1455
-internal void set_colored_line_batch_sizes(63,2021
-extern void game_update_and_render(80,2700
+#define SORT_NAME 10,144
+#define SORT_TYPE 11,168
+#define SORT_CMP(12,192
+internal int wallsortfunc 22,528
+internal void set_actor_batch_sizes(31,841
+internal void set_wall_batch_sizes(47,1454
+internal void set_colored_line_batch_sizes(62,2020
+extern void game_update_and_render(79,2699
 
 src/icon.c,15
 } icon 10,396
@@ -298,8 +94,8 @@ internal b32 has_block_at(222,6840
 internal void set_block_at(228,7046
 internal void set_meta_block_at(234,7245
 internal void add_stairs(240,7454
-void make_level_str(339,11740
-void make_level(346,11926
+void make_level_str(339,11748
+void make_level(346,11934
 
 src/level.h,73
 #define LEVEL_H2,16
@@ -315,28 +111,28 @@ internal void SetSDLIcon(39,1598
 internal void initialize_SDL(68,2558
 internal int event_filter(112,4200
 internal void load_resources(129,4605
-internal void quit(156,6024
-internal void update_frame(162,6157
-internal void set_wall_batch_sizes(170,6399
-internal void set_actor_batch_sizes(186,6970
-internal void set_glyph_batch_sizes(202,7583
-internal void set_colored_line_batch_sizes(218,8228
-internal void draw_glyph(235,8907
-u32 debug_text_x 246,9197
-u32 debug_text_y 247,9219
-internal u32 draw_text(249,9242
-internal void print(292,10366
-internal void center_view(307,10800
-internal int wallsortfunc(324,11526
-internal int actorsortfunc(332,11835
-Shared_Library libgame 340,12149
-internal void stub(347,12310
-PerfDict clone;357,12564
-int ticker 358,12580
-internal void reset_debug_performance_components(360,12597
-internal void maybe_load_libgame(367,12780
-int main(399,14140
-#define ACTOR_BATCH 468,16421
+internal void quit(156,6025
+internal void update_frame(162,6158
+internal void set_wall_batch_sizes(170,6400
+internal void set_actor_batch_sizes(186,6971
+internal void set_glyph_batch_sizes(202,7584
+internal void set_colored_line_batch_sizes(218,8229
+internal void draw_glyph(235,8908
+u32 debug_text_x 246,9198
+u32 debug_text_y 247,9220
+internal u32 draw_text(249,9243
+internal void print(292,10367
+internal void center_view(307,10801
+internal int wallsortfunc(324,11527
+internal int actorsortfunc(332,11836
+Shared_Library libgame 340,12150
+internal void stub(347,12311
+PerfDict clone;357,12565
+int ticker 358,12581
+internal void reset_debug_performance_components(360,12598
+internal void maybe_load_libgame(367,12781
+int main(399,14141
+#define ACTOR_BATCH 468,16422
 
 src/memory.c,418
 internal u64 hash(11,67
@@ -387,56 +183,58 @@ src/multi_platform.h,279
 #define IOS37,727
 #define GLES38,739
 
-src/pathfind.c,1562
-void init_grid(4,52
-#define FLATTEN_3D_INDEX(68,2751
-grid_node *GetNodeAt(GetNodeAt70,2842
-internal int GridCanGoUpFrom(73,2979
-internal int GridCanGoDownFrom(89,3888
-internal inline int InBounds(108,5161
-internal int GridWalkableAt(113,5356
-internal inline int isJumpNode(116,5537
-#define isWall(123,5931
-#define isEmpty(124,5983
-typedef enum jump_direction 126,6036
-    north,127,6066
-    east,128,6077
-    south,129,6087
-    west,130,6098
-    ne,131,6108
-    se,132,6116
-    sw,133,6124
-    nw,134,6132
-    up,135,6140
-    down,136,6148
-    invalid137,6158
-} jump_direction;138,6170
-internal void display_processed(141,6190
-void preprocess_grid(177,7442
-inline internal grid_node* HeapPop(453,19121
-#define NODE_EQUALS(458,19271
-internal path_list * BacktrackPath(462,19379
-#define SET_ALLOWED(485,20163
-#define IS_CARDINAL(488,20272
-internal jump_direction getDirection(491,20430
-internal inline int diffXY(531,21411
-internal inline int otherIsInGeneralDirectionOfDiagonal(539,21637
-grid_node * getNodeGivenDirectionAndDistance(551,22148
-grid_node * getNodeGivenDirection(621,24642
-#define SQRT2_OVER_1 626,24871
-#define SQRT2 627,24912
-internal float ManHattan(629,24946
-internal float Octile(632,25026
-path_list * FindPathPlus(636,25163
-typedef struct coord2d 809,32956
-} coord2d;814,33057
-typedef struct coord_list 816,33069
-} coord_list;819,33141
-#define setXYZinStruct(821,33156
-#define PUSH_COORD(823,33242
-void interpolate(840,34067
-path_list * SmoothenPath(869,34639
-path_list * ExpandPath(961,38061
+src/pathfind.c,1627
+internal inline int InBounds(5,72
+internal int canMoveDown(11,268
+void init_grid(17,509
+#define FLATTEN_3D_INDEX(80,3073
+grid_node *GetNodeAt(GetNodeAt82,3164
+internal int GridCanGoUpFrom(85,3301
+internal int GridCanGoDownFrom(92,3731
+internal int isStairsUp(106,4476
+internal int GridWalkableAt(110,4779
+internal inline int isJumpNode(113,4960
+#define isWall(120,5354
+#define isEmpty(121,5406
+typedef enum jump_direction 123,5459
+    north,124,5489
+    east,125,5500
+    south,126,5510
+    west,127,5521
+    ne,128,5531
+    se,129,5539
+    sw,130,5547
+    nw,131,5555
+    up,132,5563
+    down,133,5571
+    invalid134,5581
+} jump_direction;135,5593
+internal void display_processed(138,5613
+void preprocess_grid(169,6739
+inline internal grid_node* HeapPop(457,19516
+#define NODE_EQUALS(462,19666
+internal path_list * BacktrackPath(464,19772
+#define SET_ALLOWED(487,20556
+#define IS_CARDINAL(490,20665
+internal jump_direction getDirection(493,20823
+internal inline int diffXY(533,21804
+internal inline int otherIsInGeneralDirectionOfDiagonal(541,22030
+grid_node * getNodeGivenDirectionAndDistance(553,22541
+grid_node * getNodeGivenDirection(625,25001
+#define SQRT2_OVER_1 630,25230
+#define SQRT2 631,25271
+internal float ManHattan(633,25305
+internal float Octile(636,25385
+path_list * FindPathPlus(645,25699
+typedef struct coord2d 815,32592
+} coord2d;820,32693
+typedef struct coord_list 822,32705
+} coord_list;825,32777
+#define setXYZinStruct(827,32792
+#define PUSH_COORD(829,32878
+void interpolate(846,33627
+path_list * SmoothenPath(875,34199
+path_list * ExpandPath(967,37621
 
 src/pathfind.h,271
 #define PATHFIND_H3,20
@@ -814,10 +612,10 @@ src/states.h,1737
 } WorldBlock;78,1329
 } LevelData;84,1429
 typedef struct grid_node 87,1444
-} grid_node;102,1877
-typedef struct grid 104,1891
-} Grid;109,1981
-} PermanentState;136,2411
+} grid_node;103,1893
+typedef struct grid 105,1907
+} Grid;110,1997
+} PermanentState;137,2427
 
 src/types.h,508
 #define TYPES_H2,16
