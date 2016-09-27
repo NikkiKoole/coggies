@@ -35,7 +35,7 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
                 g->nodes[i].f = 0.0f;
                 g->nodes[i].g = 0.0f;
                 g->nodes[i].h = 0.0f;
-                g->nodes[i].cost = 0.0f;
+                //->nodes[i].cost = 0.0f;
 
 
                 g->nodes[i].walkable = 0;
@@ -51,18 +51,20 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
                            m->blocks[i].object == LadderDown ||
                            m->blocks[i].object == LadderUpDown) {
                     g->nodes[i].walkable = 1;
+                    g->nodes[i].h = 10.0f;
                 } else if (m->blocks[i].object == StairsUp1N ||
                            m->blocks[i].object == StairsUp1E ||
                            m->blocks[i].object == StairsUp1S ||
                            m->blocks[i].object == StairsUp1W) {
                     //g->nodes[i].g = 1000.0f;
                     //printf("setting cost to 1000\n");
-                    g->nodes[i].cost = 10.0f;
+                    g->nodes[i].h = 10.0f;
 
                     g->nodes[i].walkable = 1;
 
                 } else if (canMoveDown(g,x,y,z)) {
                     g->nodes[i].walkable = 1;
+                    g->nodes[i].h = 10.0f;
                 }else if (m->blocks[i].meta_object == StairsDownMeta) {
                     g->nodes[i].walkable = 1;
                     g->nodes[i].type = m->blocks[i].meta_object;
@@ -208,6 +210,7 @@ void preprocess_grid(Grid *g) {
                     node->distance[down] = 0;
                 }
 
+                // points around corners or voids turn to jumppoints
                 if (isJumpNode(g, x, y, z, 0, 1) ||
                     isJumpNode(g, x, y, z, 0, -1) ||
                     isJumpNode(g, x, y, z, 1, 0) ||
@@ -215,6 +218,7 @@ void preprocess_grid(Grid *g) {
                     node->isJumpNode = 1;
                 }
 
+                // diagonally around stairs and ladders I place jumppoints
                 if (isStairOrLadder(g,x-1,y-1,z) ||
                     isStairOrLadder(g,x+1,y+1,z) ||
                     isStairOrLadder(g,x+1,y-1,z) ||
@@ -417,7 +421,7 @@ void preprocess_grid(Grid *g) {
             }
         }
     }
-    display_processed(g);
+    //display_processed(g);
 }
 
 
@@ -738,21 +742,15 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                 givenCost = ABS(ManHattan(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
                 if (!IS_CARDINAL(direction)) {givenCost *= SQRT2;}
                 givenCost += Node->g;
-                //givenCost += Node->cost;
-
             }
 
             if (Successor) {
-                //i//f (Successor->X == 0 && Successor->Y == 2) {
-                    //printf("sadf\n");
-                //}
-                //printf("given cost: %f g: %f\n", givenCost, Successor->g);
                 if ((!Successor->opened || !Successor->closed)) {
                     Successor->opened = true;
                     Successor->parent = Node;
                     Successor->g = givenCost;
                     Successor->f = givenCost + Octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
-                    Successor->f += Successor->cost;
+                    Successor->f += Successor->h; // TODO can i reuse one of my f,g,h values? H perhaps?
                     HEAP_PUSH(OpenList, Successor);
 
                     // TODO: dirtylist
@@ -773,7 +771,6 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
     printf("FAILED: no path found from %d,%d,%d to %d,%d,%d.\n", startNode->X, startNode->Y, startNode->Z, endNode->X, endNode->Y, endNode->Z);
 
     return NULL;
-    //return NULL;
 }
 
 typedef struct coord2d {
@@ -802,10 +799,6 @@ typedef struct coord_list {
         N->Y = y;                                           \
         DLIST_ADDLAST(CoordList, N);                        \
     }                                                       \
-
-
-
-
 
 void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, coord_list * List) {
     int sx, sy, dx, dy, err, e2;
@@ -876,7 +869,8 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
             coord2d * c = interpolated->Sentinel->Next->Next; //skipping the first
             while(c != interpolated->Sentinel) {
                 grid_node * n= GetNodeAt(pg, c->X,c->Y,sz);
-                if (! n->walkable) {
+                if (! n->walkable ) { // line below works, but i think it needs optimizing
+                //if (! n->walkable || isStairOrLadder(pg, c->X,c->Y,sz)) {
                     //printf("found blocking at : %d,%d,%d\n",n->X,n->Y,n->Z);
                     blocked = 1;
                     break;
@@ -893,8 +887,6 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
                 sz = lastValidPoint->Z;
             }
         } else { //different z, just push both points
-            //printf("Smoothing, is this the cause?: %d,%d,%d, or %d,%d,%d \n", sx,sy,sz,ex,ey,ez);
-            //printf("smoothing Z: from: %d, %d, %d,|||| %d, %d, %d\n",Node->Prev->X, Node->Prev->Y, Node->Prev->Z, Node->X,Node->Y,Node->Z);
             if(sx == ex && sy == ey) {
                 //ladder
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);

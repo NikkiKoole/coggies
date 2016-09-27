@@ -91,7 +91,7 @@ typedef struct grid_node {
     float g;
     float f;
     float h;
-    float cost;
+    //float cost;
     u8 opened;
     u8 closed;
     struct grid_node *parent; //used for backtracking

@@ -6,6 +6,7 @@
 #include "../src/pathfind.h"
 #include "../src/memory.h"
 #include "../src/level.h"
+#include "../src/random.h"
 
 bool block_at_xyz_is(int x, int y, int z, Block b, LevelData * level) {
     return (level->blocks[FLATTEN_3D_INDEX(x,y,z, level->x, level->y)].object == b);
@@ -27,6 +28,14 @@ int total_jumppoints(Grid *grid) {
             }
         }
     }
+    return result;
+}
+
+grid_node* get_random_walkable_node(Grid *grid) {
+    grid_node *result;// = GetNodeAt(grid, 0,0,0);
+    do {
+        result = GetNodeAt(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
+    } while (!result->walkable);
     return result;
 }
 
@@ -272,12 +281,61 @@ describe(grid_preprocessor) {
         expect(total_jumppoints(permanent->grid) == 10);
 
     }
-}
 
+}
+describe(pathfinder) {
+    it(finds its way through a small narrow single floored maze (1000x) ) {
+        Memory _memory;
+        Memory *memory = &_memory;
+
+        initialize_memory(memory);
+        PermanentState *permanent = (PermanentState *)memory->permanent;
+        ScratchState *scratch = (ScratchState *)memory->scratch;
+        World_Size size = (World_Size){6,7,1};
+        char string[] =
+            "+------+\n"
+            "|.#....|\n"
+            "|.#..#.|\n"
+            "|.####.|\n"
+            "|...#..|\n"
+            "|.###.#|\n"
+            "|...#.#|\n"
+            "|.#....|\n"
+            "+------+";
+
+        make_level_str(permanent, &permanent->level , size, string);
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+        init_grid(permanent->grid, &permanent->arena, &permanent->level);
+        preprocess_grid(permanent->grid);
+
+
+        TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
+        for (int i = 0; i < 1000; i++) {
+
+            grid_node * Start = get_random_walkable_node(permanent->grid);
+            grid_node * End = get_random_walkable_node(permanent->grid);
+            path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+            if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n",
+                              Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z);
+            expect(Path);
+            for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) {
+                permanent->grid->nodes[i].f = 0;
+                permanent->grid->nodes[i].g = 0;
+                permanent->grid->nodes[i].opened = 0;
+                permanent->grid->nodes[i].closed = 0;
+                permanent->grid->nodes[i].Next = NULL;
+                permanent->grid->nodes[i].parent = NULL;
+
+            }
+            end_temporary_memory(temp_mem);
+        }
+    }
+}
 
 int main() {
     test(memory);
     test(leveldata);
     test(grid_preprocessor);
+    test(pathfinder);
     return summary();
 }

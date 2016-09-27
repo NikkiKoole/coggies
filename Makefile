@@ -47,7 +47,7 @@ gamelibrary:
 	mv *.o $(OBJDIR)
 
 test:
-	gcc -std=c99 spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c   -lm  && ./a.out
+	gcc -std=c99 spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c  src/random.c  -lm  && ./a.out
 	rm ./a.out
 
 tags:

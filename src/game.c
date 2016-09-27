@@ -351,10 +351,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) {
             permanent->grid->nodes[i].f = 0;
             permanent->grid->nodes[i].g = 0;
-            permanent->grid->nodes[i].h = 0;
             permanent->grid->nodes[i].opened = 0;
             permanent->grid->nodes[i].closed = 0;
             permanent->grid->nodes[i].Next = NULL;
+            permanent->grid->nodes[i].parent = NULL;
         }
         printf("cleaning took: %f.\n", ((SDL_GetPerformanceCounter() - before)/SDL_GetPerformanceFrequency() )*1000.0f);
 
