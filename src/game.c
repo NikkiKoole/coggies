@@ -7,7 +7,6 @@
 #include "states.h"
 #include "level.h"
 
-
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
 #define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
@@ -332,8 +331,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         printf("used scratch space: %lu\n", scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 2, 2, 0);
-        grid_node * End = GetNodeAt(permanent->grid, 12, 12, 4);
+        grid_node * Start = GetNodeAt(permanent->grid, 5, 0, 0);
+        grid_node * End = GetNodeAt(permanent->grid, 5, 3, 0);
+
 
         ASSERT(Start->walkable);
         ASSERT(End->walkable);
@@ -356,11 +356,11 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->grid->nodes[i].closed = 0;
             permanent->grid->nodes[i].Next = NULL;
         }
-        printf("cleaning took: %f", ((SDL_GetPerformanceCounter() - before)/SDL_GetPerformanceFrequency() )*1000.0f);
+        printf("cleaning took: %f.\n", ((SDL_GetPerformanceCounter() - before)/SDL_GetPerformanceFrequency() )*1000.0f);
 
         //PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
         //Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
-        printf("used scrathc space: %lu\n", scratch->arena.used);
+        //printf("used scratch space: %lu\n", scratch->arena.used);
 
         if (Path) {
             u32 i = 0;
@@ -383,7 +383,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
 
         end_temporary_memory(temp_mem);
-        printf("used scrathc space: %lu\n", scratch->arena.used);
+        printf("used scratch space: %lu\n", scratch->arena.used);
 
         set_colored_line_batch_sizes(permanent, renderer);
 #endif

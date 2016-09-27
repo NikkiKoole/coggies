@@ -1,0 +1,849 @@
+
+pathfind/pathfind2/data_structures.h,865
+#define DATA_STRUCTURES_H2,26
+#define NEW_SLIST(9,179
+#define NEW_SLIST_FREE(14,428
+#define FREE_SLIST(21,801
+#define SLIST_ADDFIRST(27,1072
+#define SLIST_REMOVEFIRST(31,1223
+#define NEW_DLIST(35,1341
+#define NEW_DLIST_FREE(41,1652
+#define DLIST_ADDLAST(49,2087
+#define DLIST_ADDFIRST(55,2338
+#define FREE_DLIST(62,2590
+#define DLIST_INSERTBEFORE(72,2942
+#define DLIST_INSERTAFTER(78,3193
+#define DLIST_REMOVE(84,3444
+#define DLIST_REMOVELAST(88,3595
+#define DLIST_REMOVEFIRST(92,3818
+#define DLIST_PEEKFIRST(96,4041
+#define DLIST_PEEKLAST(99,4142
+#define DLIST_EMPTY(102,4243
+#define SLIST_EMPTY(106,4394
+#define SLIST_PEEKFIRST(109,4495
+#define NEW_HEAP(111,4550
+#define CMP(116,4815
+#define HEAP_PUSH(118,4853
+#define HEAP_PEEKFIRST(129,5474
+#define HEAP_POP(133,5652
+#define HEAP_UPDATE_AT(150,6774
+#define HEAP_UPDATE_ITEM(172,8352
+
+pathfind/pathfind2/main.c,75
+#define CLOCK_MONOTONIC 12,153
+int clock_gettime(14,221
+int main(24,449
+
+pathfind/pathfind2/memory.c,159
+void reserve_memory(7,25
+temp_memory begin_temporary_memory(23,595
+void end_temporary_memory(29,736
+void* push_size_(36,889
+void initialize_arena(56,1555
+
+pathfind/pathfind2/memory.h,864
+#define MEMORY_H2,17
+typedef int8_t s8;11,146
+typedef int16_t s16;12,165
+typedef int32_t s32;13,186
+typedef int64_t s64;14,207
+typedef uint8_t u8;16,229
+typedef uint16_t u16;17,249
+typedef uint32_t u32;18,271
+typedef uint64_t u64;19,293
+typedef float r32;21,316
+typedef double r64;22,335
+typedef bool b32;23,355
+typedef size_t memory_index;25,374
+#define internal 27,404
+#define kilobytes(29,429
+#define megabytes(30,471
+#define gigabytes(31,522
+#define terabytes(32,573
+#define ASSERT(34,625
+typedef struct memory36,793
+} memory;43,952
+typedef struct memory_arena45,963
+} memory_arena;50,1053
+typedef struct temp_memory52,1070
+} temp_memory;56,1147
+typedef struct state 58,1163
+} state;60,1210
+#define PUSH_STRUCT(62,1220
+#define PUSH_ARRAY(63,1293
+#define PUSH_SIZE(64,1380
+typedef struct trans_state72,1702
+} trans_state;75,1762
+
+pathfind/pathfind2/pathfind.c,1751
+void DisplayPreProcessed(6,140
+void DrawGrid(31,958
+#define KNRM 81,2603
+#define KRED 82,2627
+#define KGRN 83,2652
+#define KYEL 84,2677
+#define KBLU 85,2702
+#define KMAG 86,2727
+#define KCYN 87,2752
+#define KWHT 88,2777
+void interpolate(116,3430
+#define setXYZinStruct(145,4003
+path_list * ExpandPath(147,4089
+path_list * SmoothenPath(191,5557
+path_list * BacktrackPath(266,7998
+void InitGrid(288,8700
+float ManHattan(313,9554
+float Octile(317,9626
+InBounds(322,9772
+GridWalkableAt(329,9952
+GetNodeAt(334,10128
+int GridCanGoUpFrom(338,10254
+int GridCanGoDownFrom(344,10511
+inline static grid_node* HeapPop(351,10767
+gridGetNeighbors(358,10933
+path_list* FindPathAStar(436,12974
+jump_diagonally_if_no_obstacles(504,15116
+jump_never_diagonally(555,16806
+find_neighbors_diagonally_if_no_obstacles(597,18276
+find_neighbors_never_diagonally(693,21895
+#define JUMP_ALWAYS_DIAGONALLY(753,23876
+jump_always_diagonally(794,26887
+#define FIND_NEIGHBORS_ALWAYS_DIAGONALLY_IF_PARENT 804,27183
+find_neighbors_always_diagonally(875,31754
+jump_if_at_most_one_obstacle(902,32687
+find_neighbors_if_at_most_one_obstacle(918,33171
+void identifySuccessors(944,34070
+path_list * FindPathJPS(994,35820
+static inline int isJumpNode(1047,37646
+#define isWall(1056,38011
+#define isEmpty(1058,38062
+void PreProcessGrid(1060,38113
+#define SET_ALLOWED(1340,49289
+#define IS_CARDINAL(1342,49397
+grid_node * getNodeGivenDirectionDiagonalHack(1345,49555
+grid_node * getNodeGivenDirectionAndDistance(1370,50216
+grid_node * getNodeGivenDirection(1414,51372
+jump_direction getDirection(1421,51603
+static inline int diffXY(1459,52563
+static inline int otherIsInGeneralDirectionOfDiagonal(1467,52787
+path_list * FindPathPlus(1482,53299
+
+pathfind/pathfind2/pathfind.h,1615
+#define PATHFIND_H2,19
+#define JPS_PLUS6,60
+#define SQRT2_OVER_1 8,78
+#define SQRT2 9,119
+#define NODE_EQUALS(10,152
+#define MAX(11,257
+#define MIN(12,299
+#define ABS(13,341
+#define FLATTEN_3D_INDEX(15,381
+#define PUSH_NEIGHBOR(17,468
+#define FIND_NEIGHBORS_NORTH_SOUTH(31,1386
+#define FIND_NEIGHBORS_EAST_WEST(40,1883
+#define FIND_NEIGHBORS_UP_DOWN(49,2348
+#define PUSH_COORD(61,2816
+} map_file;84,3775
+typedef struct path_node 86,3788
+} path_node;90,3889
+typedef struct path_list 92,3903
+} path_list;94,3956
+typedef struct grid_node 96,3970
+} grid_node;112,4495
+typedef struct grid_node_list 114,4509
+} grid_node_list;116,4566
+} grid_node_heap;122,4653
+typedef struct grid 124,4672
+} grid;129,4762
+typedef enum diagonal_movement 131,4771
+    Never,132,4804
+    OnlyWhenNoObstacles,133,4815
+    IfAtMostOneObstacle,134,4840
+    Always135,4865
+} diagonal_movement;136,4876
+typedef struct neighbor 138,4898
+} neighbor;142,4997
+typedef struct neighbor_list 144,5010
+} neighbor_list;147,5087
+typedef struct jump_point 149,5105
+} jump_point;151,5150
+typedef struct coord2d 154,5166
+} coord2d;159,5267
+typedef struct coord_list 161,5279
+} coord_list;164,5351
+typedef jump_point (*jump_func)jump_func168,5368
+typedef neighbor_list * (*find_neighbors_func)find_neighbors_func169,5452
+typedef struct JPS 171,5571
+} JPS;174,5652
+typedef enum jump_direction 176,5660
+    north,177,5690
+    east,178,5701
+    south,179,5711
+    west,180,5722
+    ne,181,5732
+    se,182,5740
+    sw,183,5748
+    nw,184,5756
+    up,185,5764
+    down,186,5772
+} jump_direction;187,5782
+
+pathfind/pathfind2/pool.c,226
+int clock_gettime(8,140
+typedef struct entity 33,806
+} entity;36,857
+typedef struct entity_pool 38,868
+} entity_pool;42,949
+void swap(44,965
+entity* get_item(50,1123
+void return_item_at_index(59,1333
+int main(75,1994
+
+pathfind/pathfind2/readMap.c,51
+void readMapString(2,1
+void readMapFile(102,3126
+
+spec/c89spec.h,1228
+#define C89SPEC_H_SC604JRD29,1306
+#define C89SPEC_PROFILE_THRESHOLD 33,1449
+#define describe(46,2268
+#define expect(52,2560
+#define it(60,2861
+#define test(64,3005
+static int _c89spec_tests_execs 107,4800
+static int _c89spec_tests_passed 108,4839
+static int _c89spec_tests_failed 109,4878
+static clock_t _c89spec_clock_begin;112,4999
+static clock_t _c89spec_clock_end;113,5036
+static double  _c89spec_test_time;114,5071
+static const char * _C89SPEC_NO_COLOR 120,5252
+static const char * _C89SPEC_UNDERSCORE 121,5299
+static const char * _C89SPEC_RED_COLOR 122,5346
+static const char * _C89SPEC_GREEN_COLOR 123,5393
+static const char * _C89SPEC_BLUE_COLOR 124,5440
+static const char * _C89SPEC_BLACK_COLOR 125,5487
+static const char * _C89SPEC_NO_COLOR 127,5540
+static const char * _C89SPEC_UNDERSCORE 128,5594
+static const char * _C89SPEC_RED_COLOR 129,5648
+static const char * _C89SPEC_GREEN_COLOR 130,5705
+static const char * _C89SPEC_BLUE_COLOR 131,5762
+static const char * _C89SPEC_BLACK_COLOR 132,5819
+void _c89spec_test_module(135,5885
+void _c89spec_begin_it(144,6183
+void _c89spec_end_it(150,6360
+void _c89spec_expect_passed(160,6730
+void _c89spec_expect_failed(165,6844
+int summary(170,6984
+
+spec/spec_runner.c,116
+void initialize_memory(10,191
+describe(53,1796
+bool block_at_xyz_is(69,2278
+describe(74,2439
+int main(120,3786
+
+src/data_structures.h,865
+#define DATA_STRUCTURES_H2,26
+#define NEW_SLIST(9,179
+#define NEW_SLIST_FREE(14,428
+#define FREE_SLIST(21,801
+#define SLIST_ADDFIRST(27,1072
+#define SLIST_REMOVEFIRST(31,1223
+#define NEW_DLIST(35,1341
+#define NEW_DLIST_FREE(41,1652
+#define DLIST_ADDLAST(49,2087
+#define DLIST_ADDFIRST(55,2338
+#define FREE_DLIST(62,2590
+#define DLIST_INSERTBEFORE(72,2942
+#define DLIST_INSERTAFTER(78,3193
+#define DLIST_REMOVE(84,3444
+#define DLIST_REMOVELAST(88,3595
+#define DLIST_REMOVEFIRST(92,3818
+#define DLIST_PEEKFIRST(96,4041
+#define DLIST_PEEKLAST(99,4142
+#define DLIST_EMPTY(102,4243
+#define SLIST_EMPTY(106,4394
+#define SLIST_PEEKFIRST(109,4495
+#define NEW_HEAP(111,4550
+#define CMP(116,4815
+#define HEAP_PUSH(118,4853
+#define HEAP_PEEKFIRST(129,5474
+#define HEAP_POP(133,5652
+#define HEAP_UPDATE_AT(150,6774
+#define HEAP_UPDATE_ITEM(172,8352
+
+src/game.c,295
+#define SORT_NAME 11,145
+#define SORT_TYPE 12,169
+#define SORT_CMP(13,193
+internal int wallsortfunc 23,529
+internal void set_actor_batch_sizes(32,842
+internal void set_wall_batch_sizes(48,1455
+internal void set_colored_line_batch_sizes(63,2021
+extern void game_update_and_render(80,2700
+
+src/icon.c,15
+} icon 10,396
+
+src/level.c,475
+#define BUF_SIZE 4,40
+internal b32 exists(6,63
+internal int starts_with(15,219
+internal World_Size validate_and_get_dimensions(22,414
+} LevelCounters;65,1625
+internal void read_level_line(68,1644
+void read_level_str(139,4197
+internal void read_level(178,5548
+internal b32 has_block_at(222,6840
+internal void set_block_at(228,7046
+internal void set_meta_block_at(234,7245
+internal void add_stairs(240,7454
+void make_level_str(339,11740
+void make_level(346,11926
+
+src/level.h,73
+#define LEVEL_H2,16
+#define FLATTEN_3D_INDEX(7,74
+} World_Size;13,231
+
+src/main.c,1054
+#define NO_HOT_RELOADING13,144
+} IOSCallbackParams;25,546
+#define SDL_ASSERT(28,569
+#define SDL_MIX_ASSERT(33,1083
+internal void SetSDLIcon(39,1598
+internal void initialize_SDL(68,2558
+internal int event_filter(112,4200
+internal void load_resources(129,4605
+internal void quit(156,6024
+internal void update_frame(162,6157
+internal void set_wall_batch_sizes(170,6399
+internal void set_actor_batch_sizes(186,6970
+internal void set_glyph_batch_sizes(202,7583
+internal void set_colored_line_batch_sizes(218,8228
+internal void draw_glyph(235,8907
+u32 debug_text_x 246,9197
+u32 debug_text_y 247,9219
+internal u32 draw_text(249,9242
+internal void print(292,10366
+internal void center_view(307,10800
+internal int wallsortfunc(324,11526
+internal int actorsortfunc(332,11835
+Shared_Library libgame 340,12149
+internal void stub(347,12310
+PerfDict clone;357,12564
+int ticker 358,12580
+internal void reset_debug_performance_components(360,12597
+internal void maybe_load_libgame(367,12780
+int main(399,14140
+#define ACTOR_BATCH 468,16421
+
+src/memory.c,418
+internal u64 hash(11,67
+internal int perf_dict_cmp(21,301
+void perf_dict_set(27,525
+PerfDictEntry perf_dict_get(45,1107
+void perf_dict_reset(50,1235
+void perf_dict_sort_clone(54,1315
+void actor_remove(62,1601
+void actor_add(75,2011
+void reserve_memory(80,2081
+TempMemory begin_temporary_memory(95,2584
+void end_temporary_memory(100,2725
+void *push_size_(push_size_106,2877
+void initialize_arena(125,3455
+
+src/memory.h,526
+#define MEMORY_H2,17
+#define KILOBYTES(9,123
+#define MEGABYTES(10,165
+#define GIGABYTES(11,218
+#define TERABYTES(12,271
+#define PERF_DICT_SIZE 14,325
+} PerfDictEntry;21,461
+} PerfDict;25,536
+#define BEGIN_PERFORMANCE_COUNTER(29,551
+#define END_PERFORMANCE_COUNTER(30,638
+typedef struct Shared_Library33,792
+} Shared_Library;42,966
+typedef size_t memory_index;45,986
+} Memory;55,1180
+} MemoryArena;61,1268
+} TempMemory;66,1348
+#define PUSH_STRUCT(77,1578
+#define PUSH_ARRAY(78,1652
+#define PUSH_SIZE(79,1742
+
+src/multi_platform.h,279
+#define MULTI_PLATFORM_H2,25
+#define getResourcePath(5,64
+#define GL36,105
+#define getResourcePath(12,181
+#define GL313,222
+#define GLEW_STATIC14,234
+#define GLES20,318
+#define getResourcePath(21,331
+#define getResourcePath(30,510
+#define IOS37,727
+#define GLES38,739
+
+src/pathfind.c,1562
+void init_grid(4,52
+#define FLATTEN_3D_INDEX(68,2751
+grid_node *GetNodeAt(GetNodeAt70,2842
+internal int GridCanGoUpFrom(73,2979
+internal int GridCanGoDownFrom(89,3888
+internal inline int InBounds(108,5161
+internal int GridWalkableAt(113,5356
+internal inline int isJumpNode(116,5537
+#define isWall(123,5931
+#define isEmpty(124,5983
+typedef enum jump_direction 126,6036
+    north,127,6066
+    east,128,6077
+    south,129,6087
+    west,130,6098
+    ne,131,6108
+    se,132,6116
+    sw,133,6124
+    nw,134,6132
+    up,135,6140
+    down,136,6148
+    invalid137,6158
+} jump_direction;138,6170
+internal void display_processed(141,6190
+void preprocess_grid(177,7442
+inline internal grid_node* HeapPop(453,19121
+#define NODE_EQUALS(458,19271
+internal path_list * BacktrackPath(462,19379
+#define SET_ALLOWED(485,20163
+#define IS_CARDINAL(488,20272
+internal jump_direction getDirection(491,20430
+internal inline int diffXY(531,21411
+internal inline int otherIsInGeneralDirectionOfDiagonal(539,21637
+grid_node * getNodeGivenDirectionAndDistance(551,22148
+grid_node * getNodeGivenDirection(621,24642
+#define SQRT2_OVER_1 626,24871
+#define SQRT2 627,24912
+internal float ManHattan(629,24946
+internal float Octile(632,25026
+path_list * FindPathPlus(636,25163
+typedef struct coord2d 809,32956
+} coord2d;814,33057
+typedef struct coord_list 816,33069
+} coord_list;819,33141
+#define setXYZinStruct(821,33156
+#define PUSH_COORD(823,33242
+void interpolate(840,34067
+path_list * SmoothenPath(869,34639
+path_list * ExpandPath(961,38061
+
+src/pathfind.h,271
+#define PATHFIND_H3,20
+typedef struct path_node 8,99
+} path_node;12,200
+typedef struct path_list 14,214
+} path_list;16,267
+typedef struct grid_node_list 18,281
+} grid_node_list;20,338
+} grid_node_heap;26,425
+typedef struct jump_point 28,444
+} jump_point;30,489
+
+src/random.c,313
+#define N 4,22
+#define M 5,93
+#define K 6,160
+#define hiBit(7,225
+#define loBit(8,305
+#define loBits(9,385
+#define mixBits(10,465
+static u32 rnd_state[rnd_state12,546
+static u32 *next;next13,623
+static int left 14,695
+void seed_rand(16,773
+internal u32 reload_MT(23,974
+u32 random_mersenne(47,1697
+
+src/random.h,175
+#define RANDOM_H2,17
+#define rand_float(9,104
+#define rand_int2(10,160
+#define rand_int(11,230
+#define rand_bool(12,272
+#define rand_arr(13,325
+#define rand_str(14,386
+
+src/renderer.c,582
+} V2;14,213
+} Rect2;19,259
+#define CHECK(23,271
+void setup_shader_layouts(34,829
+internal inline Rect2 get_uvs(63,2817
+internal inline Rect2 get_verts(72,3071
+internal void makeBufferRPI(93,3895
+internal void bindBuffer(107,4421
+internal void makeBuffer(129,5283
+internal const char *gl_error_string(gl_error_string164,6470
+void initialize_GL(188,7053
+void prepare_renderer(214,7855
+void update_and_draw_actor_vertices(382,15224
+void render_actors(580,24074
+void render_walls(604,24911
+void render_text(643,26386
+void render_lines(718,29819
+void render(782,32800
+
+src/renderer.h,514
+#define RENDERER_H2,19
+#define USES_HALF_FLOAT13,171
+#define VERTEX_FLOAT_TYPE 21,321
+#define GL_FLOAT_TYPE 23,365
+#define GL_FLOAT_TYPE 27,421
+#define VERTEX_FLOAT_TYPE 30,474
+#define GL_FLOAT_TYPE 31,508
+#define GL_FLOAT_TYPE 37,615
+#define GL_FLOAT_TYPE 39,657
+} ShaderLayoutElement;51,802
+} ShaderLayout;58,1011
+} Assets;75,1283
+} ViewPort;81,1343
+#define MAX_IN_BUFFER 84,1357
+typedef struct DrawBuffer 86,1385
+} DrawBuffer;96,1641
+typedef struct RenderState 100,1658
+} RenderState;118,2168
+
+src/resource.c,663
+internal b32 exists(9,130
+internal void make_font(18,286
+internal char *resource(resource109,3884
+void resource_font(116,4030
+internal b32 load_TGA_file(123,4193
+internal b32 is_power_of_2(187,5782
+internal void make_texture(191,5853
+void resource_texture(219,7127
+internal const char *read_file(read_file224,7251
+internal GLuint load_shader(250,7822
+#define CHECK(274,8507
+internal GLuint make_shader_program(285,9065
+void resource_shader(314,10004
+internal void make_sprite_atlas(321,10228
+void resource_sprite_atlas(375,12423
+#define BUF_SIZE 380,12542
+void resource_level(384,12567
+void resource_ogg(390,12737
+void resource_wav(395,12898
+
+src/resource.h,98
+#define RESOURCE_H2,19
+} BM_Glyph;18,283
+} BM_Font;24,412
+} Texture;30,487
+} TGA_File;38,590
+
+src/sort.h,8031
+#define SORT_CMP(21,389
+#define TIM_SORT_STACK_SIZE 25,489
+#define SORT_SWAP(29,530
+#define SORT_CONCAT(31,619
+#define SORT_MAKE_STR1(32,657
+#define SORT_MAKE_STR(33,703
+#define BINARY_INSERTION_FIND 35,757
+#define BINARY_INSERTION_SORT_START 36,833
+#define BINARY_INSERTION_SORT 37,915
+#define REVERSE_ELEMENTS 38,991
+#define COUNT_RUN 39,1062
+#define CHECK_INVARIANT 40,1126
+#define TIM_SORT 41,1196
+#define TIM_SORT_RESIZE 42,1259
+#define TIM_SORT_MERGE 43,1329
+#define TIM_SORT_COLLAPSE 44,1398
+#define HEAP_SORT 45,1470
+#define MEDIAN 46,1534
+#define QUICK_SORT 47,1595
+#define MERGE_SORT 48,1660
+#define MERGE_SORT_IN_PLACE 49,1725
+#define MERGE_SORT_IN_PLACE_RMERGE 50,1799
+#define MERGE_SORT_IN_PLACE_BACKMERGE 51,1880
+#define MERGE_SORT_IN_PLACE_FRONTMERGE 52,1964
+#define MERGE_SORT_IN_PLACE_ASWAP 53,2049
+#define SELECTION_SORT 54,2129
+#define SHELL_SORT 55,2198
+#define QUICK_SORT_PARTITION 56,2263
+#define QUICK_SORT_RECURSIVE 57,2338
+#define HEAP_SIFT_DOWN 58,2413
+#define HEAPIFY 59,2482
+#define TIM_SORT_RUN_T 60,2544
+#define TEMP_STORAGE_T 61,2613
+#define PUSH_NEXT 62,2682
+#define GRAIL_SWAP1 63,2746
+#define REC_STABLE_SORT 64,2812
+#define GRAIL_REC_MERGE 65,2882
+#define GRAIL_SORT_DYN_BUFFER 66,2952
+#define GRAIL_SORT_FIXED_BUFFER 67,3028
+#define GRAIL_COMMON_SORT 68,3106
+#define GRAIL_SORT 69,3178
+#define GRAIL_COMBINE_BLOCKS 70,3243
+#define GRAIL_LAZY_STABLE_SORT 71,3318
+#define GRAIL_MERGE_WITHOUT_BUFFER 72,3395
+#define GRAIL_ROTATE 73,3476
+#define GRAIL_BIN_SEARCH_LEFT 74,3543
+#define GRAIL_BUILD_BLOCKS 75,3619
+#define GRAIL_FIND_KEYS 76,3692
+#define GRAIL_MERGE_BUFFERS_LEFT_WITH_X_BUF 77,3762
+#define GRAIL_BIN_SEARCH_RIGHT 78,3857
+#define GRAIL_MERGE_BUFFERS_LEFT 79,3934
+#define GRAIL_SMART_MERGE_WITH_X_BUF 80,4013
+#define GRAIL_MERGE_LEFT_WITH_X_BUF 81,4096
+#define GRAIL_SMART_MERGE_WITHOUT_BUFFER 82,4178
+#define GRAIL_SMART_MERGE_WITH_BUFFER 83,4267
+#define GRAIL_MERGE_RIGHT 84,4351
+#define GRAIL_MERGE_LEFT 85,4423
+#define GRAIL_SWAP_N 86,4494
+#define SQRT_SORT 87,4561
+#define SQRT_SORT_BUILD_BLOCKS 88,4625
+#define SQRT_SORT_MERGE_BUFFERS_LEFT_WITH_X_BUF 89,4702
+#define SQRT_SORT_MERGE_DOWN 90,4805
+#define SQRT_SORT_MERGE_LEFT_WITH_X_BUF 91,4880
+#define SQRT_SORT_MERGE_RIGHT 92,4967
+#define SQRT_SORT_SWAP_N 93,5043
+#define SQRT_SORT_SWAP_1 94,5114
+#define SQRT_SORT_SMART_MERGE_WITH_X_BUF 95,5185
+#define SQRT_SORT_SORT_INS 96,5274
+#define SQRT_SORT_COMBINE_BLOCKS 97,5347
+#define SQRT_SORT_COMMON_SORT 98,5426
+#define BUBBLE_SORT 99,5502
+#define MAX(102,5581
+#define MIN(105,5643
+} TIM_SORT_RUN_T;111,5748
+void SHELL_SORT(128,6362
+static __inline int64_t BINARY_INSERTION_FIND(165,7082
+static void BINARY_INSERTION_SORT_START(205,7877
+void BINARY_INSERTION_SORT(231,8493
+void SELECTION_SORT(241,8713
+void MERGE_SORT_IN_PLACE_ASWAP(260,9077
+void MERGE_SORT_IN_PLACE_FRONTMERGE(268,9240
+size_t MERGE_SORT_IN_PLACE_BACKMERGE(299,9791
+void MERGE_SORT_IN_PLACE_RMERGE(336,10458
+void MERGE_SORT_IN_PLACE(383,11580
+void MERGE_SORT(476,13279
+static __inline size_t QUICK_SORT_PARTITION(522,14178
+static __inline size_t MEDIAN(553,14903
+static void QUICK_SORT_RECURSIVE(598,15787
+void QUICK_SORT(625,16466
+static __inline void REVERSE_ELEMENTS(637,16703
+static int64_t COUNT_RUN(649,16914
+static int CHECK_INVARIANT(701,17812
+} TEMP_STORAGE_T;733,18375
+static void TIM_SORT_RESIZE(735,18394
+static void TIM_SORT_MERGE(750,18852
+static int TIM_SORT_COLLAPSE(801,20190
+static __inline int PUSH_NEXT(865,21940
+void TIM_SORT(908,23008
+static __inline void HEAP_SIFT_DOWN(958,24133
+static __inline void HEAPIFY(977,24555
+void HEAP_SORT(986,24736
+#define SORT_CMP_A(1015,25752
+static __inline void SQRT_SORT_SWAP_1(1017,25797
+static __inline void SQRT_SORT_SWAP_N(1023,25913
+static void SQRT_SORT_MERGE_RIGHT(1030,26044
+static void SQRT_SORT_MERGE_LEFT_WITH_X_BUF(1047,26485
+static void SQRT_SORT_MERGE_DOWN(1065,26909
+static void SQRT_SORT_SMART_MERGE_WITH_X_BUF(1081,27256
+static void SQRT_SORT_MERGE_BUFFERS_LEFT_WITH_X_BUF(1114,28273
+static void SQRT_SORT_BUILD_BLOCKS(1164,29609
+static void SQRT_SORT_SORT_INS(1222,30621
+static void SQRT_SORT_COMBINE_BLOCKS(1236,31021
+static void SQRT_SORT_COMMON_SORT(1302,32417
+static void SQRT_SORT(1328,33036
+#define GRAIL_EXT_BUFFER_LENGTH 1377,34745
+static __inline void GRAIL_SWAP1(1379,34782
+static __inline void GRAIL_SWAP_N(1385,34889
+static void GRAIL_ROTATE(1391,35010
+static int GRAIL_BIN_SEARCH_LEFT(1404,35263
+static int GRAIL_BIN_SEARCH_RIGHT(1419,35522
+static int GRAIL_FIND_KEYS(1436,35807
+static void GRAIL_MERGE_WITHOUT_BUFFER(1458,36312
+static void GRAIL_MERGE_LEFT(1501,37192
+static void GRAIL_MERGE_RIGHT(1517,37561
+static void GRAIL_SMART_MERGE_WITH_BUFFER(1533,37978
+static void GRAIL_SMART_MERGE_WITHOUT_BUFFER(1557,38576
+static void GRAIL_MERGE_LEFT_WITH_X_BUF(1598,39446
+static void GRAIL_SMART_MERGE_WITH_X_BUF(1615,39791
+static void GRAIL_MERGE_BUFFERS_LEFT_WITH_X_BUF(1647,40803
+static void GRAIL_BUILD_BLOCKS(1699,42206
+static void GRAIL_MERGE_BUFFERS_LEFT(1812,44669
+static void GRAIL_LAZY_STABLE_SORT(1879,46267
+static void GRAIL_COMBINE_BLOCKS(1909,46921
+static void GRAIL_COMMON_SORT(1987,48818
+static void GRAIL_SORT(2062,50369
+static void GRAIL_SORT_FIXED_BUFFER(2066,50465
+static void GRAIL_SORT_DYN_BUFFER(2071,50643
+static void GRAIL_REC_MERGE(2091,51026
+static void REC_STABLE_SORT(2132,51902
+void BUBBLE_SORT(2161,52474
+#undef QUICK_SORT2178,52760
+#undef MEDIAN2179,52778
+#undef SORT_CONCAT2180,52792
+#undef SORT_MAKE_STR12181,52811
+#undef SORT_MAKE_STR2182,52833
+#undef SORT_NAME2183,52854
+#undef SORT_TYPE2184,52871
+#undef SORT_CMP2185,52888
+#undef TEMP_STORAGE_T2186,52904
+#undef TIM_SORT_RUN_T2187,52926
+#undef PUSH_NEXT2188,52948
+#undef SORT_SWAP2189,52965
+#undef SORT_CONCAT2190,52982
+#undef SORT_MAKE_STR12191,53001
+#undef SORT_MAKE_STR2192,53023
+#undef BINARY_INSERTION_FIND2193,53044
+#undef BINARY_INSERTION_SORT_START2194,53073
+#undef BINARY_INSERTION_SORT2195,53108
+#undef REVERSE_ELEMENTS2196,53137
+#undef COUNT_RUN2197,53161
+#undef TIM_SORT2198,53178
+#undef TIM_SORT_RESIZE2199,53194
+#undef TIM_SORT_COLLAPSE2200,53217
+#undef TIM_SORT_RUN_T2201,53242
+#undef TEMP_STORAGE_T2202,53264
+#undef MERGE_SORT2203,53286
+#undef MERGE_SORT_IN_PLACE2204,53304
+#undef MERGE_SORT_IN_PLACE_RMERGE2205,53331
+#undef MERGE_SORT_IN_PLACE_BACKMERGE2206,53365
+#undef MERGE_SORT_IN_PLACE_FRONTMERGE2207,53402
+#undef MERGE_SORT_IN_PLACE_ASWAP2208,53440
+#undef GRAIL_SWAP12209,53473
+#undef REC_STABLE_SORT2210,53492
+#undef GRAIL_REC_MERGE2211,53515
+#undef GRAIL_SORT_DYN_BUFFER2212,53538
+#undef GRAIL_SORT_FIXED_BUFFER2213,53567
+#undef GRAIL_COMMON_SORT2214,53598
+#undef GRAIL_SORT2215,53623
+#undef GRAIL_COMBINE_BLOCKS2216,53641
+#undef GRAIL_LAZY_STABLE_SORT2217,53669
+#undef GRAIL_MERGE_WITHOUT_BUFFER2218,53699
+#undef GRAIL_ROTATE2219,53733
+#undef GRAIL_BIN_SEARCH_LEFT2220,53753
+#undef GRAIL_BUILD_BLOCKS2221,53782
+#undef GRAIL_FIND_KEYS2222,53808
+#undef GRAIL_MERGE_BUFFERS_LEFT_WITH_X_BUF2223,53831
+#undef GRAIL_BIN_SEARCH_RIGHT2224,53874
+#undef GRAIL_MERGE_BUFFERS_LEFT2225,53904
+#undef GRAIL_SMART_MERGE_WITH_X_BUF2226,53936
+#undef GRAIL_MERGE_LEFT_WITH_X_BUF2227,53972
+#undef GRAIL_SMART_MERGE_WITHOUT_BUFFER2228,54007
+#undef GRAIL_SMART_MERGE_WITH_BUFFER2229,54047
+#undef GRAIL_MERGE_RIGHT2230,54084
+#undef GRAIL_MERGE_LEFT2231,54109
+#undef GRAIL_SWAP_N2232,54133
+#undef SQRT_SORT2233,54153
+#undef SQRT_SORT_BUILD_BLOCKS2234,54170
+#undef SQRT_SORT_MERGE_BUFFERS_LEFT_WITH_X_BUF2235,54200
+#undef SQRT_SORT_MERGE_DOWN2236,54247
+#undef SQRT_SORT_MERGE_LEFT_WITH_X_BUF2237,54275
+#undef SQRT_SORT_MERGE_RIGHT2238,54314
+#undef SQRT_SORT_SWAP_N2239,54343
+#undef SQRT_SORT_SWAP_12240,54367
+#undef SQRT_SORT_SMART_MERGE_WITH_X_BUF2241,54391
+#undef SQRT_SORT_SORT_INS2242,54431
+#undef SQRT_SORT_COMBINE_BLOCKS2243,54457
+#undef SQRT_SORT_COMMON_SORT2244,54489
+#undef SORT_CMP_A2245,54518
+#undef BUBBLE_SORT2246,54536
+
+src/sort_common.h,268
+#define SORT_COMMON_H6,172
+#define MAX(9,207
+#define MIN(13,270
+static const uint64_t shell_gaps[shell_gaps19,408
+#define CLZ 23,1099
+static int clzll(29,1199
+#define CLZ 70,1709
+static __inline int compute_minrun(74,1742
+static __inline size_t rbnd(87,2030
+
+src/states.h,1737
+#define STATES_H2,17
+} ScratchState;7,95
+} DebugState;12,176
+} BlockTextureAtlasPosition;17,238
+} Wall;24,355
+} Actor;34,481
+} Glyph;43,582
+} ColoredLine;49,669
+} WorldDims;55,747
+    Nothing,59,777
+    WallBlock,60,790
+    Floor,61,805
+    Floor, Grass,61,805
+    Floor, Grass, Wood,61,805
+    Floor, Grass, Wood, Concrete,61,805
+    Floor, Grass, Wood, Concrete, Tiles,61,805
+    Floor, Grass, Wood, Concrete, Tiles, Carpet,61,805
+    LadderUpDown,62,854
+    LadderUpDown, LadderUp,62,854
+    LadderUpDown, LadderUp, LadderDown,62,854
+    StairsUpMeta,63,894
+    StairsUpMeta, StairsDownMeta,63,894
+    StairsDown1N,64,928
+    StairsDown1N,StairsDown1E,64,928
+    StairsDown1N,StairsDown1E,StairsDown1W,64,928
+    StairsDown1N,StairsDown1E,StairsDown1W,StairsDown1S,64,928
+    StairsFollowUpMeta,65,985
+    StairsUp1N,66,1009
+    StairsUp1N, StairsUp2N,66,1009
+    StairsUp1N, StairsUp2N, StairsUp3N,66,1009
+    StairsUp1N, StairsUp2N, StairsUp3N, StairsUp4N,66,1009
+    StairsUp1E,67,1061
+    StairsUp1E, StairsUp2E,67,1061
+    StairsUp1E, StairsUp2E, StairsUp3E,67,1061
+    StairsUp1E, StairsUp2E, StairsUp3E, StairsUp4E,67,1061
+    StairsUp1S,68,1113
+    StairsUp1S, StairsUp2S,68,1113
+    StairsUp1S, StairsUp2S, StairsUp3S,68,1113
+    StairsUp1S, StairsUp2S, StairsUp3S, StairsUp4S,68,1113
+    StairsUp1W,69,1165
+    StairsUp1W, StairsUp2W,69,1165
+    StairsUp1W, StairsUp2W, StairsUp3W,69,1165
+    StairsUp1W, StairsUp2W, StairsUp3W, StairsUp4W,69,1165
+    Shaded,70,1217
+    BlockTotal71,1229
+} Block;72,1244
+} WorldBlock;78,1329
+} LevelData;84,1429
+typedef struct grid_node 87,1444
+} grid_node;102,1877
+typedef struct grid 104,1891
+} Grid;109,1981
+} PermanentState;136,2411
+
+src/types.h,508
+#define TYPES_H2,16
+#define MAX(9,151
+#define MIN(10,195
+#define CLAMP(11,239
+#define ARRAY_COUNT(12,290
+#define UNUSED(13,352
+#define ABS(14,380
+#define ASSERT(16,420
+#define internal 22,855
+typedef int8_t s8;24,880
+typedef int16_t s16;25,899
+typedef int32_t s32;26,920
+typedef int64_t s64;27,941
+typedef uint8_t u8;29,963
+typedef uint16_t u16;30,983
+typedef uint32_t u32;31,1005
+typedef uint64_t u64;32,1027
+typedef float r32;34,1050
+typedef double r64;35,1069
+typedef bool b32;36,1089
+
+tools/write_map.c,140
+#define BOLDWHITE 3,102
+char custom_middle 10,224
+static void build_line_in_parts(13,252
+static void write_map(34,773
+int main(63,1543

@@ -231,6 +231,12 @@ internal void set_block_at(LevelData *level, u32 x, u32 y, u32 z_level, Block ty
 
 }
 
+internal void set_meta_block_at(LevelData *level, u32 x, u32 y, u32 z_level, Block type) {
+    WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(x,y,z_level, level->x, level->y)];
+    b->meta_object = type;
+
+}
+
 internal void add_stairs(LevelData *level){
     //printf("add_stairs\n");
     for (int z = 0; z < level->z_level; z++){
@@ -252,6 +258,7 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x, y-1, z, StairsUp2N);
                             set_block_at(level, x, y-2, z, StairsUp3N);
                             set_block_at(level, x, y-3, z, StairsUp4N);
+                            //set_meta_block_at(level, x, y-3, z+1, StairsDownMeta);
                             //set_block_at(level, x, y-3, z+1, StairsDown1S);
                         }
                     }
@@ -271,6 +278,8 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x+1, y, z, StairsUp2E);
                             set_block_at(level, x+2, y, z, StairsUp3E);
                             set_block_at(level, x+3, y, z, StairsUp4E);
+                            //set_meta_block_at(level, x+3, y, z+1, StairsDownMeta);
+
                             //set_block_at(level, x+3, y, z+1, StairsDown1W);
 
                         }
@@ -290,6 +299,8 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x, y+1, z, StairsUp2S);
                             set_block_at(level, x, y+2, z, StairsUp3S);
                             set_block_at(level, x, y+3, z, StairsUp4S);
+                            //set_meta_block_at(level, x, y+3, z+1, StairsDownMeta);
+
                             //set_block_at(level, x, y+3, z+1, StairsDown1N);
 
                         }
@@ -309,6 +320,8 @@ internal void add_stairs(LevelData *level){
                             set_block_at(level, x-1, y, z, StairsUp2W);
                             set_block_at(level, x-2, y, z, StairsUp3W);
                             set_block_at(level, x-3, y, z, StairsUp4W);
+                            //set_meta_block_at(level, x-3, y, z+1, StairsDownMeta);
+
                             //set_block_at(level, x-3, y, z+1, StairsDown1E);
 
                         }

@@ -318,8 +318,7 @@ float Octile(int dx, int dy, int dz) {
     return (dx < dy ? SQRT2_OVER_1 * dx + dy + (dz) : SQRT2_OVER_1 * dy + dx + (dz));
 }
 
-inline static int
-InBounds(grid *Grid, int x, int y, int z) {
+inline static int InBounds(grid *Grid, int x, int y, int z) {
     return ((x >= 0 && x < Grid->width) &&
             (y >= 0 && y < Grid->height) &&
             (z >= 0 && z < Grid->depth));

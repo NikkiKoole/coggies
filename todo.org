@@ -1,5 +1,17 @@
 * Currently doing
-  - [ ] stairs/ladders
+  - [X] stairs/ladders
+    for pathing i want to be able to use the g values, so stairs will be avoided if possible
+    (dont walk through the base)
+
+    I believe there's a bug in the preprocessed  distances, visible now Jumppoints touch each other around stairs.
+    ......
+    .J....
+    JJ???#
+    .J....
+    Here I would like the Jumppoint at 1,1 to also jump to 0,2 (since 1,2 is the stairs up and is higher cost/needs to be avoided if possible)
+    somehow the distance SW at 1,1 == 0
+
+
 
 * Todo
 - [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
