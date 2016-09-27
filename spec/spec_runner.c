@@ -7,6 +7,30 @@
 #include "../src/memory.h"
 #include "../src/level.h"
 
+bool block_at_xyz_is(int x, int y, int z, Block b, LevelData * level) {
+    return (level->blocks[FLATTEN_3D_INDEX(x,y,z, level->x, level->y)].object == b);
+}
+
+bool four_diagonals_are_jumps(Grid *grid, int x, int y, int z) {
+    return (GetNodeAt(grid, x-1, y-1, z)->isJumpNode &&
+            GetNodeAt(grid, x-1, y+1, z)->isJumpNode &&
+            GetNodeAt(grid, x+1, y+1, z)->isJumpNode &&
+            GetNodeAt(grid, x+1, y-1, z)->isJumpNode);
+}
+
+int total_jumppoints(Grid *grid) {
+    int result = 0;
+    for (int z = 0; z < grid->depth; z++) {
+        for (int y = 0; y < grid->height; y++) {
+            for (int x = 0; x< grid->width; x++) {
+                if (GetNodeAt(grid, x, y, z)->isJumpNode) result++;
+            }
+        }
+    }
+    return result;
+}
+
+
 void initialize_memory(Memory *memory) {
     void *base_address = (void *)GIGABYTES(0);
     memory->permanent_size = MEGABYTES(32);
@@ -66,9 +90,6 @@ describe(memory) {
     }
 }
 
-bool block_at_xyz_is(int x, int y, int z, Block b, LevelData * level) {
-    return (level->blocks[FLATTEN_3D_INDEX(x,y,z, level->x, level->y)].object == b);
-}
 
 
 describe(leveldata) {
@@ -100,7 +121,7 @@ describe(leveldata) {
 
         initialize_memory(memory);
         PermanentState *permanent = (PermanentState *)memory->permanent;
-        World_Size size = (World_Size){6,1,1};
+        World_Size size = (World_Size){6,1,2};
 
         char string[] =
             "+------+\n"
@@ -112,6 +133,143 @@ describe(leveldata) {
         make_level_str(permanent, &permanent->level , size, string);
         expect(block_at_xyz_is(1,0,0, StairsUp1E, &permanent->level));
         expect(block_at_xyz_is(4,0,0, StairsUp4E, &permanent->level));
+    }
+}
+
+describe(grid_preprocessor) {
+    it (places jump points around a wall) {
+
+        Memory _memory;
+        Memory *memory = &_memory;
+
+        initialize_memory(memory);
+        PermanentState *permanent = (PermanentState *)memory->permanent;
+        World_Size size = (World_Size){6,3,1};
+        char string[] =
+            "+------+\n"
+            "|......|\n"
+            "|..##..|\n"
+            "|......|\n"
+            "+------+";
+        /*
+          "+------+\n"
+          "|.J..J.|\n"
+          "|..##..|\n"
+          "|.J..J.|\n"
+          "+------+";
+         */
+
+        make_level_str(permanent, &permanent->level , size, string);
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+        init_grid(permanent->grid, &permanent->arena, &permanent->level);
+        expect(permanent->grid->width == 6 && permanent->grid->height == 3);
+        preprocess_grid(permanent->grid);
+        expect(GetNodeAt(permanent->grid, 1, 0, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 4, 0, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 1, 2, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 4, 2, 0)->isJumpNode);
+    }
+    it (places jumppoints at wallcorners and void corners) {
+         Memory _memory;
+        Memory *memory = &_memory;
+
+        initialize_memory(memory);
+        PermanentState *permanent = (PermanentState *)memory->permanent;
+        World_Size size = (World_Size){12,11,1};
+        char string[] =
+            "+------------+\n"
+            "|............|\n"
+            "|.##########.|\n"
+            "|.#........#.|\n"
+            "|.#........#.|\n"
+            "|.#...  ...#.|\n"
+            "|.#...  ...#.|\n"
+            "|.#...  ...#.|\n"
+            "|.#........#.|\n"
+            "|.#........#.|\n"
+            "|.##########.|\n"
+            "|............|\n"
+            "+------------+";
+
+        /*
+          "+------------+\n"
+          "|J..........J|\n"
+          "|.##########.|\n"
+          "|.#........#.|\n"
+          "|.#..J..J..#.|\n"
+          "|.#...  ...#.|\n"
+          "|.#...  ...#.|\n"
+          "|.#...  ...#.|\n"
+          "|.#..J..J..#.|\n"
+          "|.#........#.|\n"
+          "|.##########.|\n"
+          "|J..........J|\n"
+          "+------------+";
+         */
+
+        make_level_str(permanent, &permanent->level , size, string);
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+        init_grid(permanent->grid, &permanent->arena, &permanent->level);
+        preprocess_grid(permanent->grid);
+        expect(GetNodeAt(permanent->grid, 0, 0, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 11, 0, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 11, 10, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 0, 10, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 4, 3, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 7, 3, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 4, 7, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 7, 7, 0)->isJumpNode);
+
+    }
+
+
+    it (places jump points around ladders and on laddders) {
+        // I found out I need to have jumppoints around ladders and stairs to
+        // give people a way around them when possible.
+        // otherwise people would end up  walking through them even when they
+        // werent using them to go up or down.
+        // i am notyet sure if I need diagonal around or cardianl around them
+
+        Memory _memory;
+        Memory *memory = &_memory;
+
+        initialize_memory(memory);
+        PermanentState *permanent = (PermanentState *)memory->permanent;
+        World_Size size = (World_Size){6,3,2};
+        char string[] =
+            "+------+\n"
+            "|......|\n"
+            "|..S...|\n"
+            "|......|\n"
+            "+------+\n"
+            "|......|\n"
+            "|..E...|\n"
+            "|......|\n"
+            "+------+";
+
+        /*
+          "+------+\n"
+          "|.J.J..|\n"
+          "|..J...|\n"
+          "|.J.J..|\n"
+          "+------+\n";
+          "|.J.J..|\n"
+          "|..J...|\n"
+          "|.J.J..|\n"
+          "+------+";
+         */
+
+        make_level_str(permanent, &permanent->level , size, string);
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+        init_grid(permanent->grid, &permanent->arena, &permanent->level);
+        expect(permanent->grid->width == 6 && permanent->grid->height == 3);
+        preprocess_grid(permanent->grid);
+
+        expect(four_diagonals_are_jumps(permanent->grid,2,1,0));
+        expect(four_diagonals_are_jumps(permanent->grid,2,1,1));
+        expect(GetNodeAt(permanent->grid, 2, 1, 0)->isJumpNode);
+        expect(GetNodeAt(permanent->grid, 2, 1, 1)->isJumpNode);
+        expect(total_jumppoints(permanent->grid) == 10);
 
     }
 }
@@ -120,5 +278,6 @@ describe(leveldata) {
 int main() {
     test(memory);
     test(leveldata);
+    test(grid_preprocessor);
     return summary();
 }
