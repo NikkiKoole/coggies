@@ -39,28 +39,28 @@ int total_jumppoints(Grid *grid) {
 
 
 #define TEST_RUN_PATHFINDER(times) {                                    \
-    make_level_str(permanent, &permanent->level , size, string);        \
-    permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);             \
-    init_grid(permanent->grid, &permanent->arena, &permanent->level);   \
-    preprocess_grid(permanent->grid);                                   \
-    TempMemory temp_mem = begin_temporary_memory(&scratch->arena);      \
-    for (int i = 0; i < times; i++) {                                    \
-        grid_node * Start = get_random_walkable_node(permanent->grid);  \
-        grid_node * End = get_random_walkable_node(permanent->grid);    \
-        path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena); \
-        if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n", Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z); \
-        expect(Path);                                                   \
-        for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) { \
-            permanent->grid->nodes[i].f = 0;                            \
-            permanent->grid->nodes[i].g = 0;                            \
-            permanent->grid->nodes[i].opened = 0;                       \
-            permanent->grid->nodes[i].closed = 0;                       \
-            permanent->grid->nodes[i].Next = NULL;                      \
-            permanent->grid->nodes[i].parent = NULL;                    \
+        make_level_str(permanent, &permanent->level , size, string);    \
+        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);         \
+        init_grid(permanent->grid, &permanent->arena, &permanent->level); \
+        preprocess_grid(permanent->grid);                               \
+        TempMemory temp_mem = begin_temporary_memory(&scratch->arena);  \
+        for (int i = 0; i < times; i++) {                               \
+            grid_node * Start = get_random_walkable_node(permanent->grid); \
+            grid_node * End = get_random_walkable_node(permanent->grid); \
+            path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena); \
+            if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n", Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z); \
+            expect(Path);                                               \
+            for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) { \
+                permanent->grid->nodes[i].f = 0;                        \
+                permanent->grid->nodes[i].g = 0;                        \
+                permanent->grid->nodes[i].opened = 0;                   \
+                permanent->grid->nodes[i].closed = 0;                   \
+                permanent->grid->nodes[i].Next = NULL;                  \
+                permanent->grid->nodes[i].parent = NULL;                \
                                                                         \
+            }                                                           \
+            end_temporary_memory(temp_mem);                             \
         }                                                               \
-        end_temporary_memory(temp_mem);                                 \
-    }                                                                   \
     }                                                                   \
 
 #define INIT_MEMORY_PATHFINDER()                                        \

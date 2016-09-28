@@ -1,27 +1,17 @@
-* Currently doing
-  - [X] stairs/ladders
-    for pathing i want to be able to use the g values, so stairs will be avoided if possible
-    (dont walk through the base)
-
-    I believe there's a bug in the preprocessed  distances, visible now Jumppoints touch each other around stairs.
-    ......
-    .J....
-    JJ???#
-    .J....
-    Here I would like the Jumppoint at 1,1 to also jump to 0,2 (since 1,2 is the stairs up and is higher cost/needs to be avoided if possible)
-    somehow the distance SW at 1,1 == 0
-
+* Currently doing / Next up
+  - make the pathfindcode use the common style i am using now
+  - make actors use pathfinding (just pick random walkable points in the plan)
+  - do a little bit of animation, at the bare minimum show a different frame when actor moves north/east/south/west/up/down
+  - worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
 
 
 * Todo
+- [ ] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
 - [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
-- [ ] update the pathfinder code
-  - add tests (unit tests for functions and a collection of paths that need finding)
-  - have it compile with superstrict warnings set
-  - add the dirty flag and cleanup routines
-  - do the staircases (now stairs are 'ladders')
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
-  this would mean allocating / or well PUSH_STRUCT calls will need to be feed a string
+  this would mean allocating / or well PUSH_STRUCT calls will need to be feed a string,
+  UPDATE: Thinking a bit more about this, seeing how PUSH-STRUCT is a MACRO I could just save the file/function/line data in the debug arena for an allocation
+  not really tagged as in : 'actors/pathfinddata' but reasonably close nonetheless (as long as my function names are clear), and no need for extra strings to think up
 - [ ] tag memory usage
   I would like to start tagging memory usage with labels like "actors/sprite", "renderer/walls/vbo", "pathfinder/JPS" things like that, so I can during runtime inspect what the memory usage for various pieces is.
   Thinking about it, i dont know how to handle tagging the scratch/transient memory block...
@@ -152,7 +142,7 @@
     - [X] JPS plus / JPS / A*
     - [ ] keys for doors
     - [ ] dirty list
-    - [ ] stairs are not ladders, move over x/y when changing z on them.
+    - [X] stairs are not ladders, move over x/y when changing z on them.
   - [ ] collision detection & avoidance for actors
 
 
