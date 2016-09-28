@@ -18,6 +18,12 @@ bool four_diagonals_are_jumps(Grid *grid, int x, int y, int z) {
             GetNodeAt(grid, x+1, y+1, z)->isJumpNode &&
             GetNodeAt(grid, x+1, y-1, z)->isJumpNode);
 }
+bool four_cardinals_are_jumps(Grid *grid, int x, int y, int z) {
+    return (GetNodeAt(grid, x-1, y, z)->isJumpNode &&
+            GetNodeAt(grid, x-1, y, z)->isJumpNode &&
+            GetNodeAt(grid, x, y+1, z)->isJumpNode &&
+            GetNodeAt(grid, x, y-1, z)->isJumpNode);
+}
 
 int total_jumppoints(Grid *grid) {
     int result = 0;
@@ -30,6 +36,41 @@ int total_jumppoints(Grid *grid) {
     }
     return result;
 }
+
+
+#define TEST_RUN_PATHFINDER(times) {                                    \
+    make_level_str(permanent, &permanent->level , size, string);        \
+    permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);             \
+    init_grid(permanent->grid, &permanent->arena, &permanent->level);   \
+    preprocess_grid(permanent->grid);                                   \
+    TempMemory temp_mem = begin_temporary_memory(&scratch->arena);      \
+    for (int i = 0; i < times; i++) {                                    \
+        grid_node * Start = get_random_walkable_node(permanent->grid);  \
+        grid_node * End = get_random_walkable_node(permanent->grid);    \
+        path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena); \
+        if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n", Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z); \
+        expect(Path);                                                   \
+        for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) { \
+            permanent->grid->nodes[i].f = 0;                            \
+            permanent->grid->nodes[i].g = 0;                            \
+            permanent->grid->nodes[i].opened = 0;                       \
+            permanent->grid->nodes[i].closed = 0;                       \
+            permanent->grid->nodes[i].Next = NULL;                      \
+            permanent->grid->nodes[i].parent = NULL;                    \
+                                                                        \
+        }                                                               \
+        end_temporary_memory(temp_mem);                                 \
+    }                                                                   \
+    }                                                                   \
+
+#define INIT_MEMORY_PATHFINDER()                                        \
+    Memory _memory;                                                     \
+    Memory *memory = &_memory;                                          \
+    initialize_memory(memory);                                          \
+    PermanentState *permanent = (PermanentState *)memory->permanent;    \
+    ScratchState *scratch = (ScratchState *)memory->scratch;            \
+    UNUSED(scratch);UNUSED(permanent);                                  \
+
 
 grid_node* get_random_walkable_node(Grid *grid) {
     grid_node *result;// = GetNodeAt(grid, 0,0,0);
@@ -99,15 +140,9 @@ describe(memory) {
     }
 }
 
-
-
 describe(leveldata) {
     it (can be read from a string) {
-        Memory _memory;
-        Memory *memory = &_memory;
-
-        initialize_memory(memory);
-        PermanentState *permanent = (PermanentState *)memory->permanent;
+        INIT_MEMORY_PATHFINDER();
         World_Size size = (World_Size){5,1,0};
 
         char string[] =
@@ -125,11 +160,7 @@ describe(leveldata) {
         }
     }
     it (can create a multifloor level with stairs) {
-        Memory _memory;
-        Memory *memory = &_memory;
-
-        initialize_memory(memory);
-        PermanentState *permanent = (PermanentState *)memory->permanent;
+        INIT_MEMORY_PATHFINDER();
         World_Size size = (World_Size){6,1,2};
 
         char string[] =
@@ -148,11 +179,7 @@ describe(leveldata) {
 describe(grid_preprocessor) {
     it (places jump points around a wall) {
 
-        Memory _memory;
-        Memory *memory = &_memory;
-
-        initialize_memory(memory);
-        PermanentState *permanent = (PermanentState *)memory->permanent;
+        INIT_MEMORY_PATHFINDER();
         World_Size size = (World_Size){6,3,1};
         char string[] =
             "+------+\n"
@@ -179,7 +206,7 @@ describe(grid_preprocessor) {
         expect(GetNodeAt(permanent->grid, 4, 2, 0)->isJumpNode);
     }
     it (places jumppoints at wallcorners and void corners) {
-         Memory _memory;
+        Memory _memory;
         Memory *memory = &_memory;
 
         initialize_memory(memory);
@@ -238,12 +265,12 @@ describe(grid_preprocessor) {
         // otherwise people would end up  walking through them even when they
         // werent using them to go up or down.
         // i am notyet sure if I need diagonal around or cardianl around them
+        INIT_MEMORY_PATHFINDER();
+        /* Memory _memory; */
+        /* Memory *memory = &_memory; */
 
-        Memory _memory;
-        Memory *memory = &_memory;
-
-        initialize_memory(memory);
-        PermanentState *permanent = (PermanentState *)memory->permanent;
+        /* initialize_memory(memory); */
+        /* PermanentState *permanent = (PermanentState *)memory->permanent; */
         World_Size size = (World_Size){6,3,2};
         char string[] =
             "+------+\n"
@@ -276,21 +303,21 @@ describe(grid_preprocessor) {
 
         expect(four_diagonals_are_jumps(permanent->grid,2,1,0));
         expect(four_diagonals_are_jumps(permanent->grid,2,1,1));
+        expect(four_cardinals_are_jumps(permanent->grid,2,1,0));
+        expect(four_cardinals_are_jumps(permanent->grid,2,1,1));
+
         expect(GetNodeAt(permanent->grid, 2, 1, 0)->isJumpNode);
         expect(GetNodeAt(permanent->grid, 2, 1, 1)->isJumpNode);
-        expect(total_jumppoints(permanent->grid) == 10);
+        expect(total_jumppoints(permanent->grid) == 18);
 
     }
-
 }
+
 describe(pathfinder) {
     it(finds its way through a small narrow single floored maze (1000x) ) {
-        Memory _memory;
-        Memory *memory = &_memory;
 
-        initialize_memory(memory);
-        PermanentState *permanent = (PermanentState *)memory->permanent;
-        ScratchState *scratch = (ScratchState *)memory->scratch;
+        INIT_MEMORY_PATHFINDER();
+
         World_Size size = (World_Size){6,7,1};
         char string[] =
             "+------+\n"
@@ -303,34 +330,142 @@ describe(pathfinder) {
             "|.#....|\n"
             "+------+";
 
-        make_level_str(permanent, &permanent->level , size, string);
-        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
-        init_grid(permanent->grid, &permanent->arena, &permanent->level);
-        preprocess_grid(permanent->grid);
+        TEST_RUN_PATHFINDER(1000);
+    }
+    it(finds its way through a forest  (1000x) ) {
+
+        INIT_MEMORY_PATHFINDER();
+
+        World_Size size = (World_Size){11,8,1};
+        char string[] =
+            "+-----------+\n"
+            "|...#.....#.|\n"
+            "|.#....#....|\n"
+            "|...#....#..|\n"
+            "|.#....#....|\n"
+            "|....#...#..|\n"
+            "|.#....#....|\n"
+            "|...#....#..|\n"
+            "|#....#....#|\n"
+            "+-----------+";
+
+        TEST_RUN_PATHFINDER(1000);
+    }
+
+    it(can use ladders (1000x)) {
+
+        INIT_MEMORY_PATHFINDER();
+        World_Size size = (World_Size){8,10,3};
+
+         char string[] =
+            "+--------+\n"
+            "|        |\n"
+            "| ###### |\n"
+            "| #....# |\n"
+            "| ##.### |\n"
+            "| #....# |\n"
+            "| #....# |\n"
+            "| #.S..# |\n"
+            "| #....# |\n"
+            "| ###### |\n"
+            "|        |\n"
+            "+--------+\n"
+            "|        |\n"
+            "| ###### |\n"
+            "| #....# |\n"
+            "| ##.### |\n"
+            "| #....# |\n"
+            "| #....# |\n"
+            "| #.Z..# |\n"
+            "| #....# |\n"
+            "| ###### |\n"
+            "|        |\n"
+            "+--------+\n"
+            "|        |\n"
+            "| ###### |\n"
+            "| #....# |\n"
+            "| ##.### |\n"
+            "| #....# |\n"
+            "| #....# |\n"
+            "| #.E..# |\n"
+            "| #....# |\n"
+            "| ###### |\n"
+            "|        |\n"
+             "+--------+";
+
+         TEST_RUN_PATHFINDER(1000);
+
+    }
 
 
-        TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-        for (int i = 0; i < 1000; i++) {
 
-            grid_node * Start = get_random_walkable_node(permanent->grid);
-            grid_node * End = get_random_walkable_node(permanent->grid);
-            path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
-            if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n",
-                              Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z);
-            expect(Path);
-            for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) {
-                permanent->grid->nodes[i].f = 0;
-                permanent->grid->nodes[i].g = 0;
-                permanent->grid->nodes[i].opened = 0;
-                permanent->grid->nodes[i].closed = 0;
-                permanent->grid->nodes[i].Next = NULL;
-                permanent->grid->nodes[i].parent = NULL;
+    it(finds its way through a multifloor building (1000x) ) {
+        INIT_MEMORY_PATHFINDER();
 
-            }
-            end_temporary_memory(temp_mem);
-        }
+        World_Size size = (World_Size){23,10,5};
+        char string[] =
+            "+-----------------------+\n"
+            "|.......................|\n"
+            "|.#####################.|\n"
+            "|.#...................#.|\n"
+            "|.#...................#.|\n"
+            "|.#...................#.|\n"
+            "|.#...................#.|\n"
+            "|.#.......U===........#.|\n"
+            "|.#...................#.|\n"
+            "|.##########.##########.|\n"
+            "|.......................|\n"
+            "+-----------------------+\n"
+            "|                       |\n"
+            "| ##################### |\n"
+            "| #...................# |\n"
+            "| ##.######.#######.### |\n"
+            "| #....#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| #.S..#.......#....S.# |\n"
+            "| #....#.......#......# |\n"
+            "| ##################### |\n"
+            "|                       |\n"
+            "+-----------------------+\n"
+            "|                       |\n"
+            "| ##################### |\n"
+            "| #...................# |\n"
+            "| ##.######.#######.### |\n"
+            "| #....#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| #.Z..#.......#....E.# |\n"
+            "| #....#.......#......# |\n"
+            "| ##################### |\n"
+            "|                       |\n"
+            "+-----------------------+\n"
+            "|                       |\n"
+            "| ##################### |\n"
+            "| #...................# |\n"
+            "| ##.######.#######.### |\n"
+            "| #....#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| #.Z..#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| ##################### |\n"
+            "|                       |\n"
+            "+-----------------------+\n"
+            "|                       |\n"
+            "| ##################### |\n"
+            "| #...................# |\n"
+            "| ##.######.#######.### |\n"
+            "| #....#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| #.Z..#.......#......# |\n"
+            "| #....#.......#......# |\n"
+            "| ##################### |\n"
+            "|                       |\n"
+            "+-----------------------+";
+
+        TEST_RUN_PATHFINDER(1000);
+
     }
 }
+//}
 
 int main() {
     test(memory);

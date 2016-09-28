@@ -331,8 +331,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         printf("used scratch space: %lu\n", scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 5, 0, 0);
-        grid_node * End = GetNodeAt(permanent->grid, 5, 3, 0);
+        grid_node * Start = GetNodeAt(permanent->grid, 4, 5, 3);
+        grid_node * End = GetNodeAt(permanent->grid, 15, 6, 0);
 
 
         ASSERT(Start->walkable);

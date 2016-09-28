@@ -127,7 +127,7 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
                     }
                 }
             } else {
-                printf("missing | signs at begin and end. %s.\n", str);
+                printf("missing | signs at begin and end. %s. line:%d\n", str, (c->line_counter - LINES_BEFORE_DATA));
 
             }
         }

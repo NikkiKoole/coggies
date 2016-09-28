@@ -97,7 +97,7 @@ internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
     int ladder = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
     from = GetNodeAt(Grid, x, y, z-1)->type;
     int stairs = (from == StairsUp4N || from == StairsUp4E || from == StairsUp4S || from == StairsUp4W);
-    if (stairs) printf("can go down by stairs %d, %d, %d\n", x,y,z);
+    //if (stairs) printf("can go down by stairs %d, %d, %d\n", x,y,z);
     return ladder || stairs;//result;
 }
 
@@ -223,6 +223,12 @@ void preprocess_grid(Grid *g) {
                     isStairOrLadder(g,x+1,y+1,z) ||
                     isStairOrLadder(g,x+1,y-1,z) ||
                     isStairOrLadder(g,x-1,y+1,z)) {
+                    node->isJumpNode = 1;
+                }
+                if (isStairOrLadder(g,x-1,y,z) ||
+                    isStairOrLadder(g,x+1,y,z) ||
+                    isStairOrLadder(g,x,y-1,z) ||
+                    isStairOrLadder(g,x,y+1,z)) {
                     node->isJumpNode = 1;
                 }
             }
@@ -752,6 +758,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                     Successor->f = givenCost + Octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
                     Successor->f += Successor->h; // TODO can i reuse one of my f,g,h values? H perhaps?
                     HEAP_PUSH(OpenList, Successor);
+                    //printf("pushing %d %d %d\n", Successor->X, Successor->Y, Successor->Z);
 
                     // TODO: dirtylist
                     //printf("successor 1\n");
