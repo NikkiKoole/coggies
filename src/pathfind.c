@@ -729,7 +729,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                 //givenCost += Node->cost;
             }  else if ((Node->Z == endNode->Z) &&
                        (!IS_CARDINAL(direction)) &&
-                       (otherIsInGeneralDirectionOfDiagonal(direction, getDirection(endNode, Node)) ) &&
+                        (otherIsInGeneralDirectionOfDiagonal((jump_direction)direction, getDirection(endNode, Node)) ) &&
                        ((ABS(Node->X - endNode->X) <= ABS(Node->distance[direction])) ||
                         (ABS(Node->Y - endNode->Y) <= ABS(Node->distance[direction]))))  {
 
@@ -738,13 +738,13 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                     minDiff = ABS(Node->distance[direction]);
                 }
 
-                Successor = getNodeGivenDirectionAndDistance(Node, direction, Grid, minDiff );
+                Successor = getNodeGivenDirectionAndDistance(Node, (jump_direction)direction, Grid, minDiff );
                 givenCost = Node->g + (SQRT2 * minDiff);
                 //givenCost += Node->cost;
 
             }else if (Node->distance[direction] > 0){
 
-                Successor = getNodeGivenDirection(Node, direction, Grid);
+                Successor = getNodeGivenDirection(Node, (jump_direction)direction, Grid);
                 givenCost = ABS(ManHattan(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
                 if (!IS_CARDINAL(direction)) {givenCost *= SQRT2;}
                 givenCost += Node->g;

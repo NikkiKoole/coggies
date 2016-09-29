@@ -100,7 +100,7 @@ typedef struct DrawBuffer {
 typedef struct RenderState {
     ViewPort view;
     SDL_Window *window;
-    SDL_GLContext *context;
+    SDL_GLContext context;
     Assets assets;
     DrawBuffer walls[8];
     int used_wall_batches;

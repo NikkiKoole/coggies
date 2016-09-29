@@ -338,12 +338,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         ASSERT(Start->walkable);
         ASSERT(End->walkable);
 
-        path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
-        /* path_list *Path = NULL; */
-        /* if (PathRaw) { */
-        /*     printf("Smoothing path!\n"); */
-        /*     Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid); */
-        /* } */
+        path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+        path_list *Path = NULL;
+        if (PathRaw) {
+            printf("Smoothing path!\n");
+            Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
+        }
         //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
         //path_list * Path = NULL;
 

@@ -20,12 +20,12 @@ PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
 
-DEBUG:=-g3 -fsanitize=address -fno-omit-frame-pointer
+DEBUG:= -g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:= #-O3
-STD:=-std=gnu99
+STD:= -std=gnu99
 
-CC:=gcc
+CC:= gcc
 
 BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c src/game.c src/pathfind.c src/level.c
 
@@ -39,6 +39,8 @@ pi:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lEGL -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 
+steer:
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) ${STD} -lSDL2_mixer -lSDL2_image steer_test/main.c
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

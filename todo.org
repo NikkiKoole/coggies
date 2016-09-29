@@ -1,8 +1,24 @@
 * Currently doing / Next up
   - make the pathfindcode use the common style i am using now
+  - play around a little with the "keys for doors" concept,
+    a few things ahead: the jumppoints shouldnt be diagonally placed but before & after the door directly
+    closing doors for a new actor at pathfind beginning means also changing distances, so I think just having a jumppoint ON the door TOO is easiest
+    i can just set its distance east & west OR north & south temporary to 0 and set them back to 1 and 1 after I am done.
   - make actors use pathfinding (just pick random walkable points in the plan)
   - do a little bit of animation, at the bare minimum show a different frame when actor moves north/east/south/west/up/down
   - worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
+
+
+  - read about path following, collison avoidance, steering behaviours:
+    http://gamedev.stackexchange.com/questions/12186/real-time-dynamic-pathfinding
+    https://www.cie.bgu.tum.de/upload/lehre/softwarelab/sl2011/projects/topics/pedestrianSimulation.pdf
+    https://forum.unity3d.com/threads/colorboid-engine.154279/
+    http://opensteer.sourceforge.net/
+    https://www.youtube.com/watch?v=pqBSNAOsMDc
+    http://rll.berkeley.edu/~sachin/papers/Patil-TVCG2011.pdf
+
+    START HERE, just build a little SDL2 test app, using SDL2 graphics and my custom memory allocator system
+    http://natureofcode.com/book/chapter-6-autonomous-agents/
 
 
 * Todo

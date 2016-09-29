@@ -231,7 +231,7 @@ internal const char *read_file(const char *path, char* buffer ) {
         fseek(f, 0, SEEK_END);
         length = ftell(f);
         fseek(f, 0, SEEK_SET);
-        buffer = malloc(length + 1); // this buffer is freed outside this function...
+        buffer = (char*)malloc(length + 1); // this buffer is freed outside this function...
         if (buffer) {
             fread(buffer, 1, length, f);
         }
