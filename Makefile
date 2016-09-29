@@ -40,7 +40,7 @@ pi:
 
 
 steer:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) ${STD} -lSDL2_mixer -lSDL2_image steer_test/main.c
+	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) ${STD} -lSDL2_mixer -lSDL2_image  -lSDL2_ttf steer_test/main.c
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

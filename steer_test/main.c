@@ -1,18 +1,22 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include <SDL2/SDL_ttf.h>
 
 #include <stdio.h>
 #include <stdbool.h>
 #include <stdlib.h>
+#include <time.h>
 
 #include "GLKVector2.h"
 
 SDL_Window* window = NULL;
 SDL_Renderer* renderer = NULL;
 SDL_Texture* texture = NULL;
+TTF_Font *font = NULL;
+
 const int SCREEN_WIDTH = 1024;
 const int SCREEN_HEIGHT = 1024;
-const int ACTOR_COUNT = 1000;
+const int ACTOR_COUNT = 1250;
 
 static SDL_Texture* loadTexture(char* path)
 {
@@ -32,7 +36,7 @@ static SDL_Texture* loadTexture(char* path)
 
 static bool init()
 {
-    if (SDL_Init(SDL_INIT_VIDEO) < 0) goto SDL_Error;
+    if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0) goto SDL_Error;
 
     window = SDL_CreateWindow( "Steering test",
                                SDL_WINDOWPOS_UNDEFINED,
@@ -53,8 +57,21 @@ static bool init()
         goto SDL_Error;
     }
 
+    if( TTF_Init() == -1 ){
+        printf( "SDL_ttf could not initialize! SDL_ttf Error: %s\n", TTF_GetError() );
+        goto SDL_Error;
+    }
+
     texture = loadTexture("resources/textures/circle.png");
     if (texture == NULL) goto SDL_Error;
+
+    font = TTF_OpenFont( "resources/fonts/monaco.ttf", 28 );
+    if( font == NULL )
+    {
+        printf( "Failed to load lazy font! SDL_ttf Error: %s\n", TTF_GetError() );
+        goto SDL_Error;
+    }
+
 
     return true;
 
@@ -85,6 +102,7 @@ static void actor_applyForce(Actor *a, GLKVector2 force) {
 
 int main() {
     init();
+    srand(time(NULL));
     bool quit = false;
     SDL_Event e;
 
@@ -113,20 +131,45 @@ int main() {
         }
         SDL_RenderClear(renderer);
 
-        // update actors
+
+        Uint64 before = SDL_GetPerformanceCounter();
+        /* // update actors */
         for (int i =0 ; i< ACTOR_COUNT ; i++) {
-            actor_applyForce(&actors[i], GLKVector2Make((-1 + (float)(rand() % 4))/1000.0f, (-1 + (float)(rand() % 4))/1000.0f));
+            actor_applyForce(&actors[i], GLKVector2Make((-2 + (float)(rand() % 5))/100.0f, (-2 + (float)(rand() % 5))/100.0f));
             actors[i].velocity = GLKVector2Add(actors[i].velocity, actors[i].acceleration);
             actors[i].location = GLKVector2Add(actors[i].location, actors[i].velocity);
             actors[i].acceleration = GLKVector2MultiplyScalar(actors[i].acceleration, 0);
-        }
+            if (actors[i].location.x+12 < 0) actors[i].location.x = SCREEN_WIDTH-12;
+            if (actors[i].location.x+12 > SCREEN_WIDTH) actors[i].location.x = -12;
+            if (actors[i].location.y+12 < 0) actors[i].location.y = SCREEN_HEIGHT-12;
+            if (actors[i].location.y+12 > SCREEN_HEIGHT) actors[i].location.y = -12;
 
+        }
+        Uint64 after = SDL_GetPerformanceCounter();
         // draw actors
         for (int i =0 ; i< ACTOR_COUNT ; i++) {
             DestR.x = actors[i].location.x;
             DestR.y = actors[i].location.y;
             SDL_RenderCopy(renderer, texture, &SrcR,  &DestR);
         }
+
+
+
+        //// frame time text
+        float update = (float)(after - before)/SDL_GetPerformanceFrequency();
+        char buffer [50];
+        sprintf(buffer, "%f ms", update*1000);
+        SDL_Rect SrcText = {.x=0, .y=0, .w=0, .h=0};
+        SDL_Rect DestText = {.x=10, .y=10, .w=0, .h=0};
+        SDL_Surface* textSurface = TTF_RenderText_Solid( font, buffer, (SDL_Color){0,0,0,0} );
+        SDL_Texture* mTexture = SDL_CreateTextureFromSurface( renderer, textSurface );
+        SrcText.w = DestText.w = textSurface->w;
+        SrcText.h = DestText.h = textSurface->h;
+        SDL_FreeSurface(textSurface);
+        SDL_RenderCopy(renderer, mTexture, &SrcText,  &DestText);
+
+
+
 
 
         SDL_RenderPresent(renderer);
