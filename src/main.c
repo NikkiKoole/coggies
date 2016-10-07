@@ -36,35 +36,7 @@ typedef struct {
         exit(0);                                                                                                             \
     }
 
-internal void SetSDLIcon(SDL_Window* window)
-{
-    // this will "paste" the struct my_icon into this function
-    #include "icon.c"
 
-    // these masks are needed to tell SDL_CreateRGBSurface(From)
-    // to assume the data it gets is byte-wise RGB(A) data
-    Uint32 rmask, gmask, bmask, amask;
-#if SDL_BYTEORDER == SDL_BIG_ENDIAN
-    int shift = (my_icon.bytes_per_pixel == 3) ? 8 : 0;
-    rmask = 0xff000000 >> shift;
-    gmask = 0x00ff0000 >> shift;
-    bmask = 0x0000ff00 >> shift;
-    amask = 0x000000ff >> shift;
-#else // little endian, like x86
-    rmask = 0x000000ff;
-    gmask = 0x0000ff00;
-    bmask = 0x00ff0000;
-    amask = (icon.bytes_per_pixel == 3) ? 0 : 0xff000000;
-#endif
-    SDL_Surface* my_icon = SDL_CreateRGBSurfaceFrom((void*)icon.pixel_data, icon.width,
-    icon.height, icon.bytes_per_pixel*8, icon.bytes_per_pixel*icon.width,
-    rmask, gmask, bmask, amask);
-
-    SDL_SetWindowIcon(window, my_icon);
-    SDL_FreeSurface(my_icon);
-
-
-}
 internal void initialize_SDL(RenderState *renderer) {
     int error = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
     if (error < 0) {
@@ -103,7 +75,7 @@ internal void initialize_SDL(RenderState *renderer) {
     SDL_ASSERT(renderer->context != NULL);
 
 #ifndef IOS
-    SetSDLIcon(renderer->window);
+    //SetSDLIcon(renderer->window);
     SDL_ASSERT(SDL_GL_SetSwapInterval(0) >= 0);
 #endif
 }
@@ -498,14 +470,14 @@ int main(int argc, char **argv) {
             reset_debug_performance_components(debug);
         }
         for (int i = 0; i < PERF_DICT_SIZE; i++) {
-            PerfDictEntry *e = &clone.data[i];
-            float averaged = ((float)(e->total_time / (float)freq) * 1000.0f) / 60;
-            float min = ((float)(e->min / (float)freq) * 1000.0f);
-            float max = ((float)(e->max / (float)freq) * 1000.0f);
+            PerfDictEntry *perf_entry = &clone.data[i];
+            float averaged = ((float)(perf_entry->total_time / (float)freq) * 1000.0f) / 60;
+            float min = ((float)(perf_entry->min / (float)freq) * 1000.0f);
+            float max = ((float)(perf_entry->max / (float)freq) * 1000.0f);
 
-            if (e->times_counted >= 60) {
-                ASSERT(e->key != NULL);
-                print(permanent, renderer, "%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, e->key, min, max, e->times_counted / 60);
+            if (perf_entry->times_counted >= 60) {
+                ASSERT(perf_entry->key != NULL);
+                print(permanent, renderer, "%-6.3f %-12s  min:%.5f max:%.3f (x%d)\n", averaged, perf_entry->key, min, max, perf_entry->times_counted / 60);
             } else {
                 break;
             }

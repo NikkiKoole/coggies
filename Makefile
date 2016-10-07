@@ -1,7 +1,7 @@
 SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LFLAGS := $(shell sdl2-config --libs)
 
-STRICT = -Werror -Wall
+STRICT = -Werror -Wall -ferror-limit=100
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
 		   -Wparentheses -Winit-self -Wswitch-enum -Wstrict-aliasing=2  \
@@ -9,8 +9,8 @@ STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wwrite-strings  -Wold-style-definition -Wmissing-prototypes \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
-SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls -pedantic-errors -Wcast-qual -Wshadow
-WARNINGS = $(-Werror)
+SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls  -Wcast-qual -Wshadow #-pedantic-errors
+WARNINGS = $(SUPERSTRICT)
 
 
 OBJDIR = ./objs/
@@ -20,12 +20,12 @@ PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
 
-DEBUG:= -g3 -fsanitize=address -fno-omit-frame-pointer
+DEBUG:= #-g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:= -O3
-STD:= -std=gnu99
+STD:= #-std=c99
 
-CC:= gcc
+CC:= gcc #g++ -x c
 
 BACKEND_FILES:=src/main.c src/resource.c src/random.c src/memory.c src/renderer.c src/game.c src/pathfind.c src/level.c
 
@@ -40,7 +40,7 @@ pi:
 
 
 steer:
-	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) $(DEBUG) ${STD} -lSDL2_mixer -lSDL2_image  -lSDL2_ttf steer_test/main.c
+	${CC}  -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) $(DEBUG) ${STD}  -lSDL2_mixer -lSDL2_image  -lSDL2_ttf steer_test/main.c
 
 gamelibrary:
 	mkdir -p $(OBJDIR)

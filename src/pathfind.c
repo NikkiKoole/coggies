@@ -532,7 +532,7 @@ internal inline int otherIsInGeneralDirectionOfDiagonal(jump_direction diagonal,
     }
     return 0;
 }
-grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_direction direction, Grid * Grid, int distance ){
+internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_direction direction, Grid * Grid, int distance ){
     //    printf("distance: %d\n", distance);
     int x = Current->X;
     int y = Current->Y;
@@ -604,7 +604,7 @@ grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_direction
 
     return Result;
 }
-grid_node * getNodeGivenDirection(grid_node * Current, jump_direction direction, Grid * grid) {
+internal grid_node * getNodeGivenDirection(grid_node * Current, jump_direction direction, Grid * grid) {
     int distance = Current->distance[direction];
     return getNodeGivenDirectionAndDistance(Current, direction, grid, distance);
 }
@@ -715,8 +715,8 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
 
             }
         }
-        for (int i = 0; i < allowedSize; i++) {
-            int direction = allowed[i];
+        for (int direction_index = 0; direction_index < allowedSize; direction_index++) {
+            int direction = allowed[direction_index];
             grid_node * Successor = NULL;
 
 
@@ -807,7 +807,7 @@ typedef struct coord_list {
         DLIST_ADDLAST(CoordList, N);                        \
     }                                                       \
 
-void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, coord_list * List) {
+internal void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, coord_list * List) {
     int sx, sy, dx, dy, err, e2;
 
     dx = ABS(x1 - x0);
@@ -900,9 +900,9 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
                 setXYZinStruct(ex, ey, Node->Prev->Z, Point1);
                 DLIST_ADDLAST(Result, Point1);
 
-                path_node * Point = PUSH_STRUCT(Arena, path_node);
-                setXYZinStruct(ex, ey, ez, Point);
-                DLIST_ADDLAST(Result, Point);
+                path_node * Point2 = PUSH_STRUCT(Arena, path_node);
+                setXYZinStruct(ex, ey, ez, Point2);
+                DLIST_ADDLAST(Result, Point2);
             } else {
                 //stairs;
                 // TODO something with this ez / sz
@@ -911,9 +911,9 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
                 setXYZinStruct(Node->Prev->X, Node->Prev->Y, Node->Prev->Z, Point1);
                 DLIST_ADDLAST(Result, Point1);
 
-                path_node * Point = PUSH_STRUCT(Arena, path_node);
-                setXYZinStruct( Node->X,Node->Y,Node->Z, Point);
-                DLIST_ADDLAST(Result, Point);
+                path_node * Point2 = PUSH_STRUCT(Arena, path_node);
+                setXYZinStruct( Node->X,Node->Y,Node->Z, Point2);
+                DLIST_ADDLAST(Result, Point2);
             }
 
         }

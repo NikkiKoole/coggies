@@ -6,6 +6,11 @@
 // Generic single linked list, double linked list, binary heap, double linked list with freelist, pool
 
 
+
+
+
+
+
 #define NEW_SLIST(List, Arena, Type)    {                   \
         Type *Sentinel = (Type *) PUSH_STRUCT(Arena, Type); \
         (List)->Sentinel = Sentinel;                        \
@@ -25,8 +30,9 @@
     }                                               \
 
 #define SLIST_ADDFIRST(List, Node)              \
-    Node->Next = (List)->Sentinel->Next;        \
-    (List)->Sentinel->Next = Node;              \
+    (Node)->Next = (List)->Sentinel->Next;      \
+    (List)->Sentinel->Next = (Node);            \
+
 
 #define SLIST_REMOVEFIRST(List)                         \
     List->Sentinel->Next = List->Sentinel->Next->Next;  \
@@ -100,11 +106,12 @@
     (List->Sentinel->Prev)                      \
 
 #define DLIST_EMPTY(List)                       \
-    (List->Sentinel->Next == List->Sentinel)    \
-    (List->Sentinel->Prev == List->Sentinel)    \
+    (List->Sentinel->Next = List->Sentinel)    \
+    (List->Sentinel->Prev = List->Sentinel)    \
+
 
 #define SLIST_EMPTY(List)                       \
-    (List->Sentinel->Next == List->Sentinel)    \
+    (List)->Sentinel->Next = (List)->Sentinel  \
 
 #define SLIST_PEEKFIRST(List) DLIST_PEEKFIRST(List) \
 
@@ -151,7 +158,7 @@
     {                                                                   \
         u32 count = Heap->count;                                        \
         u32 item=StartIndex;                                            \
-        int index, swap, other;                                         \
+        u32 index, swap, other;                                         \
         Type temp;                                                      \
         while(1) {                                                      \
             temp = Heap->data[item];                                    \
@@ -171,9 +178,9 @@
 
 #define HEAP_UPDATE_ITEM(Heap, Type, Value)     \
     {                                           \
-        int Index = 0;                          \
+        u32 Index = 0;                          \
         int IndexFound = 0;                     \
-        for (int i = 0; i < Heap->size; i++) {  \
+        for (u32 i = 0; i < Heap->size; i++) {  \
             if (Heap->data[i] == Value) {       \
                 IndexFound = 1;                 \
                 break;                          \

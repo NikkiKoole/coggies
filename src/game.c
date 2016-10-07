@@ -13,6 +13,8 @@
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
+#pragma GCC diagnostic ignored "-Wmissing-prototypes"
+#pragma GCC diagnostic ignored "-Wsign-compare"
 #include "sort.h"
 #pragma GCC diagnostic pop
 
@@ -124,7 +126,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         ////
 
         int used_wall_block =0;
-        int count_shadow = 0;
+        //int count_shadow = 0;
         int used_floors = 0;
         int used_walls = 0;
         int wall_count =0;
@@ -204,6 +206,18 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                         break;
+                    case Grass:
+                    case Wood:
+                    case Concrete:
+                    case Nothing:
+                    case Tiles:
+                    case Carpet:
+                    case StairsUpMeta:
+                    case StairsDownMeta:
+                    case StairsFollowUpMeta:
+                    case Shaded:
+                    case BlockTotal:
+
                     default:
                         //c = b;
                         //ASSERT("Problem!" && false);

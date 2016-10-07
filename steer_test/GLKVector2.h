@@ -15,6 +15,8 @@
 #include <arm_neon.h>
 #endif
 
+#include <x86intrin.h>
+
 //#include <GLKit/GLKMathTypes.h>
 #include "GLKMathTypes.h"
 
@@ -25,6 +27,17 @@ extern "C" {
 #pragma mark -
 #pragma mark Prototypes
 #pragma mark -
+
+/*
+static __inline__ float InvSqrt(float x){
+    float xhalf = 0.5f * x;
+    int i = *(int*)&x;            // store floating-point bits in integer
+    i = 0x5f3759df - (i >> 1);    // initial guess for Newton's method
+    x = *(float*)&i;              // convert new bits into float
+    x = x*(1.5f - xhalf*x*x);     // One round of Newton's method
+    return x;
+}
+*/
 
 static __inline__ GLKVector2 GLKVector2Make(float x, float y);
 static __inline__ GLKVector2 GLKVector2MakeWithArray(float values[2]);
@@ -40,6 +53,9 @@ static __inline__ GLKVector2 GLKVector2AddScalar(GLKVector2 vector, float value)
 static __inline__ GLKVector2 GLKVector2SubtractScalar(GLKVector2 vector, float value);
 static __inline__ GLKVector2 GLKVector2MultiplyScalar(GLKVector2 vector, float value);
 static __inline__ GLKVector2 GLKVector2DivideScalar(GLKVector2 vector, float value);
+
+
+static __inline__ GLKVector2 GLKVector2Limit(GLKVector2 vector, float max);
 
 /*
  Returns a vector whose elements are the larger of the corresponding elements of the vector arguments.
@@ -83,6 +99,11 @@ static __inline__ float GLKVector2Distance(GLKVector2 vectorStart, GLKVector2 ve
 
 static __inline__ GLKVector2 GLKVector2Lerp(GLKVector2 vectorStart, GLKVector2 vectorEnd, float t);
 
+
+    // my own addition, saves many sguareroots
+static __inline__ float GLKVector2LengthSquared(GLKVector2 vector);
+    static __inline__ float GLKVector2DistanceSquared(GLKVector2 vectorStart, GLKVector2 vectorEnd);
+
 /*
  Project the vector, vectorToProject, onto the vector, projectionVector.
  */
@@ -91,6 +112,16 @@ static __inline__ GLKVector2 GLKVector2Project(GLKVector2 vectorToProject, GLKVe
 #pragma mark -
 #pragma mark Implementations
 #pragma mark -
+
+
+
+static __inline__ GLKVector2 GLKVector2Limit(GLKVector2 vector, float max) {
+    if (GLKVector2Length(vector) > max) {
+        return GLKVector2MultiplyScalar(GLKVector2Normalize(vector),max);
+    } else {
+        return  vector;
+    }
+}
 
 static __inline__ GLKVector2 GLKVector2Make(float x, float y)
 {
@@ -398,14 +429,41 @@ static __inline__ float GLKVector2Length(GLKVector2 vector)
     v = vpadd_f32(v, v);
     return sqrt(vget_lane_f32(v, 0));
 #else
+    //return 1.0f/InvSqrt(vector.v[0] * vector.v[0] + vector.v[1] * vector.v[1]);
     return sqrt(vector.v[0] * vector.v[0] + vector.v[1] * vector.v[1]);
 #endif
 }
+
+static __inline__ float GLKVector2LengthSquared(GLKVector2 vector)
+{
+#if defined(__ARM_NEON__)
+    float32x2_t v = vmul_f32(*(float32x2_t *)&vector,
+                             *(float32x2_t *)&vector);
+    v = vpadd_f32(v, v);
+    return (vget_lane_f32(v, 0));
+#else
+    return (vector.v[0] * vector.v[0] + vector.v[1] * vector.v[1]);
+#endif
+}
+
 
 static __inline__ float GLKVector2Distance(GLKVector2 vectorStart, GLKVector2 vectorEnd)
 {
     return GLKVector2Length(GLKVector2Subtract(vectorEnd, vectorStart));
 }
+
+
+static __inline__ float GLKVector2DistanceSquared(GLKVector2 vectorStart, GLKVector2 vectorEnd)
+{
+    return GLKVector2LengthSquared(GLKVector2Subtract(vectorEnd, vectorStart));
+}
+
+
+
+
+
+
+
 
 static __inline__ GLKVector2 GLKVector2Lerp(GLKVector2 vectorStart, GLKVector2 vectorEnd, float t)
 {

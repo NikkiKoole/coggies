@@ -61,7 +61,6 @@ typedef enum {
     Floor, Grass, Wood, Concrete, Tiles, Carpet,
     LadderUpDown, LadderUp, LadderDown,
     StairsUpMeta, StairsDownMeta,
-    StairsDown1N,StairsDown1E,StairsDown1W,StairsDown1S,
     StairsFollowUpMeta,
     StairsUp1N, StairsUp2N, StairsUp3N, StairsUp4N,
     StairsUp1E, StairsUp2E, StairsUp3E, StairsUp4E,

@@ -7,6 +7,7 @@
 #include "../src/memory.h"
 #include "../src/level.h"
 #include "../src/random.h"
+#include "../src/data_structures.h"
 
 bool block_at_xyz_is(int x, int y, int z, Block b, LevelData * level) {
     return (level->blocks[FLATTEN_3D_INDEX(x,y,z, level->x, level->y)].object == b);
@@ -137,6 +138,79 @@ describe(memory) {
         expect(&scratch->arena.size > 0);
         expect(&debug->arena.size > 0);
 
+    }
+}
+
+typedef struct ListItem {
+    int value;
+    struct ListItem * Next;
+} ListItem;
+
+typedef struct {
+    ListItem * Sentinel;
+} List;
+
+describe(slist) {
+    it(can be reset using end temporary memory) {
+        Memory _memory;
+        Memory *memory = &_memory;
+
+        initialize_memory(memory);
+        ScratchState *scratch = (ScratchState *)memory->scratch;
+        expect(&scratch->arena.size > 0);
+
+        List l;
+        NEW_SLIST(&l, &scratch->arena, ListItem);
+
+        TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
+
+        int test_total = 0;
+        for (int i = 0; i < 10; i++) {
+            ListItem *item = PUSH_STRUCT(&scratch->arena, ListItem);
+            item->value = 2;
+            SLIST_ADDFIRST(&l, item);
+            test_total += 2;
+        }
+
+        int total = 0;
+
+        ListItem * node = l.Sentinel;
+
+        do {
+            total += node->value;
+            node = node->Next;
+        } while(node != l.Sentinel);
+
+        expect(total == test_total);
+
+        int for_loop_total = 0;
+        for (ListItem * node = l.Sentinel->Next; node != l.Sentinel; node = node->Next) {
+            for_loop_total += node->value;
+        }
+        expect(for_loop_total == total);
+
+
+        end_temporary_memory(temp_mem);
+
+        SLIST_EMPTY(&l);
+
+        test_total = 0;
+        total = 0;
+        for (int i = 0; i < 10; i++) {
+            ListItem *item = PUSH_STRUCT(&scratch->arena, ListItem);
+            item->value = 4;
+            SLIST_ADDFIRST(&l, item);
+            test_total += 4;
+        }
+
+        node = l.Sentinel;
+
+        do {
+            total += node->value;
+            node = node->Next;
+        } while(node != l.Sentinel);
+
+        expect(total == test_total);
     }
 }
 
@@ -398,7 +472,6 @@ describe(pathfinder) {
     }
 
 
-
     it(finds its way through a multifloor building (1000x) ) {
         INIT_MEMORY_PATHFINDER();
 
@@ -472,5 +545,6 @@ int main() {
     test(leveldata);
     test(grid_preprocessor);
     test(pathfinder);
+    test(slist);
     return summary();
 }

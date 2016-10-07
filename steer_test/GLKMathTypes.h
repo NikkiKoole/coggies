@@ -12,6 +12,8 @@
 extern "C" {
 #endif
 
+#undef __STRICT_ANSI__
+
 #if defined(__STRICT_ANSI__)
 struct _GLKMatrix2
 {
