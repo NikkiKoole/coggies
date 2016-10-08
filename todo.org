@@ -8,19 +8,6 @@
   - do a little bit of animation, at the bare minimum show a different frame when actor moves north/east/south/west/up/down
   - worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
 
-
-  - read about path following, collison avoidance, steering behaviours:
-    http://gamedev.stackexchange.com/questions/12186/real-time-dynamic-pathfinding
-    https://www.cie.bgu.tum.de/upload/lehre/softwarelab/sl2011/projects/topics/pedestrianSimulation.pdf
-    https://forum.unity3d.com/threads/colorboid-engine.154279/
-    http://opensteer.sourceforge.net/
-    https://www.youtube.com/watch?v=pqBSNAOsMDc
-    http://rll.berkeley.edu/~sachin/papers/Patil-TVCG2011.pdf
-
-    START HERE, just build a little SDL2 test app, using SDL2 graphics and my custom memory allocator system
-    http://natureofcode.com/book/chapter-6-autonomous-agents/
-
-
 * Todo
 - [ ] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
 - [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
@@ -163,6 +150,18 @@
 
 
 * Done
+- [X] some steering stuff
+  its done in steering_test
+  read about path following, collison avoidance, steering behaviours:
+  http://gamedev.stackexchange.com/questions/12186/real-time-dynamic-pathfinding
+  https://www.cie.bgu.tum.de/upload/lehre/softwarelab/sl2011/projects/topics/pedestrianSimulation.pdf
+  https://forum.unity3d.com/threads/colorboid-engine.154279/
+  http://opensteer.sourceforge.net/
+  https://www.youtube.com/watch?v=pqBSNAOsMDc
+  http://rll.berkeley.edu/~sachin/papers/Patil-TVCG2011.pdf
+  START HERE, just build a little SDL2 test app, using SDL2 graphics and my custom memory allocator system
+  http://natureofcode.com/book/chapter-6-autonomous-agents/
+
 - [X] hot code reloading (static memory block)
   - [X] build state struct that remains intact after reloading the lib
   - [X] makefile command to build so library

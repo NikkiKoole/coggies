@@ -19,12 +19,12 @@
 
 const int SCREEN_WIDTH = 1224;
 const int SCREEN_HEIGHT = 1224;
-const int ACTOR_COUNT = 10000;
+const int ACTOR_COUNT = 20000;
 const float METER_2_PIXEL = 24;
 const float PIXEL_2_METER = 1.0f/24;
 #define GRID_WIDTH 64
 #define GRID_HEIGHT 64
-#define MAX_IN_ACTOR_LOCATION_ARRAY 64
+#define MAX_IN_ACTOR_LOCATION_ARRAY 16
 
 #include <sys/mman.h> //mmap
 #define UNUSED(x) (void)(x)

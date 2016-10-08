@@ -94,7 +94,7 @@ internal void makeBufferRPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], in
     UNUSED(layout);
     glGenBuffers(1, VBO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * layout->values_per_quad, vertices, usage);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * layout->values_per_thing, vertices, usage);
 
     glGenBuffers(1, EBO);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
@@ -112,12 +112,9 @@ internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayou
     for (int i = 0; i < layout->element_count; i++) {
         ShaderLayoutElement *elem = &layout->elements[i];
         GLuint loc =  glGetAttribLocation(*program, elem->attr_name);
-
-        glVertexAttribPointer(loc, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
-        //printf("%d, %d, %d, %d, %d, %d\n",( GLuint)i, elem->amount, elem->type, GL_FALSE, (layout->values_per_quad/4) * elem->type_size, (stride * elem->type_size));
+        glVertexAttribPointer(loc, elem->amount, elem->type, GL_FALSE, (layout->values_per_vertex) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
         stride += elem->amount;
         glEnableVertexAttribArray(loc);
-        CHECK();
     }
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, *EBO);
 }
@@ -226,7 +223,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
     //u32 number_to_do = renderer->walls_layout.values_per_thing;
     //ASSERT(number_to_do > 0);
-
+    printf("walls \n");
     for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
@@ -302,12 +299,13 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         }
 
 #ifdef GLES
-        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &walls_layout);
+        makeBufferRPI(batch->vertices, batch->indices, batch->count, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &renderer->walls_layout);
 #endif
 #ifdef GL3
         makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &renderer->walls_layout);
 #endif
     }
+    printf("actors \n");
 
     for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
@@ -322,12 +320,13 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
             batch->indices[i + 5] = j + 3;
         }
 #ifdef GLES
-        makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &actors_layout);
+        makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
 #ifdef GL3
         makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
     }
+    printf("fonts \n");
 
     // prepare buffers for FONT drawing
     {
@@ -344,13 +343,15 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->indices[i + 5] = j + 3;
             }
 #ifdef GLES
-            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &debug_text_layout);
+            makeBufferRPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
 #endif
 #ifdef GL3
             makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
 #endif
         }
     }
+    printf("lines \n");
+
 
     // prepare buffers for LINE drawing
     {
@@ -526,7 +527,7 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
 
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette, &actors_layout);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette, &renderer->actors_layout);
         CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * number_to_do * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
@@ -624,7 +625,7 @@ void render_walls(PermanentState *permanent, RenderState *renderer) {
         //int count = batch->count; //game->wall_count;
         //Draw walls
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv, &walls_layout );
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv, &renderer->walls_layout );
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
 #endif
@@ -695,7 +696,7 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
                 batch->vertices[i + 15] = uvs.br.y;
             }
 #ifdef GLES
-            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xy_uv, &debug_text_layout);
+            bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xy_uv, &renderer->debug_text_layout);
             CHECK();
 
             glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * number_to_do * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
@@ -761,11 +762,11 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
             batch->vertices[i + 11] = data.b;
         }
 #ifdef GLES
-        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xy_rgb, &colored_lines_layout);
+        bindBuffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_rgb, &renderer->colored_lines_layout);
         CHECK();
 
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * number_to_do * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
-        glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
+        glDrawElements(GL_LINES, batch->count * 4, GL_UNSIGNED_SHORT, 0);
         glDisableVertexAttribArray(0);
 #endif
 #ifdef GL3

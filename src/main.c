@@ -99,7 +99,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/stairs_issue.txt");
+    resource_level(permanent, &permanent->level, "levels/two_floors.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
@@ -117,6 +117,7 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
 #ifdef GLES
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GLES2.vert", "shaders/xyz_uv_palette.GLES2.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GLES2.vert", "shaders/xyz_uv.GLES2.frag");
+    resource_shader(&renderer->assets.xyz_rgb, "shaders/xyz_rgb.GLES2.vert", "shaders/xyz_rgb.GLES2.frag");
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GLES2.vert", "shaders/xy_uv.GLES2.frag");
 
 #endif
@@ -401,7 +402,7 @@ int main(int argc, char **argv) {
     RenderState _rstate;
     RenderState *renderer = &_rstate;
 
-    printf("permanent struct size: %lu\n",(sizeof(PermanentState)));
+    printf("permanent struct size: %lu\n",(unsigned long)(sizeof(PermanentState)));
     initialize_arena(&permanent->arena,
                      memory->permanent_size - sizeof(PermanentState),
                      (u8 *)memory->permanent + sizeof(PermanentState));
@@ -437,7 +438,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 1000
+#define ACTOR_BATCH 10
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);

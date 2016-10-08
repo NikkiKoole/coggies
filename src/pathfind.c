@@ -537,7 +537,7 @@ internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_
     int x = Current->X;
     int y = Current->Y;
     int z = Current->Z;
-    grid_node *Result;
+    grid_node *Result = NULL;
     int stair_offset = 4; // TODO sometimes you want 4, in some cases things break though.
 
     grid_node * one_down;// = GetNodeAt(Grid,x, y, z - 1);
@@ -648,7 +648,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
     // TODO: dirtylist
     startNode->opened = true;
 
-    jump_direction *allowed;
+    jump_direction *allowed = NULL;
     int allowedSize = 0;
     while (OpenList->count > 0) {
         grid_node * Node = HeapPop(OpenList);
@@ -722,7 +722,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
 
             if ((Node->Z == endNode->Z) &&
                 (IS_CARDINAL(direction)) &&
-                (getDirection(endNode, Node) == direction) &&
+                ((int) getDirection(endNode, Node) == direction) &&
                 ((diffXY(endNode, Node)) <= ABS(Node->distance[direction])))  {
                 Successor = endNode;
                 givenCost = Node->g + (diffXY(endNode, Node));

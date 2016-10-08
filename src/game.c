@@ -15,6 +15,8 @@
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
 #pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Warray-bounds"
+
 #include "sort.h"
 #pragma GCC diagnostic pop
 
@@ -89,14 +91,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     DebugState *debug = (DebugState *)memory->debug;
 
     if (memory->is_initialized == false) {
-        printf("Used at permanent:  %lu\n", permanent->arena.used);
+        printf("Used at permanent:  %lu\n", (unsigned long) permanent->arena.used);
         permanent->walls = (Wall*) PUSH_ARRAY(&permanent->arena, (16384), Wall);
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
         permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
 
-        printf("used scrathc space (before init): %lu\n", scratch->arena.used);
-        printf("Used at permanent:  %lu\n", permanent->arena.used);
+        printf("used scrathc space (before init): %lu\n", (unsigned long)scratch->arena.used);
+        printf("Used at permanent:  %lu\n", (unsigned long)permanent->arena.used);
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         printf("blocktotal %d\n", BlockTotal);
 
@@ -342,10 +344,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 #if 1
         init_grid(permanent->grid, &permanent->arena, &permanent->level);
         preprocess_grid(permanent->grid);
-        printf("used scratch space: %lu\n", scratch->arena.used);
+        printf("used scratch space: %lu\n", (unsigned long) scratch->arena.used);
         TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-        grid_node * Start = GetNodeAt(permanent->grid, 4, 5, 3);
+        grid_node * Start = GetNodeAt(permanent->grid, 16, 3, 2);
         grid_node * End = GetNodeAt(permanent->grid, 15, 6, 0);
 
 
@@ -397,7 +399,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
 
         end_temporary_memory(temp_mem);
-        printf("used scratch space: %lu\n", scratch->arena.used);
+        printf("used scratch space: %lu\n", (unsigned long)scratch->arena.used);
 
         set_colored_line_batch_sizes(permanent, renderer);
 #endif

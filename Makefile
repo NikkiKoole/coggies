@@ -1,7 +1,7 @@
 SDL_CFLAGS := $(shell sdl2-config --cflags)
 SDL_LFLAGS := $(shell sdl2-config --libs)
 
-STRICT = -Werror -Wall -ferror-limit=100
+STRICT = -Werror -Wall
 STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wimplicit -Wmain -Wchar-subscripts -Wsequence-point -Wmissing-braces \
 		   -Wparentheses -Winit-self -Wswitch-enum -Wstrict-aliasing=2  \
@@ -10,7 +10,7 @@ STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
 SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls  -Wcast-qual -Wshadow #-pedantic-errors
-WARNINGS = $(SUPERSTRICT)
+WARNINGS = $(STRICT_RPI2)
 
 
 OBJDIR = ./objs/
@@ -23,7 +23,7 @@ CHK_SOURCES := src/main.c
 DEBUG:= #-g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:= -O3
-STD:= #-std=c99
+STD:= -std=gnu99
 
 CC:= gcc #g++ -x c
 
@@ -44,7 +44,7 @@ steer:
 
 gamelibrary:
 	mkdir -p $(OBJDIR)
-	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE) -DOSX -fPIC src/level.c src/game.c src/random.c src/renderer.c src/memory.c src/pathfind.c
+	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE)   -DOSX -fPIC src/level.c src/game.c src/random.c src/renderer.c src/memory.c src/pathfind.c
 	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) level.o game.o random.o renderer.o memory.o pathfind.o -lglew -framework OpenGL  $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
 
