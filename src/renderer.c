@@ -730,9 +730,12 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
                            0.0f, 0.0f, 0.0f, 1.0f};
 
     GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f * renderer->view.width/2, 1.0f * renderer->view.width/2,
-                                                -1.0f * renderer->view.height/2, 1.0f * renderer->view.height/2,
-                                                0.0f, 100.0f);
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0, 1.0f * renderer->view.width,
+                                                0, 1.0f * renderer->view.height,
+                                               0.0f, 100.0f);
+    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
+    //                                            -1.0f , 1.0f ,
+    //                                            0.0f, 100.0f);
     GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
 
@@ -772,15 +775,15 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
             const float tempY2 = round(((data.z2) - (data.y2) / 2.0f) + permanent->y_view_offset);
             const float x2 = (tempX2 / screenWidth) * 2.0f - 1.0f;
             const float y2 = ((tempY2+6) / screenHeight) * 2.0f - 1.0f;
-
-            batch->vertices[i + 0] = x1;
-            batch->vertices[i + 1] = y1;
+            //printf("%f\n",tempX1);
+            batch->vertices[i + 0] = tempX1;//x1;
+            batch->vertices[i + 1] = tempY1+7;//y1;
             batch->vertices[i + 2] = 0.0f;
             batch->vertices[i + 3] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;
             batch->vertices[i + 4] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;
             batch->vertices[i + 5] = data.b;
-            batch->vertices[i + 6] = x2;
-            batch->vertices[i + 7] = y2;
+            batch->vertices[i + 6] = tempX2;//x2;
+            batch->vertices[i + 7] = tempY2+7;//y2;
             batch->vertices[i + 8] = 0.0f;
             batch->vertices[i + 9] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;;//ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
             batch->vertices[i + 10] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;
@@ -824,12 +827,12 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    //render_actors(permanent, renderer, debug);
-    //render_walls(permanent, renderer);
+    render_actors(permanent, renderer, debug);
+    render_walls(permanent, renderer);
 
     glDisable(GL_DEPTH_TEST);
 
-    //render_text(permanent, renderer);
+    render_text(permanent, renderer);
     render_lines(permanent, renderer);
 
     END_PERFORMANCE_COUNTER(render_func);
