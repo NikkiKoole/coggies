@@ -7,6 +7,12 @@
 #include <stdio.h>
 #include <string.h>
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+#include "GLKMatrix4.h"
+#pragma GCC diagnostic pop
+
 
 typedef struct {
     float x;
@@ -717,8 +723,27 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
 
 void render_lines(PermanentState *permanent, RenderState *renderer);
 void render_lines(PermanentState *permanent, RenderState *renderer) {
+
+    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 1.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 1.0f, 0.0f,
+                           0.0f, 0.0f, 0.0f, 1.0f};
+
+    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f * renderer->view.width/2, 1.0f * renderer->view.width/2,
+                                                -1.0f * renderer->view.height/2, 1.0f * renderer->view.height/2,
+                                                0.0f, 100.0f);
+    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
+
+
+
+
     glUseProgram(renderer->assets.xyz_rgb);
 
+    GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_rgb, "MVP");
+    ASSERT(MatrixID >= 0);
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
 
     float screenWidth = renderer->view.width;
     float screenHeight = renderer->view.height;
@@ -799,12 +824,12 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-    render_actors(permanent, renderer, debug);
-    render_walls(permanent, renderer);
+    //render_actors(permanent, renderer, debug);
+    //render_walls(permanent, renderer);
 
     glDisable(GL_DEPTH_TEST);
 
-    render_text(permanent, renderer);
+    //render_text(permanent, renderer);
     render_lines(permanent, renderer);
 
     END_PERFORMANCE_COUNTER(render_func);
