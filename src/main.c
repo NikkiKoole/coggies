@@ -399,7 +399,8 @@ int main(int argc, char **argv) {
     ScratchState *scratch = (ScratchState *)memory->scratch;
     ASSERT(sizeof(DebugState) <= memory->debug_size);
     DebugState *debug = (DebugState *)memory->debug;
-    RenderState _rstate;
+    RenderState _rstate; //TODO: make this use memory scheme instead of stack space, it gets in the order of 5-8 Mb now (when using 32bit floats)
+    printf("sizeof renderstate: %lu\n", (unsigned long) sizeof _rstate);
     RenderState *renderer = &_rstate;
 
     printf("permanent struct size: %lu\n",(unsigned long)(sizeof(PermanentState)));

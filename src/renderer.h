@@ -10,9 +10,10 @@
 
 
 
-#define USES_HALF_FLOAT
+//#define USES_HALF_FLOAT
 
 // TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
+
 
 
 
@@ -95,6 +96,10 @@ typedef struct DrawBuffer {
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
 } DrawBuffer;
 
+#define WALL_BATCH_COUNT 8
+#define ACTOR_BATCH_COUNT 32
+#define GLYPH_BATCH_COUNT 2
+#define LINE_BATCH_COUNT 2
 
 
 typedef struct RenderState {
@@ -102,13 +107,13 @@ typedef struct RenderState {
     SDL_Window *window;
     SDL_GLContext context;
     Assets assets;
-    DrawBuffer walls[8];
+    DrawBuffer walls[WALL_BATCH_COUNT];
     int used_wall_batches;
-    DrawBuffer actors[32];
+    DrawBuffer actors[ACTOR_BATCH_COUNT]; //was 32
     int used_actor_batches;
-    DrawBuffer glyphs[2];
+    DrawBuffer glyphs[GLYPH_BATCH_COUNT];
     int used_glyph_batches;
-    DrawBuffer colored_lines[2];
+    DrawBuffer colored_lines[LINE_BATCH_COUNT];
     int used_colored_lines_batches;
     int needs_prepare;
     ShaderLayout debug_text_layout;

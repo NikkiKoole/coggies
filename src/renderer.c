@@ -93,6 +93,21 @@ internal inline Rect2 get_verts(float viewportWidth,
     return result;
 }
 
+internal inline Rect2 get_verts_mvp(float x,
+                                    float y,
+                                    float width,
+                                    float height,
+                                    float scaleX,
+                                    float scaleY,
+                                    float pivotX,
+                                    float pivotY) {
+    Rect2 result;
+    result.tl.x = x - ((pivotX) * (width) * scaleX);
+    result.tl.y = y - ((1.0f - pivotY ) * (height ) * scaleY);
+    result.br.x = x + ((1.0f - pivotX ) * (width ) * scaleX);
+    result.br.y = y + ((pivotY) * (height ) * scaleY);
+    return result;
+}
 
 
 #ifdef GLES
@@ -219,18 +234,18 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
     //int real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
-    int real_world_depth = permanent->dims.y * (permanent->block_size.y);
+    //int real_world_depth = permanent->dims.y * (permanent->block_size.y);
     int screenWidth = renderer->view.width;
     int screenHeight = renderer->view.height;
 
-    int offset_x_blocks = permanent->x_view_offset;
-    int offset_y_blocks = permanent->y_view_offset;
+    //int offset_x_blocks = permanent->x_view_offset;
+    //int offset_y_blocks = permanent->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
     //u32 number_to_do = renderer->walls_layout.values_per_thing;
     //ASSERT(number_to_do > 0);
-    printf("walls \n");
-    for (int wall_batch_index = 0; wall_batch_index < 8; wall_batch_index++) {
+    //printf("walls \n");
+    for (int wall_batch_index = 0; wall_batch_index < WALL_BATCH_COUNT; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
 
@@ -241,26 +256,27 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 int prepare_index = i / renderer->walls_layout.values_per_thing;
                 prepare_index += (wall_batch_index * 2048);
                 Wall data = permanent->walls[prepare_index];
-                float scale = 1;
+                float scale = 1.0f;
                 float wallX = data.frame.x_pos * 24;
                 float wallY = data.frame.y_pos * 108;
 
                 float tempX = data.x;
                 float tempY = (data.z) - (data.y) / 2;
-                tempX += offset_x_blocks;
-                tempY += offset_y_blocks;
+                //tempX += offset_x_blocks;
+                //tempY += offset_y_blocks;
 
-                float x = (tempX / screenWidth) * 2 - 1.0;
-                float y = (tempY / screenHeight) * 2 - 1.0;
+                //float x = (tempX / screenWidth) * 2 - 1.0;
+                //float y = (tempY / screenHeight) * 2 - 1.0;
 
-                float wallDepth = -1 * ((float)(data.y) / (float)real_world_depth);
-
+                //float wallDepth = -1 * ((float)(data.y) / (float)real_world_depth);
+                float wallDepth = data.y;
                 float wallHeight = 108.0f;
 
 
                 // float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
-                Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
+                //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
+                Rect2 verts = get_verts_mvp(tempX, tempY, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
                 //printf("%d\n",i);
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
@@ -311,9 +327,9 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         makeBuffer(batch->vertices, batch->indices, batch->count, &batch->VAO, &batch->VBO, &batch->EBO, GL_STATIC_DRAW, &renderer->walls_layout);
 #endif
     }
-    printf("actors \n");
+    //printf("actors \n");
 
-    for (int actor_batch_index = 0; actor_batch_index < 32; actor_batch_index++) {
+    for (int actor_batch_index = 0; actor_batch_index < ACTOR_BATCH_COUNT; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
 
         for (u32 i = 0; i < 2048 * 6; i += 6) {
@@ -332,11 +348,11 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         makeBuffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
     }
-    printf("fonts \n");
+    //printf("fonts \n");
 
     // prepare buffers for FONT drawing
     {
-        for (int glyph_batch_index = 0; glyph_batch_index < 1; glyph_batch_index++) {
+        for (int glyph_batch_index = 0; glyph_batch_index < GLYPH_BATCH_COUNT; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
 
             for (u32 i = 0; i < 2048 * 6; i += 6) {
@@ -356,12 +372,12 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 #endif
         }
     }
-    printf("lines \n");
+    //printf("lines \n");
 
 
     // prepare buffers for LINE drawing
     {
-        for (int line_batch_index = 0; line_batch_index < 2; line_batch_index++) {
+        for (int line_batch_index = 0; line_batch_index < LINE_BATCH_COUNT; line_batch_index++) {
             DrawBuffer *batch = &renderer->colored_lines[line_batch_index];
             for (u32 i = 0; i < 2048 * 6; i += 6) {
                 int j = (i / 6) * 4;
@@ -424,11 +440,15 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             // this offset is to get actors drawn on top of floors that are of the same depth
             // I think a better approach is have the pivot for the walls and floors lie 'at the far side'
             // also the exact position of the actor on the sprite sheet needs looking at, and the depths of walls and floors
-            const float offset_toget_actor_ontop_of_floor = 0;//24.0f/real_world_depth;
-            const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
-
+            //const float offset_toget_actor_ontop_of_floor = 0;//24.0f/real_world_depth;
+            //const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
+            const float guyDepth = data.y;
             const float tempX = round(data.x + permanent->x_view_offset);
             const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
+
+            const float x2 = round(data.x);
+            const float y2 = round((data.z) - (data.y) / 2.0f);
+
             //tempX += permanent->x_view_offset;
             //tempY += permanent->y_view_offset;
 
@@ -449,14 +469,15 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
             //Rect2 uvs = get_uvs(actor_texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
             //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
+            Rect2 verts = get_verts_mvp(x2, y2, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
 
-            const float pivotX = 0.5f;
-            const float pivotY = 1.0f; //
+            //const float pivotX = 0.5f;
+            //const float pivotY = 1.0f; //
 
-            const float VERT_TL_X = x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
-            const float VERT_TL_Y = y - ((2 - pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
-            const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
-            const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
+            //const float VERT_TL_X = x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
+            //const float VERT_TL_Y = y - ((2 - pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
+            //const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
+            //const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
 
             /* const int FL = sizeof(VERTEX_FLOAT_TYPE); */
 
@@ -494,29 +515,29 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
 
             // bottomright
-            batch->vertices[i + 0] = VERT_BR_X; //verts.br.x;
-            batch->vertices[i + 1] = VERT_BR_Y; //verts.br.y;
+            batch->vertices[i + 0] = verts.br.x;//VERT_BR_X; //verts.br.x;
+            batch->vertices[i + 1] = verts.br.y;//VERT_BR_Y; //verts.br.y;
             batch->vertices[i + 2] = guyDepth;
             batch->vertices[i + 3] = UV_BR_X; // uvs.br.x;
             batch->vertices[i + 4] = UV_BR_Y; ////uvs.br.y;
             batch->vertices[i + 5] = paletteIndex;
             //topright
-            batch->vertices[i + 6] = VERT_BR_X; //verts.br.x;
-            batch->vertices[i + 7] = VERT_TL_Y; //verts.tl.y;
+            batch->vertices[i + 6] = verts.br.x;// VERT_BR_X; //verts.br.x;
+            batch->vertices[i + 7] = verts.tl.y;//VERT_TL_Y; //verts.tl.y;
             batch->vertices[i + 8] = guyDepth;
             batch->vertices[i + 9] = UV_BR_X;  //uvs.br.x;
             batch->vertices[i + 10] = UV_TL_Y; //uvs.tl.y;
             batch->vertices[i + 11] = paletteIndex;
             // top left
-            batch->vertices[i + 12] = VERT_TL_X; //verts.tl.x;
-            batch->vertices[i + 13] = VERT_TL_Y; //verts.tl.y;
+            batch->vertices[i + 12] = verts.tl.x;// VERT_TL_X; //verts.tl.x;
+            batch->vertices[i + 13] = verts.tl.y;//VERT_TL_Y; //verts.tl.y;
             batch->vertices[i + 14] = guyDepth;
             batch->vertices[i + 15] = UV_TL_X; //uvs.tl.x;
             batch->vertices[i + 16] = UV_TL_Y; //uvs.tl.y;
             batch->vertices[i + 17] = paletteIndex;
             // bottomleft
-            batch->vertices[i + 18] = VERT_TL_X; //verts.tl.x;
-            batch->vertices[i + 19] = VERT_BR_Y; //verts.br.y;
+            batch->vertices[i + 18] = verts.tl.x;;//VERT_TL_X; //verts.tl.x;
+            batch->vertices[i + 19] = verts.br.y;//VERT_BR_Y; //verts.br.y;
             batch->vertices[i + 20] = guyDepth;
             batch->vertices[i + 21] = UV_TL_X; //uvs.tl.x;
             batch->vertices[i + 22] = UV_BR_Y; //uvs.br.y;
@@ -540,40 +561,14 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
         glDisableVertexAttribArray(0);
 #endif
 
-
-
-
-
-
 #ifdef GL3
-        /*  BEGIN_PERFORMANCE_COUNTER(render_actors_mapbuffer); */
-        /* //glBindVertexArray(batch->VAO); */
-        /* //glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
-        /* //GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); */
-        /* //memcpy(ptr, batch->vertices, (batch->count * VALUES_PER_ELEM * sizeof(VERTEX_FLOAT_TYPE))); */
-        /* CHECK(); */
-        /* glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0); */
-        /* CHECK(); */
-        /* glUnmapBuffer(GL_ARRAY_BUFFER); */
-        /* glFlush(); */
-        /* CHECK(); */
-        /* END_PERFORMANCE_COUNTER(render_actors_mapbuffer); */
-
-
-
-
         BEGIN_PERFORMANCE_COUNTER(render_actors_buffersubber);
         glBindVertexArray(batch->VAO);
         glBindBuffer(GL_ARRAY_BUFFER, batch->VBO);
-        //CHECK();
         glBufferSubData(GL_ARRAY_BUFFER, 0, batch->count * number_to_do * sizeof(VERTEX_FLOAT_TYPE), batch->vertices);
-        //CHECK();
         glDrawElements(GL_TRIANGLES, batch->count * 6, GL_UNSIGNED_SHORT, 0);
-        //CHECK();
         glBindVertexArray(0);
-        //glFlush(); // not needed but gives a better idea of the costs
         END_PERFORMANCE_COUNTER(render_actors_buffersubber);
-
 #endif
         END_PERFORMANCE_COUNTER(render_actors_buffers);
     }
@@ -586,8 +581,31 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 void render_actors(PermanentState *permanent,  RenderState *renderer, DebugState *debug);
 void render_actors(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
 
+
+    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 1.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 1.0f, 0.0f,
+                           0.0f, 0.0f, 0.0f, 1.0f};
+
+    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+                                                0.0f, 1.0f * (float)renderer->view.height,
+                                                -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
+    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
+    //                                            -1.0f , 1.0f ,
+    //                                            0.0f, 100.0f);
+    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
+    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+
+
     // this part needs to be repeated in all render loops (To use specific shader programs)
     glUseProgram(renderer->assets.xyz_uv_palette);
+
+
+     GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv_palette, "MVP");
+     ASSERT(MatrixID >= 0);
+     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
@@ -610,7 +628,29 @@ void render_actors(PermanentState *permanent, RenderState *renderer, DebugState 
 void render_walls(PermanentState *permanent,  RenderState *renderer);
 void render_walls(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
+
+
+    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 1.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 1.0f, 0.0f,
+                           0.0f, 0.0f, 0.0f, 1.0f};
+
+    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+                                                0.0f, 1.0f * (float)renderer->view.height,
+                                                -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
+    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
+    //                                            -1.0f , 1.0f ,
+    //                                            0.0f, 100.0f);
+    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
+    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+
     glUseProgram(renderer->assets.xyz_uv);
+
+    GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv, "MVP");
+    ASSERT(MatrixID >= 0);
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
@@ -650,7 +690,35 @@ void render_text(PermanentState *permanent, RenderState *renderer);
 void render_text(PermanentState *permanent, RenderState *renderer) {
     // Draw FONTS
     {
+
+        float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                               0.0f, 1.0f, 0.0f, 0.0f,
+                               0.0f, 0.0f, 1.0f, 0.0f,
+                               0.0f, 0.0f, 0.0f, 1.0f};
+
+        GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
+        GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+                                                    0.0f, 1.0f * (float)renderer->view.height,
+                                                    -1000.0f, 10000.0f);
+        //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
+        //                                            -1.0f , 1.0f ,
+        //                                            0.0f, 100.0f);
+        GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+        GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
+
+        //mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+
+
+
+
         glUseProgram(renderer->assets.xy_uv);
+
+
+        GLuint MatrixID = glGetUniformLocation(renderer->assets.xy_uv, "MVP");
+        ASSERT(MatrixID >= 0);
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
+
+
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_2D, renderer->assets.menlo.id);
         glUniform1i(glGetUniformLocation(renderer->assets.xy_uv, "sprite_atlas"), 0);
@@ -671,11 +739,16 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
                 int prepare_index = i / number_to_do;
                 prepare_index += (glyph_batch_index * 2048);
                 Glyph data = permanent->glyphs[prepare_index];
-                r32 scale = 1;
-                float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
-                float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
+                r32 scale = 1.0f;
+                //float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
+                //float y = -1.0f + (((float)(renderer->view.height - data.y) / (float)renderer->view.height) * 2.0f);
+                float x2 = (float)(data.x);
+                float y2 = (float)(renderer->view.height - data.y);
+
+                // TODO save the UVs on loadtime then just read them
                 Rect2 uvs = get_uvs(texture_size, (float)data.sx, (float)data.sy, (float)data.w, (float)data.h);
-                Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
+                //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
+                Rect2 verts = get_verts_mvp(x2, y2, (float)data.w, (float)data.h, scale, scale, 0.0, 0.0);
 
                 /* // bottomright */
                 batch->vertices[i + 0] = verts.br.x;
@@ -730,8 +803,8 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
                            0.0f, 0.0f, 0.0f, 1.0f};
 
     GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0, 1.0f * renderer->view.width,
-                                                0, 1.0f * renderer->view.height,
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+                                                0.0f, 1.0f * (float)renderer->view.height,
                                                0.0f, 100.0f);
     //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
     //                                            -1.0f , 1.0f ,
@@ -739,8 +812,9 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
     GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
     GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
 
-
-
+    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+    //mvp = GLKMatrix4RotateZ(mvp, PI*0.5);
+    //mvp = GLKMatrix4Scale(mvp, 2.0f, 2.0f, 2.0f);
 
     glUseProgram(renderer->assets.xyz_rgb);
 
@@ -748,8 +822,8 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
     ASSERT(MatrixID >= 0);
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
 
-    float screenWidth = renderer->view.width;
-    float screenHeight = renderer->view.height;
+    //float screenWidth = renderer->view.width;
+    //float screenHeight = renderer->view.height;
 
     for (int line_batch_index = 0; line_batch_index < renderer->used_colored_lines_batches; line_batch_index++) {
         DrawBuffer *batch = &renderer->colored_lines[line_batch_index];
@@ -766,15 +840,15 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
             prepare_index += (line_batch_index * 2048);
             ColoredLine data = permanent->colored_lines[prepare_index];
 
-            const float tempX1 = round(data.x1 + permanent->x_view_offset);
-            const float tempY1 = round(((data.z1) - (data.y1) / 2.0f) + permanent->y_view_offset);
-            const float x1 = (tempX1 / screenWidth) * 2.0f - 1.0f;
-            const float y1 = ((tempY1+6) / screenHeight) * 2.0f - 1.0f;
+            const float tempX1 = round(data.x1);
+            const float tempY1 = round(((data.z1) - (data.y1) / 2.0f) );
+            //const float x1 = (tempX1 / screenWidth) * 2.0f - 1.0f;
+            //const float y1 = ((tempY1+6) / screenHeight) * 2.0f - 1.0f;
 
-            const float tempX2 = round(data.x2 + permanent->x_view_offset);
-            const float tempY2 = round(((data.z2) - (data.y2) / 2.0f) + permanent->y_view_offset);
-            const float x2 = (tempX2 / screenWidth) * 2.0f - 1.0f;
-            const float y2 = ((tempY2+6) / screenHeight) * 2.0f - 1.0f;
+            const float tempX2 = round(data.x2 );
+            const float tempY2 = round(((data.z2) - (data.y2) / 2.0f));
+            //const float x2 = (tempX2 / screenWidth) * 2.0f - 1.0f;
+            //const float y2 = ((tempY2+6) / screenHeight) * 2.0f - 1.0f;
             //printf("%f\n",tempX1);
             batch->vertices[i + 0] = tempX1;//x1;
             batch->vertices[i + 1] = tempY1+7;//y1;
