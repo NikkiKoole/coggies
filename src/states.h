@@ -6,6 +6,7 @@ typedef struct {
     MemoryArena arena;
 } ScratchState;
 
+
 typedef struct {
     MemoryArena arena;
     PerfDict perf_dict;
@@ -21,6 +22,7 @@ typedef struct {
     u16 y;
     u16 z;
     BlockTextureAtlasPosition frame;
+    u8 is_floor;
 } Wall; //64
 
 typedef struct {
@@ -58,6 +60,7 @@ typedef struct {
 typedef enum {
     Nothing,
     WallBlock,
+    WindowBlock,
     Floor, Grass, Wood, Concrete, Tiles, Carpet,
     LadderUpDown, LadderUp, LadderDown,
     StairsUpMeta, StairsDownMeta,
@@ -108,6 +111,29 @@ typedef struct grid {
     grid_node* nodes;
 } Grid;
 
+
+typedef struct FoundPathNode {
+    u8 X, Y, Z;
+    struct FoundPathNode * Next;
+    struct FoundPathNode * Prev;
+} FoundPathNode;
+
+typedef struct FoundPathList {
+    FoundPathNode * Sentinel;
+} FoundPathList;
+
+typedef struct {
+    MemoryArena arena;
+    FoundPathNode * Free;
+} FoundPathState;
+
+
+
+typedef struct {
+    FoundPathList data;
+} ActorPath;
+
+
 typedef struct {
     MemoryArena arena;
     LevelData level;
@@ -116,6 +142,9 @@ typedef struct {
 
     Actor *actors;//[16384*4];
     u32 actor_count;
+
+    ActorPath *paths; //
+    // doesnt need a count because it will be the same as actor
 
     Glyph *glyphs;//[16384];
     u32 glyph_count;
@@ -133,6 +162,10 @@ typedef struct {
     WorldDims block_size;
     ////
     Grid *grid;
+    //
+
+
+
 } PermanentState;
 
 void actor_remove(PermanentState *state, u32 index);

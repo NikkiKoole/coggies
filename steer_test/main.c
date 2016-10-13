@@ -9,6 +9,10 @@
 
 #include <math.h>
 
+#include "remotery.h"
+#undef RMT_USE_OPENGL
+#define RMT_USE_OPENGL 1
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-braces"
 #include "GLKVector2.h"
@@ -710,6 +714,9 @@ static GLKVector2 separate_abins(Actor *actor, ArrayBins abins) {
 #define PI 3.14159265358979323846
 
 
+
+
+
 int main() {
 #ifdef __SSE2__
     printf("SSE2 found!\n");
@@ -753,6 +760,12 @@ int main() {
     Bins bins;
     ArrayBins abins;
 
+    Remotery* rmt;
+    rmt_BindOpenGL();
+    rmt_CreateGlobalInstance(&rmt);
+
+    // Explicit begin/end for C
+
 
     for (int x = 0; x< GRID_WIDTH; x++) {
         for (int y = 0; y< GRID_HEIGHT; y++) {
@@ -775,6 +788,13 @@ int main() {
 
 
     while (!quit) {
+        rmt_BeginOpenGLSample(UnscopedSample);
+        {
+        rmt_BeginCPUSample(Begin, 0);
+        rmt_LogText("Time me, please!");
+        rmt_EndCPUSample();
+        }
+
 
         SDL_GetMouseState(&mouseX, &mouseY);
 
@@ -823,6 +843,10 @@ int main() {
 
         }
 
+        {
+        rmt_BeginCPUSample(binloop, 0);
+        //rmt_LogText("some loop!");
+
         for (int i =0 ; i < ACTOR_COUNT ; i++) {
             int cell_x = actors[i].location.x / (SCREEN_WIDTH / GRID_WIDTH);
             int cell_y = actors[i].location.y / (SCREEN_HEIGHT / GRID_HEIGHT);
@@ -846,7 +870,11 @@ int main() {
                 abins.grid[cell_x][cell_y].count++;
             }
         }
-
+        rmt_EndCPUSample();
+        }
+        {
+        rmt_BeginCPUSample(update, 0);
+        //rmt_LogText("some other loop!");
         for (int i =0 ; i< ACTOR_COUNT ; i++) {
             //GLKVector2 separate_force = separate(&actors[i], actors);
             GLKVector2 separate_force = separate_abins(&actors[i], abins);
@@ -881,7 +909,8 @@ int main() {
 
             wrap_around_actors_in_screen(&actors[i]);
         }
-
+        rmt_EndCPUSample();
+        }
         end_temporary_memory(temp_mem);
         // end memory
 
@@ -928,7 +957,10 @@ int main() {
 
         delta_sec = update;
         SDL_RenderPresent(renderer);
+        rmt_EndOpenGLSample();
 
     }
+    rmt_DestroyGlobalInstance(rmt);
     close_app();
+
 }

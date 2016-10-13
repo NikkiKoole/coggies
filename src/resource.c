@@ -17,7 +17,7 @@ internal b32 exists(const char *fname) {
 
 internal void make_font(BM_Font *font, const char *path) {
     UNUSED(font);
-    printf("%s\n", path);
+    //    printf("%s\n", path);
     if (exists(path)) {
         //ok the bmf file will be in binary, thats a lot easier actually for me.
         //http://www.angelcode.com/products/bmfont/doc/file_format.html
@@ -94,7 +94,7 @@ internal void make_font(BM_Font *font, const char *path) {
                 //printf("x:%d, y:%d, xoffset:%d, yoffset:%d, width:%d, height:%d\n", x,y,xoffset,yoffset,width,height);
             }
             font->line_height = lineHeight;
-            printf("%d chars found in fnt file %s.\n", num_chars, path);
+            //printf("%d chars found in fnt file %s.\n", num_chars, path);
 
         } else {
             printf("%s is not a valid binary BMFont file.\n", path);
@@ -319,7 +319,7 @@ void resource_shader(GLuint *shader, const char *vertPath, const char *fragPath)
 
 
 internal void make_sprite_atlas(const char *path) {
-    printf("%s\n", path);
+    //printf("%s\n", path);
     if (exists(path)) {
         FILE *f = fopen(path, "rb");
         u8 header[3];

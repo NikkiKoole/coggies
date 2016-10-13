@@ -7,11 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wmissing-braces"
-#include "GLKMatrix4.h"
-#pragma GCC diagnostic pop
+
 
 
 typedef struct {
@@ -132,7 +128,8 @@ internal void bindBuffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayou
     int stride = 0;
     for (int i = 0; i < layout->element_count; i++) {
         ShaderLayoutElement *elem = &layout->elements[i];
-        GLuint loc =  glGetAttribLocation(*program, elem->attr_name);
+        GLint loc =  glGetAttribLocation(*program, elem->attr_name);
+        ASSERT(loc >=0);
         glVertexAttribPointer(loc, elem->amount, elem->type, GL_FALSE, (layout->values_per_vertex) * elem->type_size, (GLvoid *) (uintptr_t)(stride * elem->type_size));
         stride += elem->amount;
         glEnableVertexAttribArray(loc);
@@ -259,24 +256,26 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float scale = 1.0f;
                 float wallX = data.frame.x_pos * 24;
                 float wallY = data.frame.y_pos * 108;
-
-                float tempX = data.x;
-                float tempY = (data.z) - (data.y) / 2;
-                //tempX += offset_x_blocks;
-                //tempY += offset_y_blocks;
-
-                //float x = (tempX / screenWidth) * 2 - 1.0;
-                //float y = (tempY / screenHeight) * 2 - 1.0;
-
-                //float wallDepth = -1 * ((float)(data.y) / (float)real_world_depth);
                 float wallDepth = data.y;
+                float pivotY = 1.0f;
+
+
                 float wallHeight = 108.0f;
 
 
-                // float paletteIndex = 1.0f / 16 * 1; //rand_float(); //(data.y / 350.0f);
+                float tempX = data.x;
+                float tempY = (data.z) - (data.y) / 2;
+
+                if (data.is_floor) {
+                    wallDepth = data.y-24;
+                    //pivotY = (108.0f) /(108.0f - 12.0f);
+                    //tempY -= 12;
+                }
+
+
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, 24, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
+                Rect2 verts = get_verts_mvp(tempX, tempY, 24.0f, wallHeight, scale, scale, 0.5, pivotY);
                 //printf("%d\n",i);
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
@@ -414,6 +413,9 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
     ASSERT(number_to_do > 0);
 
 
+    //float smallestZ = 100000;
+    //float largestZ = -100000;
+
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
         int count = batch->count; //permanent->actor_count;
@@ -443,8 +445,12 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             //const float offset_toget_actor_ontop_of_floor = 0;//24.0f/real_world_depth;
             //const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
             const float guyDepth = data.y;
-            const float tempX = round(data.x + permanent->x_view_offset);
-            const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
+
+            //if (guyDepth < smallestZ) smallestZ = guyDepth;
+            //if (guyDepth > largestZ) largestZ = guyDepth;
+
+            //const float tempX = round(data.x + permanent->x_view_offset);
+            //const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
 
             const float x2 = round(data.x);
             const float y2 = round((data.z) - (data.y) / 2.0f);
@@ -452,8 +458,8 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             //tempX += permanent->x_view_offset;
             //tempY += permanent->y_view_offset;
 
-            const float x = (tempX / screenWidth) * 2.0f - 1.0f;
-            const float y = (tempY / screenHeight) * 2.0f - 1.0f;
+            //const float x = (tempX / screenWidth) * 2.0f - 1.0f;
+            //const float y = (tempY / screenHeight) * 2.0f - 1.0f;
 
             const float paletteIndex = data.palette_index; //rand_float();
 
@@ -572,7 +578,7 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 #endif
         END_PERFORMANCE_COUNTER(render_actors_buffers);
     }
-
+    //printf("largestZ = %f, smallestZ = %f\n",smallestZ, largestZ);
 }
 
 
@@ -581,31 +587,12 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 void render_actors(PermanentState *permanent,  RenderState *renderer, DebugState *debug);
 void render_actors(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
 
-
-    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f,
-                           0.0f, 0.0f, 0.0f, 1.0f};
-
-    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
-                                                0.0f, 1.0f * (float)renderer->view.height,
-                                                -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
-    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
-    //                                            -1.0f , 1.0f ,
-    //                                            0.0f, 100.0f);
-    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
-    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
-
-
     // this part needs to be repeated in all render loops (To use specific shader programs)
     glUseProgram(renderer->assets.xyz_uv_palette);
 
-
-     GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv_palette, "MVP");
+     GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv_palette, "MVP");
      ASSERT(MatrixID >= 0);
-     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
+     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &renderer->mvp.m[0]);
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
@@ -629,28 +616,11 @@ void render_walls(PermanentState *permanent,  RenderState *renderer);
 void render_walls(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
 
-
-    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f,
-                           0.0f, 0.0f, 0.0f, 1.0f};
-
-    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
-                                                0.0f, 1.0f * (float)renderer->view.height,
-                                                -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
-    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
-    //                                            -1.0f , 1.0f ,
-    //                                            0.0f, 100.0f);
-    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
-    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
-
     glUseProgram(renderer->assets.xyz_uv);
 
-    GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv, "MVP");
+    GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv, "MVP");
     ASSERT(MatrixID >= 0);
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &renderer->mvp.m[0]);
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
@@ -690,33 +660,12 @@ void render_text(PermanentState *permanent, RenderState *renderer);
 void render_text(PermanentState *permanent, RenderState *renderer) {
     // Draw FONTS
     {
-
-        float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
-                               0.0f, 1.0f, 0.0f, 0.0f,
-                               0.0f, 0.0f, 1.0f, 0.0f,
-                               0.0f, 0.0f, 0.0f, 1.0f};
-
-        GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-        GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
-                                                    0.0f, 1.0f * (float)renderer->view.height,
-                                                    -1000.0f, 10000.0f);
-        //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
-        //                                            -1.0f , 1.0f ,
-        //                                            0.0f, 100.0f);
-        GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-        GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
-
-        //mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
-
-
-
-
         glUseProgram(renderer->assets.xy_uv);
 
 
-        GLuint MatrixID = glGetUniformLocation(renderer->assets.xy_uv, "MVP");
+        GLint MatrixID = glGetUniformLocation(renderer->assets.xy_uv, "MVP");
         ASSERT(MatrixID >= 0);
-        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &renderer->mvp.m[0]);
 
 
         glActiveTexture(GL_TEXTURE0);
@@ -796,34 +745,10 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
 
 void render_lines(PermanentState *permanent, RenderState *renderer);
 void render_lines(PermanentState *permanent, RenderState *renderer) {
-
-    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
-                           0.0f, 1.0f, 0.0f, 0.0f,
-                           0.0f, 0.0f, 1.0f, 0.0f,
-                           0.0f, 0.0f, 0.0f, 1.0f};
-
-    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
-                                                0.0f, 1.0f * (float)renderer->view.height,
-                                               0.0f, 100.0f);
-    //GLKMatrix4 projection = GLKMatrix4MakeOrtho(-1.0f , 1.0f ,
-    //                                            -1.0f , 1.0f ,
-    //                                            0.0f, 100.0f);
-    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    GLKMatrix4 mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
-
-    mvp = GLKMatrix4Translate(mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
-    //mvp = GLKMatrix4RotateZ(mvp, PI*0.5);
-    //mvp = GLKMatrix4Scale(mvp, 2.0f, 2.0f, 2.0f);
-
     glUseProgram(renderer->assets.xyz_rgb);
-
-    GLuint MatrixID = glGetUniformLocation(renderer->assets.xyz_rgb, "MVP");
+    GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_rgb, "MVP");
     ASSERT(MatrixID >= 0);
-    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &mvp.m[0]);
-
-    //float screenWidth = renderer->view.width;
-    //float screenHeight = renderer->view.height;
+    glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &renderer->mvp.m[0]);
 
     for (int line_batch_index = 0; line_batch_index < renderer->used_colored_lines_batches; line_batch_index++) {
         DrawBuffer *batch = &renderer->colored_lines[line_batch_index];
@@ -833,7 +758,6 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
 #endif
 
         int number_to_do = renderer->colored_lines_layout.values_per_thing;
-
 
         for (int i = 0; i < count * number_to_do; i += number_to_do) {
             int prepare_index = i / number_to_do;
@@ -881,12 +805,26 @@ void render_lines(PermanentState *permanent, RenderState *renderer) {
     }
 }
 
-
 void render(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
     if (renderer->needs_prepare == 1) {
         prepare_renderer(permanent, renderer);
         renderer->needs_prepare = 0;
     }
+
+
+    float identity[16] = { 1.0f, 0.0f, 0.0f, 0.0f,
+                           0.0f, 1.0f, 0.0f, 0.0f,
+                           0.0f, 0.0f, 1.0f, 0.0f,
+                           0.0f, 0.0f, 0.0f, 1.0f};
+
+    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
+    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+                                                0.0f, 1.0f * (float)renderer->view.height,
+                                                -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
+    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    renderer->mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
+    renderer->mvp = GLKMatrix4Translate(renderer->mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+    //renderer->mvp  = GLKMatrix4RotateZ(renderer->mvp, PI/2);
 
 
     BEGIN_PERFORMANCE_COUNTER(render_func);
@@ -906,8 +844,9 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
 
     glDisable(GL_DEPTH_TEST);
 
+    //render_lines(permanent, renderer);
+    renderer->mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view)); // get rid of translation
     render_text(permanent, renderer);
-    render_lines(permanent, renderer);
 
     END_PERFORMANCE_COUNTER(render_func);
 

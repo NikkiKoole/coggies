@@ -1,4 +1,5 @@
 * Currently doing / Next up
+  - move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
   - make the pathfindcode use the common style i am using now
   - play around a little with the "keys for doors" concept,
     a few things ahead: the jumppoints shouldnt be diagonally placed but before & after the door directly
@@ -6,7 +7,9 @@
     i can just set its distance east & west OR north & south temporary to 0 and set them back to 1 and 1 after I am done.
   - make actors use pathfinding (just pick random walkable points in the plan)
   - do a little bit of animation, at the bare minimum show a different frame when actor moves north/east/south/west/up/down
-  - worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
+  - Ive done Reynolds steering behaviours, but its still a bit too much bouncing ball like, eventually i want it to be smarter, more human like
+    In Game AI PRO 2 chapter 19 there is a Guide to Anticipatory Collision Avoidance (Guy, Karamouzas) which seems promising.
+
 
 * Todo
 - [ ] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
@@ -98,36 +101,18 @@
     (this will actually be fixed as soon as I am using texture atlasses)
   However, it might be a wiser idea to just get a rpi3 (or better) and don't care.
 
-  - [X] half floats
+  - [ ] half floats
     On the same note I could try and give GL_OES_vertex_half_float a look over, that too -if I can use it in sdl2- can shave a lot of my buffers (50%)
     Haha top hit on Google: https://www.raspberrypi.org/forums/viewtopic.php?t=125128&p=839778 (my own question...)
     gcc documentation saying that it supports a half-float type (__fp16) for ARM targets.
     Ok half float is being used, sadly it doenst really has much effect, only when buffers are really large, and framerate is down to 100ms on rpi anyway
     then it does save 10/20% compared to glFloat ah well.. atleast my meory usage is down with 50%
 
-  - [ ] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU
+  - [X] Another thing that needs measuring, try out MVP matrixes instead of caluclating my vertices on the CPU, its much easier to use, not usefull as an optimization, but just better
 
   - [ ] Another thing that needs experimenting is the usage of depthbuffer
     https://www.opengl.org/discussion_boards/showthread.php/153121-Reading-the-Depth-Buffer-Why-so-slow
     It seems feeding floats (which I do) is by far the slowest, rather use chars or shorts
-
-  - [ ] single triangle instead of quad trick
-    also look into this:
-    https://www.reddit.com/r/opengl/comments/1kjsr9/how_to_render_2d_objects_using_2_triangles_for_a/
-    You can often get away with using a single triangle with twice the width and height of the intended sprite. This may be faster if you have a lot of sprites. Crappy ASCII art follows:
-    more info: https://www.reddit.com/r/gamedev/comments/2j17wk/a_slightly_faster_bufferless_vertex_shader_trick/
-    mm ok, that is unrelated to drawing many little quads, its on 1 quad that covers the whole screen.
-    I dont know about this, seems not very usefull.
-
-    *
-    | \
-    |   \
-    |     \
-    +------*
-    |      | \
-    |      |   \
-    |      |     \
-    +------+------*
 
   - [ ] filling the vertice arrays on CPU side
     on the rpi this appeasr to be quite a costly part of the whole frame time, on OSX is something like 25% of the time too.
@@ -150,6 +135,8 @@
 
 
 * Done
+- [X] worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
+
 - [X] some steering stuff
   its done in steering_test
   read about path following, collison avoidance, steering behaviours:

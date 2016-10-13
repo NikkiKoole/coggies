@@ -8,9 +8,13 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+#include "GLKMatrix4.h"
+#pragma GCC diagnostic pop
 
-
-//#define USES_HALF_FLOAT
+#define USES_HALF_FLOAT
 
 // TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
 
@@ -99,10 +103,12 @@ typedef struct DrawBuffer {
 #define WALL_BATCH_COUNT 8
 #define ACTOR_BATCH_COUNT 32
 #define GLYPH_BATCH_COUNT 2
-#define LINE_BATCH_COUNT 2
+#define LINE_BATCH_COUNT 8
 
 
 typedef struct RenderState {
+//float tx, ty, rotation;
+    GLKMatrix4 mvp;
     ViewPort view;
     SDL_Window *window;
     SDL_GLContext context;

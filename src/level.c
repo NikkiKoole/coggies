@@ -31,7 +31,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
 
     // first  line should contain MAP string
     if (fgets(str, BUF_SIZE, f) != NULL) {
-        printf("map header found ? %d\n", starts_with("MAP", str));
+        //printf("map header found ? %d\n", starts_with("MAP", str));
     }
 
     //second line should contain some version info
@@ -39,7 +39,7 @@ internal World_Size validate_and_get_dimensions(const char * path){
         if (atoi(str) != 1) {
             printf("I only grasp version 1.0 at the moment\n");
         } else {
-            printf("version %d\n", atoi(str));
+            //printf("version %d\n", atoi(str));
         }
     }
 
@@ -87,6 +87,10 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
                     WorldBlock *b = &level->blocks[FLATTEN_3D_INDEX(i-1,_y_level,_z_level, dimensions.x, dimensions.y)];
 
                     switch(str[i]) {
+                    case 'W':{
+                        b->object = WindowBlock;
+                        break;
+                    }
                     case '#':{
                         b->object = WallBlock;
                         break;
@@ -185,7 +189,7 @@ internal void read_level(PermanentState * permanent, LevelData * level, World_Si
     level->z_level = dimensions.z_level;
     level->block_count = dimensions.x * dimensions.y * dimensions.z_level;
     level->blocks = (WorldBlock*) PUSH_ARRAY(&permanent->arena, (level->block_count), WorldBlock);
-    printf("reading level : %s \n", path);
+    //printf("reading level : %s \n", path);
     {
         for (int z = 0; z< dimensions.z_level; z++){
             for (int y = 0; y < dimensions.y; y++) {

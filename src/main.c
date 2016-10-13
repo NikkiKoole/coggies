@@ -3,6 +3,7 @@
 
 #include "types.h"
 #include "renderer.h"
+#include "pathfind.h"
 #include "memory.h"
 #include "random.h"
 
@@ -366,6 +367,14 @@ internal void maybe_load_libgame(DebugState *debug) {
     }
 }
 
+internal grid_node* get_random_walkable_node(Grid *grid) {
+    grid_node *result;// = GetNodeAt(grid, 0,0,0);
+    do {
+        result = GetNodeAt(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
+    } while (!result->walkable);
+    return result;
+}
+
 
 
 
@@ -378,32 +387,37 @@ int main(int argc, char **argv) {
     //reserve_memory(memory);
 
     void *base_address = (void *)GIGABYTES(0);
-    memory->permanent_size = MEGABYTES(32);
-    memory->scratch_size = MEGABYTES(16);
-    memory->debug_size = MEGABYTES(16);
+    memory->permanent_size = MEGABYTES(8);
+    memory->scratch_size = MEGABYTES(2);
+    memory->found_paths_size = MEGABYTES(2);
+    memory->debug_size = MEGABYTES(2);
 
-    u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->debug_size;
+    u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->found_paths_size + memory->debug_size;
     memory->permanent = mmap(base_address, total_storage_size,
                              PROT_READ | PROT_WRITE,
                              MAP_ANON | MAP_PRIVATE,
                              -1, 0);
     memory->scratch = (u8 *)(memory->permanent) + memory->permanent_size;
-    memory->debug = (u8 *)(memory->scratch) + memory->scratch_size;
+    memory->found_paths = (u8 *)(memory->scratch) + memory->scratch_size;
+    memory->debug = (u8 *)(memory->found_paths) + memory->found_paths_size;
 
 
     memory->is_initialized = false;
-
+    printf("Total amount of MB in use: %lu.\n\n",(unsigned long) total_storage_size / 1000000);
     ASSERT(sizeof(PermanentState) <= memory->permanent_size);
     PermanentState *permanent = (PermanentState *)memory->permanent;
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);
     ScratchState *scratch = (ScratchState *)memory->scratch;
+
+    ASSERT(sizeof(FoundPathState) <= memory->found_paths_size);
+    FoundPathState *foundPaths = (FoundPathState *)memory->found_paths;
     ASSERT(sizeof(DebugState) <= memory->debug_size);
     DebugState *debug = (DebugState *)memory->debug;
     RenderState _rstate; //TODO: make this use memory scheme instead of stack space, it gets in the order of 5-8 Mb now (when using 32bit floats)
-    printf("sizeof renderstate: %lu\n", (unsigned long) sizeof _rstate);
+    //printf("sizeof renderstate: %lu\n", (unsigned long) sizeof _rstate);
     RenderState *renderer = &_rstate;
 
-    printf("permanent struct size: %lu\n",(unsigned long)(sizeof(PermanentState)));
+    //printf("permanent struct size: %lu\n",(unsigned long)(sizeof(PermanentState)));
     initialize_arena(&permanent->arena,
                      memory->permanent_size - sizeof(PermanentState),
                      (u8 *)memory->permanent + sizeof(PermanentState));
@@ -411,6 +425,11 @@ int main(int argc, char **argv) {
     initialize_arena(&scratch->arena,
                      memory->scratch_size - sizeof(ScratchState),
                      (u8 *)memory->scratch + sizeof(ScratchState));
+
+    initialize_arena(&foundPaths->arena,
+                     memory->found_paths_size - sizeof(FoundPathState),
+                     (u8 *)memory->found_paths + sizeof(FoundPathState));
+
 
     initialize_arena(&debug->arena,
                      memory->debug_size - sizeof(DebugState),
@@ -502,31 +521,32 @@ int main(int argc, char **argv) {
             }
             if (keys[SDL_SCANCODE_LEFT]) {
                 permanent->x_view_offset -= 24;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                //prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_RIGHT]) {
                 permanent->x_view_offset += 24;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                //prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_UP]) {
                 permanent->y_view_offset -= 12;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                //prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_DOWN]) {
                 permanent->y_view_offset += 12;
-                prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
+                //prepare_renderer(permanent, renderer); // this goes to show that just updating the walls should be a function, I dont want to prepare all other buffers just because
             }
             if (keys[SDL_SCANCODE_Z]) {
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
                     if (permanent->actor_count < (2048 * 32) - ACTOR_BATCH) {
                         actor_add(permanent);
                         u32 i = permanent->actor_count;
-                        permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;
+                        grid_node * Start  = get_random_walkable_node(permanent->grid);
+                        permanent->actors[i].x = Start->X * permanent->block_size.x;
                         ;
-                        permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
-                        permanent->actors[i].z = rand_int(0) * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
+                        permanent->actors[i].y = Start->Y * permanent->block_size.y;
+                        permanent->actors[i].z = Start->Z * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
                         permanent->actors[i].frame = rand_int(4);
-                        float speed = 40 + rand_int(10); // px per seconds
+                        float speed = 2;//4 + rand_int(10); // px per seconds
                         permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
                         permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
