@@ -389,17 +389,17 @@ int main(int argc, char **argv) {
     void *base_address = (void *)GIGABYTES(0);
     memory->permanent_size = MEGABYTES(8);
     memory->scratch_size = MEGABYTES(2);
-    memory->found_paths_size = MEGABYTES(2);
+    memory->node16_size = MEGABYTES(3);
     memory->debug_size = MEGABYTES(2);
 
-    u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->found_paths_size + memory->debug_size;
+    u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->node16_size + memory->debug_size;
     memory->permanent = mmap(base_address, total_storage_size,
                              PROT_READ | PROT_WRITE,
                              MAP_ANON | MAP_PRIVATE,
                              -1, 0);
     memory->scratch = (u8 *)(memory->permanent) + memory->permanent_size;
-    memory->found_paths = (u8 *)(memory->scratch) + memory->scratch_size;
-    memory->debug = (u8 *)(memory->found_paths) + memory->found_paths_size;
+    memory->node16 = (u8 *)(memory->scratch) + memory->scratch_size;
+    memory->debug = (u8 *)(memory->node16) + memory->node16_size;
 
 
     memory->is_initialized = false;
@@ -409,8 +409,8 @@ int main(int argc, char **argv) {
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);
     ScratchState *scratch = (ScratchState *)memory->scratch;
 
-    ASSERT(sizeof(FoundPathState) <= memory->found_paths_size);
-    FoundPathState *foundPaths = (FoundPathState *)memory->found_paths;
+    ASSERT(sizeof(Node16Arena) <= memory->node16_size);
+    Node16Arena *foundPaths = (Node16Arena *)memory->node16;
     ASSERT(sizeof(DebugState) <= memory->debug_size);
     DebugState *debug = (DebugState *)memory->debug;
     RenderState _rstate; //TODO: make this use memory scheme instead of stack space, it gets in the order of 5-8 Mb now (when using 32bit floats)
@@ -427,8 +427,8 @@ int main(int argc, char **argv) {
                      (u8 *)memory->scratch + sizeof(ScratchState));
 
     initialize_arena(&foundPaths->arena,
-                     memory->found_paths_size - sizeof(FoundPathState),
-                     (u8 *)memory->found_paths + sizeof(FoundPathState));
+                     memory->node16_size - sizeof(Node16Arena),
+                     (u8 *)memory->node16 + sizeof(Node16Arena));
 
 
     initialize_arena(&debug->arena,

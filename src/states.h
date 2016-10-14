@@ -2,6 +2,12 @@
 #define STATES_H
 #include "memory.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wsign-compare"
+#pragma GCC diagnostic ignored "-Wmissing-braces"
+#include "GLKVector3.h"
+#pragma GCC diagnostic pop
+
 typedef struct {
     MemoryArena arena;
 } ScratchState;
@@ -111,28 +117,36 @@ typedef struct grid {
     grid_node* nodes;
 } Grid;
 
-
 typedef struct FoundPathNode {
-    u8 X, Y, Z;
-    struct FoundPathNode * Next;
-    struct FoundPathNode * Prev;
+    GLKVector3 node;
+    float unused;
 } FoundPathNode;
 
-typedef struct FoundPathList {
-    FoundPathNode * Sentinel;
-} FoundPathList;
+typedef struct {
+    float data[4];
+} BarNode;
+
+typedef struct Node16
+{
+    union
+    {
+        FoundPathNode path;
+        BarNode bar;
+        u8 reserved[16];
+    };
+    struct Node16 *Next, *Prev;
+} Node16;
 
 typedef struct {
     MemoryArena arena;
-    FoundPathNode * Free;
-} FoundPathState;
-
+    Node16 *Free;
+    //Node16 *Sentinel;
+} Node16Arena;
 
 
 typedef struct {
-    FoundPathList data;
+    Node16 * Sentinel;
 } ActorPath;
-
 
 typedef struct {
     MemoryArena arena;

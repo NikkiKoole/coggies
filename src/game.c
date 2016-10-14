@@ -6,6 +6,7 @@
 #include "pathfind.h"
 #include "states.h"
 #include "level.h"
+#include "data_structures.h"
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
@@ -103,12 +104,31 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     ScratchState *scratch = (ScratchState *)memory->scratch;
     ASSERT(sizeof(DebugState) <= memory->debug_size);
     DebugState *debug = (DebugState *)memory->debug;
+    ASSERT(sizeof(Node16Arena) <= memory->node16_size);
+    Node16Arena *node16 = (Node16Arena *)memory->node16;
+
+    ASSERT(sizeof(Node16)  == sizeof(Node16*)*2 + 16);
+    ASSERT(sizeof(FoundPathNode) == sizeof(BarNode));
 
     if (memory->is_initialized == false) {
         //printf("Used at permanent:  %lu\n", (unsigned long) permanent->arena.used);
         permanent->walls = (Wall*) PUSH_ARRAY(&permanent->arena, (16384), Wall);
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
+        for (int i = 0; i < 16384*4; i++) {
+            Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
+            permanent->paths[i].Sentinel = Sentinel;
+            permanent->paths[i].Sentinel->Next = Sentinel;
+            permanent->paths[i].Sentinel->Prev = Sentinel;
+        }
+        //node16->Sentinel = PUSH_STRUCT(&node16->arena, Node16);
+        //node16->Sentinel->Next =  node16->Sentinel;
+        //node16->Sentinel->Prev =  node16->Sentinel;
+
+        node16->Free = PUSH_STRUCT(&node16->arena, Node16);
+        node16->Free->Next = node16->Free;//node16->Sentinel;
+        node16->Free->Prev = node16->Free;//node16->Sentinel;
+        printf("Node16 used: %lu\n", node16->arena.used);
         permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
         permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
 
@@ -391,6 +411,25 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
             path_list *Path = NULL;
+
+            // remove my current path
+            // (give it to the free list and empty myself)
+            if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
+                // TODO this is broken.
+                Node16 *First = permanent->paths[i].Sentinel->Next;
+                Node16 *Last  = permanent->paths[i].Sentinel->Prev;
+
+                Last->Next = node16->Free->Next;
+                node16->Free->Next->Prev = Last;
+
+                node16->Free->Next = First;
+                First->Prev = node16->Free;
+
+                permanent->paths[i].Sentinel->Next = permanent->paths[i].Sentinel;
+                permanent->paths[i].Sentinel->Prev = permanent->paths[i].Sentinel;
+            }
+
+
             if (PathRaw) {
                 //printf("Smoothing path!\n");
                 Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
@@ -398,25 +437,52 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                 if (Path) {
                     u32 path_length = 0;
-                    u32 i = permanent->colored_line_count;
+                    u32 c = permanent->colored_line_count;
 
                     path_node * done= Path->Sentinel->Next;
                     while (done->Next != Path->Sentinel) {
-                        permanent->colored_lines[i].x1 = done->X * permanent->block_size.x;
-                        permanent->colored_lines[i].y1 = done->Y * permanent->block_size.y;
-                        permanent->colored_lines[i].z1 = done->Z * permanent->block_size.z_level;
-                        permanent->colored_lines[i].x2 = done->Next->X * permanent->block_size.x;;
-                        permanent->colored_lines[i].y2 = done->Next->Y * permanent->block_size.y;;
-                        permanent->colored_lines[i].z2 = done->Next->Z * permanent->block_size.z_level;;
-                        permanent->colored_lines[i].r = 0.0f;
-                        permanent->colored_lines[i].g = 0.0f;
-                        permanent->colored_lines[i].b = 0.0f;
+                        permanent->colored_lines[c].x1 = done->X * permanent->block_size.x;
+                        permanent->colored_lines[c].y1 = done->Y * permanent->block_size.y;
+                        permanent->colored_lines[c].z1 = done->Z * permanent->block_size.z_level;
+                        permanent->colored_lines[c].x2 = done->Next->X * permanent->block_size.x;;
+                        permanent->colored_lines[c].y2 = done->Next->Y * permanent->block_size.y;;
+                        permanent->colored_lines[c].z2 = done->Next->Z * permanent->block_size.z_level;;
+                        permanent->colored_lines[c].r = 0.0f;
+                        permanent->colored_lines[c].g = 0.0f;
+                        permanent->colored_lines[c].b = 0.0f;
                         done = done->Next;
-                        i++;
+
+
+                        // addlast this node onto my path, use free list if you can.
+
+                        Node16 *N = NULL;
+                        if ( node16->Free->Next !=  node16->Free) {
+                            N = node16->Free->Next;
+                            node16->Free->Next = N->Next;
+                            node16->Free->Next->Prev = node16->Free;
+                        } else {
+                            N = PUSH_STRUCT(&node16->arena, Node16);
+                        }
+
+                        ActorPath * p = &(permanent->paths[i]);
+                        DLIST_ADDFIRST(p, N);
+
+                        c++;
                         path_length++;
                     }
-                    permanent->colored_line_count = i;
+                    //permanent->colored_line_count = i;
+
                     //printf("pathlength: %d\n", path_length);
+                    BEGIN_PERFORMANCE_COUNTER(extra_walk);
+                    Node16 * fp = permanent->paths[i].Sentinel;
+                    int fp_count = 0;
+                    while(fp->Next != permanent->paths[i].Sentinel) {
+                        fp_count++;
+                        fp = fp->Next;
+                    }
+                    END_PERFORMANCE_COUNTER(extra_walk);
+
+                    //printf("found path length: %d\n", fp_count);
                 }
                 ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
             }

@@ -50,8 +50,8 @@ typedef struct {
     void *permanent;
     u32 scratch_size;
     void *scratch;
-    u32 found_paths_size;
-    void * found_paths;
+    u32 node16_size;
+    void * node16;
     u32 debug_size;
     void *debug;
 } Memory;
