@@ -27,23 +27,20 @@ typedef struct {
 } Wall; //64
 
 typedef struct {
-
-
-
     //r32 x;
     //r32 y;
     //r32 z;
     u16 frame;
-    //s16 dx;
-    //s16 dy;
+    s16 dx;
+    s16 dy;
     r32 palette_index;
 
     GLKVector3 location;
-    GLKVector3 velocity;
-    GLKVector3 acceleration;
-    float mass;
-    float max_speed;
-    float max_force;
+    //GLKVector3 velocity;
+    //GLKVector3 acceleration;
+    //float mass;
+    //float max_speed;
+    //float max_force;
 } Actor; //176
 
 typedef struct {

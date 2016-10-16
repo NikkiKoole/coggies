@@ -547,8 +547,8 @@ int main(int argc, char **argv) {
                         permanent->actors[i].location.z = Start->Z * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
                         permanent->actors[i].frame = rand_int(4);
                         float speed = 4 + rand_int(10); // px per seconds
-                        permanent->actors[i].velocity.x = rand_bool() ? -1 * speed : 1 * speed;
-                        permanent->actors[i].velocity.y = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
                         permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
                         set_actor_batch_sizes(permanent, renderer);
                     } else {

@@ -10,8 +10,8 @@
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
+//#define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
 #define SORT_CMP(b, a) ((((a).location.y * 16384) - (a).location.z) - (((b).location.y * 16384) - (b).location.z))
-
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
@@ -378,8 +378,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->actors[i].location.z = rand_int(0) * permanent->block_size.z_level;
             permanent->actors[i].frame = rand_int(4);
             float speed = 1; //10 + rand_int(10); // px per seconds
-            permanent->actors[i].velocity.x = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->actors[i].velocity.y = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
             permanent->actors[i].palette_index = rand_float();
         }
 
@@ -429,7 +429,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     First->Next = node16->Free->Next;
                     node16->Free->Next = First;
                     First->Prev = node16->Free;
-                    permanent->paths[i].counter = 2000;
+                    permanent->paths[i].counter = 20;
                 }
             }
 
@@ -545,42 +545,41 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     BEGIN_PERFORMANCE_COUNTER(actors_update);
     // TODO: plenty of bugs are in this loop, never really cleaned up after
-    /*
+
     for (u32 i = 0; i < permanent->actor_count; i++) {
-        if (permanent->actors[i].x <= 0 || permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-            if (permanent->actors[i].x < 0) {
-                permanent->actors[i].x = 0;
+        if (permanent->actors[i].location.x <= 0 || permanent->actors[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+            if (permanent->actors[i].location.x < 0) {
+                permanent->actors[i].location.x = 0;
             }
-            if (permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-                permanent->actors[i].x = ((permanent->dims.x - 1) * permanent->block_size.x);
+            if (permanent->actors[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+                permanent->actors[i].location.x = ((permanent->dims.x - 1) * permanent->block_size.x);
             }
 
             permanent->actors[i].dx *= -1.0f;
         }
-        permanent->actors[i].x += permanent->actors[i].dx * (last_frame_time_seconds);
+        permanent->actors[i].location.x += permanent->actors[i].dx * (last_frame_time_seconds);
 
-        if (permanent->actors[i].y <= 0 || permanent->actors[i].y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
-            if (permanent->actors[i].z < 0) {
-                permanent->actors[i].z = 0;
+        if (permanent->actors[i].location.y <= 0 || permanent->actors[i].location.y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
+            if (permanent->actors[i].location.z < 0) {
+                permanent->actors[i].location.z = 0;
             }
-            if (permanent->actors[i].y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
-                permanent->actors[i].y = ((permanent->dims.y - 1) * permanent->block_size.y);
+            if (permanent->actors[i].location.y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
+                permanent->actors[i].location.y = ((permanent->dims.y - 1) * permanent->block_size.y);
             }
 
             permanent->actors[i].dy *= -1.0f;
         }
-        permanent->actors[i].y += permanent->actors[i].dy * (last_frame_time_seconds);
+        permanent->actors[i].location.y += permanent->actors[i].dy * (last_frame_time_seconds);
         //printf("is it a float: %f \n", permanent->actors[i].y);
     }
-    */
     END_PERFORMANCE_COUNTER(actors_update);
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
     //    qsort, timsort, quick_sort
     //64k 7.3    4.8      3.7
     //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
-    //Actor_quick_sort(permanent->actors, permanent->actor_count);
-    Actor_tim_sort(permanent->actors,  permanent->actor_count);
+    Actor_quick_sort(permanent->actors, permanent->actor_count);
+    //Actor_tim_sort(permanent->actors,  permanent->actor_count);
     END_PERFORMANCE_COUNTER(actors_sort);
 
 }
