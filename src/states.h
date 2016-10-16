@@ -1,12 +1,7 @@
 #ifndef STATES_H
 #define STATES_H
 #include "memory.h"
-
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wmissing-braces"
-#include "GLKVector3.h"
-#pragma GCC diagnostic pop
+#include "GLKMath.h"
 
 typedef struct {
     MemoryArena arena;
@@ -32,13 +27,23 @@ typedef struct {
 } Wall; //64
 
 typedef struct {
-    r32 x;
-    r32 y;
-    r32 z;
+
+
+
+    //r32 x;
+    //r32 y;
+    //r32 z;
     u16 frame;
-    s16 dx;
-    s16 dy;
+    //s16 dx;
+    //s16 dy;
     r32 palette_index;
+
+    GLKVector3 location;
+    GLKVector3 velocity;
+    GLKVector3 acceleration;
+    float mass;
+    float max_speed;
+    float max_force;
 } Actor; //176
 
 typedef struct {
@@ -146,6 +151,7 @@ typedef struct {
 
 typedef struct {
     Node16 * Sentinel;
+    int counter;
 } ActorPath;
 
 typedef struct {

@@ -303,13 +303,13 @@ internal int wallsortfunc(const void *a, const void *b) {
     return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z));
 }
 
-internal int actorsortfunc(const void *a, const void *b) {
-    //1536 = some guestimate, assuming the depth is maximum 128.
-    // and the height of each block is 128
-    const Actor *a2 = (const Actor *)a;
-    const Actor *b2 = (const Actor *)b;
-    return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z));
-}
+/* internal int actorsortfunc(const void *a, const void *b) { */
+/*     //1536 = some guestimate, assuming the depth is maximum 128. */
+/*     // and the height of each block is 128 */
+/*     const Actor *a2 = (const Actor *)a; */
+/*     const Actor *b2 = (const Actor *)b; */
+/*     return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z)); */
+/* } */
 
 Shared_Library libgame = {
     .handle = NULL,
@@ -389,7 +389,7 @@ int main(int argc, char **argv) {
     void *base_address = (void *)GIGABYTES(0);
     memory->permanent_size = MEGABYTES(8);
     memory->scratch_size = MEGABYTES(2);
-    memory->node16_size = MEGABYTES(3);
+    memory->node16_size = MEGABYTES(30);
     memory->debug_size = MEGABYTES(2);
 
     u64 total_storage_size = memory->permanent_size + memory->scratch_size + memory->node16_size + memory->debug_size;
@@ -458,7 +458,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 10
+#define ACTOR_BATCH 1000
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);
@@ -541,14 +541,14 @@ int main(int argc, char **argv) {
                         actor_add(permanent);
                         u32 i = permanent->actor_count;
                         grid_node * Start  = get_random_walkable_node(permanent->grid);
-                        permanent->actors[i].x = Start->X * permanent->block_size.x;
+                        permanent->actors[i].location.x = Start->X * permanent->block_size.x;
                         ;
-                        permanent->actors[i].y = Start->Y * permanent->block_size.y;
-                        permanent->actors[i].z = Start->Z * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
+                        permanent->actors[i].location.y = Start->Y * permanent->block_size.y;
+                        permanent->actors[i].location.z = Start->Z * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
                         permanent->actors[i].frame = rand_int(4);
-                        float speed = 2;//4 + rand_int(10); // px per seconds
-                        permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-                        permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+                        float speed = 4 + rand_int(10); // px per seconds
+                        permanent->actors[i].velocity.x = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->actors[i].velocity.y = rand_bool() ? -1 * speed : 1 * speed;
                         permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
                         set_actor_batch_sizes(permanent, renderer);
                     } else {

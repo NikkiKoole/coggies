@@ -444,7 +444,9 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             // also the exact position of the actor on the sprite sheet needs looking at, and the depths of walls and floors
             //const float offset_toget_actor_ontop_of_floor = 0;//24.0f/real_world_depth;
             //const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
-            const float guyDepth = data.y;
+
+            GLKVector3 location = data.location;
+            const float guyDepth = location.y;
 
             //if (guyDepth < smallestZ) smallestZ = guyDepth;
             //if (guyDepth > largestZ) largestZ = guyDepth;
@@ -452,8 +454,8 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             //const float tempX = round(data.x + permanent->x_view_offset);
             //const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
 
-            const float x2 = round(data.x);
-            const float y2 = round((data.z) - (data.y) / 2.0f);
+            const float x2 = round(location.x);
+            const float y2 = round((location.z) - (location.y) / 2.0f);
 
             //tempX += permanent->x_view_offset;
             //tempY += permanent->y_view_offset;

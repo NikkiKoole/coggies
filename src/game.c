@@ -10,7 +10,7 @@
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
-#define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
+#define SORT_CMP(b, a) ((((a).location.y * 16384) - (a).location.z) - (((b).location.y * 16384) - (b).location.z))
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
@@ -98,6 +98,7 @@ internal grid_node* get_random_walkable_node(Grid *grid) {
 extern void game_update_and_render(Memory* memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
     UNUSED(keys);
     UNUSED(e);
+    UNUSED(last_frame_time_seconds);
     ASSERT(sizeof(PermanentState) <= memory->permanent_size);
     PermanentState *permanent = (PermanentState *)memory->permanent;
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);
@@ -372,13 +373,13 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         //prepare_renderer(permanent, renderer);
 
         for (u32 i = 0; i < 1; i++) {
-            permanent->actors[i].x = rand_int(permanent->dims.x) * permanent->block_size.x;
-            permanent->actors[i].y = rand_int(permanent->dims.y) * permanent->block_size.y;
-            permanent->actors[i].z = rand_int(0) * permanent->block_size.z_level;
+            permanent->actors[i].location.x = rand_int(permanent->dims.x) * permanent->block_size.x;
+            permanent->actors[i].location.y = rand_int(permanent->dims.y) * permanent->block_size.y;
+            permanent->actors[i].location.z = rand_int(0) * permanent->block_size.z_level;
             permanent->actors[i].frame = rand_int(4);
             float speed = 1; //10 + rand_int(10); // px per seconds
-            permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].velocity.x = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->actors[i].velocity.y = rand_bool() ? -1 * speed : 1 * speed;
             permanent->actors[i].palette_index = rand_float();
         }
 
@@ -399,23 +400,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     {
         permanent->colored_line_count = 0;
         for (u32 i = 0; i < permanent->actor_count; i++) {
-            BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
-            TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
 
-            grid_node * Start = get_random_walkable_node(permanent->grid);// GetNodeAt(permanent->grid, 16, 3, 2);
-            grid_node * End = get_random_walkable_node(permanent->grid);//GetNodeAt(permanent->grid, 15, 6, 0);
-
-
-            ASSERT(Start->walkable);
-            ASSERT(End->walkable);
-
-            path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
-            path_list *Path = NULL;
-
-            // remove my current path
-            // (give it to the free list and empty myself)
+            // this block removes the whole path and gives it to free
+            /*
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
-                // TODO this is broken.
                 Node16 *First = permanent->paths[i].Sentinel->Next;
                 Node16 *Last  = permanent->paths[i].Sentinel->Prev;
 
@@ -428,6 +416,42 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 permanent->paths[i].Sentinel->Next = permanent->paths[i].Sentinel;
                 permanent->paths[i].Sentinel->Prev = permanent->paths[i].Sentinel;
             }
+            */
+
+            // this just gives the first of my pathnodes to free.
+            if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
+                permanent->paths[i].counter--;
+
+
+                if (permanent->paths[i].counter <=0) {
+                    Node16 *First = permanent->paths[i].Sentinel->Next;
+                    permanent->paths[i].Sentinel->Next = First->Next;
+                    First->Next = node16->Free->Next;
+                    node16->Free->Next = First;
+                    First->Prev = node16->Free;
+                    permanent->paths[i].counter = 2000;
+                }
+            }
+
+            // if now my path is not empty, i dont need a new path yet
+            if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
+                continue;
+            }
+
+
+
+            BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
+            TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
+
+            grid_node * Start = get_random_walkable_node(permanent->grid);
+            grid_node * End = get_random_walkable_node(permanent->grid);
+
+            ASSERT(Start->walkable);
+            ASSERT(End->walkable);
+
+            path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+            path_list *Path = NULL;
+
 
 
             if (PathRaw) {
@@ -506,11 +530,22 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
         //printf("colored lines: %d\n", permanent->colored_line_count);
         set_colored_line_batch_sizes(permanent, renderer);
+
+        Node16 * fp2 = node16->Free;
+        int fp2_count = 0;
+        while(fp2->Next != node16->Free) {
+            fp2_count++;
+            fp2 = fp2->Next;
+        }
+
+
+        printf("Node16 used: %lu Freelist length: %d\n", node16->arena.used, fp2_count);
     }
 #endif
 
     BEGIN_PERFORMANCE_COUNTER(actors_update);
     // TODO: plenty of bugs are in this loop, never really cleaned up after
+    /*
     for (u32 i = 0; i < permanent->actor_count; i++) {
         if (permanent->actors[i].x <= 0 || permanent->actors[i].x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
             if (permanent->actors[i].x < 0) {
@@ -537,14 +572,15 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i].y += permanent->actors[i].dy * (last_frame_time_seconds);
         //printf("is it a float: %f \n", permanent->actors[i].y);
     }
+    */
     END_PERFORMANCE_COUNTER(actors_update);
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
     //    qsort, timsort, quick_sort
     //64k 7.3    4.8      3.7
     //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
-    Actor_quick_sort(permanent->actors, permanent->actor_count);
-    //Actor_tim_sort(game->actors,  game->actor_count);
+    //Actor_quick_sort(permanent->actors, permanent->actor_count);
+    Actor_tim_sort(permanent->actors,  permanent->actor_count);
     END_PERFORMANCE_COUNTER(actors_sort);
 
 }

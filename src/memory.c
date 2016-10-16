@@ -61,7 +61,9 @@ void perf_dict_sort_clone(PerfDict *source, PerfDict *clone) {
 // actors live in a pool, to easily add and remove them into the simulation.
 void actor_remove(PermanentState *state, u32 index) {
     if (state->actor_count > 0) {
-        state->actors[index] = (Actor) {0,0,0,0,0,0,0.0f}; // kill the data in here, just to be sure.
+        // zero out everything
+        memset(&state->actors[index], 0, sizeof(state->actors[index]));
+        //state->actors[index] = {0};//(Actor) {0,0,{0,0},0,0,0,0.0f}; // kill the data in here, just to be sure.
 
         // now swap
         Actor temp = state->actors[state->actor_count];

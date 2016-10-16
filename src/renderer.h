@@ -8,11 +8,7 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wsign-compare"
-#pragma GCC diagnostic ignored "-Wmissing-braces"
-#include "GLKMatrix4.h"
-#pragma GCC diagnostic pop
+#include "GLKMath.h"
 
 #define USES_HALF_FLOAT
 
