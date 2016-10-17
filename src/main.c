@@ -541,15 +541,14 @@ int main(int argc, char **argv) {
                         actor_add(permanent);
                         u32 i = permanent->actor_count;
                         grid_node * Start  = get_random_walkable_node(permanent->grid);
-                        permanent->actors[i].location.x = Start->X * permanent->block_size.x;
-                        ;
-                        permanent->actors[i].location.y = Start->Y * permanent->block_size.y;
-                        permanent->actors[i].location.z = Start->Z * permanent->block_size.z_level; //rand_int(permanent->dims.z_level) * permanent->block_size.z_level;
-                        permanent->actors[i].frame = rand_int(4);
+                        permanent->steer_data[i].location.x = Start->X * permanent->block_size.x;
+                        permanent->steer_data[i].location.y = Start->Y * permanent->block_size.y;
+                        permanent->steer_data[i].location.z = Start->Z * permanent->block_size.z_level;
+                        //permanent->actors[i].frame = rand_int(4);
                         float speed = 4 + rand_int(10); // px per seconds
-                        permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-                        permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-                        permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
+                        permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+                        permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+                        //permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
                         set_actor_batch_sizes(permanent, renderer);
                     } else {
                         printf("Wont be adding actors reached max already\n");

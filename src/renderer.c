@@ -395,7 +395,6 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 #endif
         }
     }
-
 }
 
 
@@ -403,68 +402,32 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug);
 void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
 
-    float screenWidth = renderer->view.width;
-    float screenHeight = renderer->view.height;
     float actor_texture_size = renderer->assets.sprite.width;
-    //float real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
-    float real_world_depth = permanent->dims.y * permanent->block_size.y;
-
     int number_to_do = renderer->actors_layout.values_per_thing;
+
     ASSERT(number_to_do > 0);
-
-
-    //float smallestZ = 100000;
-    //float largestZ = -100000;
 
     for (int actor_batch_index = 0; actor_batch_index < renderer->used_actor_batches; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
-        int count = batch->count; //permanent->actor_count;
-
-        /* glBindVertexArray(batch->VAO); */
-        /* glBindBuffer(GL_ARRAY_BUFFER, batch->VBO); */
-        /* GLvoid * ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); */
+        int count = batch->count;
 
 
         for (int i = 0; i < count * number_to_do; i += number_to_do) {
             BEGIN_PERFORMANCE_COUNTER(render_actors_batches);
-            //            u64 begin_loop = SDL_GetPerformanceCounter();
             int prepare_index = i / number_to_do;
             prepare_index += (actor_batch_index * 2048);
             Actor data = permanent->actors[prepare_index];
 
-
-            //printf("in render is actor float?  %f \n", data.y);
             const float scale = 1.0f;
-            const float guyFrameX = data.frame * 24.0f;
+            const float guyFrameX = 24.0f;//data.frame * 24.0f;
 
-
-            // TODO Make this better
-            // this offset is to get actors drawn on top of floors that are of the same depth
-            // I think a better approach is have the pivot for the walls and floors lie 'at the far side'
-            // also the exact position of the actor on the sprite sheet needs looking at, and the depths of walls and floors
-            //const float offset_toget_actor_ontop_of_floor = 0;//24.0f/real_world_depth;
-            //const float guyDepth = -1.0f * (data.y / real_world_depth) - offset_toget_actor_ontop_of_floor;
-
-            GLKVector3 location = data.location;
+            GLKVector3 location = data._location;
             const float guyDepth = location.y;
 
-            //if (guyDepth < smallestZ) smallestZ = guyDepth;
-            //if (guyDepth > largestZ) largestZ = guyDepth;
-
-            //const float tempX = round(data.x + permanent->x_view_offset);
-            //const float tempY = round(((data.z) - (data.y) / 2.0f) + permanent->y_view_offset);
 
             const float x2 = round(location.x);
             const float y2 = round((location.z) - (location.y) / 2.0f);
-
-            //tempX += permanent->x_view_offset;
-            //tempY += permanent->y_view_offset;
-
-            //const float x = (tempX / screenWidth) * 2.0f - 1.0f;
-            //const float y = (tempY / screenHeight) * 2.0f - 1.0f;
-
-            const float paletteIndex = data.palette_index; //rand_float();
-
+            const float paletteIndex = 0.5f;//data.palette_index; //rand_float();
 
             const float guyFrameY = 9.0f * 12.0f;
             const float guyFrameHeight = 108.0f ;
@@ -475,88 +438,39 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_size;
             const float UV_BR_Y = guyFrameY / actor_texture_size;
 
-            //Rect2 uvs = get_uvs(actor_texture_size, guyFrameX, 9*12.0f , 24.0f, 108.0f);
-            //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
             Rect2 verts = get_verts_mvp(x2, y2, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
-
-            //const float pivotX = 0.5f;
-            //const float pivotY = 1.0f; //
-
-            //const float VERT_TL_X = x - ((pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
-            //const float VERT_TL_Y = y - ((2 - pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
-            //const float VERT_BR_X = x + ((2 - pivotX * 2) * (guyFrameWidth / screenWidth) * scale);
-            //const float VERT_BR_Y = y + ((pivotY * 2) * (guyFrameHeight / screenHeight) * scale);
-
-            /* const int FL = sizeof(VERTEX_FLOAT_TYPE); */
-
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_X;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_Y;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_X;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_Y;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
-
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_X;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_Y;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_X;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_Y;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
-
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_X;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_Y;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_X;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_Y;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
-
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_TL_X;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = VERT_BR_Y;     ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = guyDepth;      ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_TL_X;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = UV_BR_Y;       ptr+=FL; */
-            /* *(VERTEX_FLOAT_TYPE*)ptr = paletteIndex;  ptr+=FL; */
-
-
-
-
 
 
             // bottomright
-            batch->vertices[i + 0] = verts.br.x;//VERT_BR_X; //verts.br.x;
-            batch->vertices[i + 1] = verts.br.y;//VERT_BR_Y; //verts.br.y;
+            batch->vertices[i + 0] = verts.br.x;
+            batch->vertices[i + 1] = verts.br.y;
             batch->vertices[i + 2] = guyDepth;
-            batch->vertices[i + 3] = UV_BR_X; // uvs.br.x;
-            batch->vertices[i + 4] = UV_BR_Y; ////uvs.br.y;
+            batch->vertices[i + 3] = UV_BR_X;
+            batch->vertices[i + 4] = UV_BR_Y;
             batch->vertices[i + 5] = paletteIndex;
             //topright
-            batch->vertices[i + 6] = verts.br.x;// VERT_BR_X; //verts.br.x;
-            batch->vertices[i + 7] = verts.tl.y;//VERT_TL_Y; //verts.tl.y;
+            batch->vertices[i + 6] = verts.br.x;
+            batch->vertices[i + 7] = verts.tl.y;
             batch->vertices[i + 8] = guyDepth;
-            batch->vertices[i + 9] = UV_BR_X;  //uvs.br.x;
-            batch->vertices[i + 10] = UV_TL_Y; //uvs.tl.y;
+            batch->vertices[i + 9] = UV_BR_X;
+            batch->vertices[i + 10] = UV_TL_Y;
             batch->vertices[i + 11] = paletteIndex;
             // top left
-            batch->vertices[i + 12] = verts.tl.x;// VERT_TL_X; //verts.tl.x;
-            batch->vertices[i + 13] = verts.tl.y;//VERT_TL_Y; //verts.tl.y;
+            batch->vertices[i + 12] = verts.tl.x;
+            batch->vertices[i + 13] = verts.tl.y;
             batch->vertices[i + 14] = guyDepth;
-            batch->vertices[i + 15] = UV_TL_X; //uvs.tl.x;
-            batch->vertices[i + 16] = UV_TL_Y; //uvs.tl.y;
+            batch->vertices[i + 15] = UV_TL_X;
+            batch->vertices[i + 16] = UV_TL_Y;
             batch->vertices[i + 17] = paletteIndex;
             // bottomleft
-            batch->vertices[i + 18] = verts.tl.x;;//VERT_TL_X; //verts.tl.x;
-            batch->vertices[i + 19] = verts.br.y;//VERT_BR_Y; //verts.br.y;
+            batch->vertices[i + 18] = verts.tl.x;
+            batch->vertices[i + 19] = verts.br.y;
             batch->vertices[i + 20] = guyDepth;
-            batch->vertices[i + 21] = UV_TL_X; //uvs.tl.x;
-            batch->vertices[i + 22] = UV_BR_Y; //uvs.br.y;
+            batch->vertices[i + 21] = UV_TL_X;
+            batch->vertices[i + 22] = UV_BR_Y;
             batch->vertices[i + 23] = paletteIndex;
             END_PERFORMANCE_COUNTER(render_actors_batches);
-
-
-            //glUnmapBuffer(GL_ARRAY_BUFFER);
         }
-        //glUnmapBuffer(GL_ARRAY_BUFFER);
-
 
         BEGIN_PERFORMANCE_COUNTER(render_actors_buffers);
 

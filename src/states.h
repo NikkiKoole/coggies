@@ -27,21 +27,20 @@ typedef struct {
 } Wall; //64
 
 typedef struct {
-    //r32 x;
-    //r32 y;
-    //r32 z;
-    u16 frame;
+    GLKVector3 _location;
+} Actor; //176
+
+typedef struct {
+    GLKVector3 location;
     s16 dx;
     s16 dy;
-    r32 palette_index;
+    GLKVector3 velocity;
+    GLKVector3 acceleration;
+    float mass;
+    float max_speed;
+    float max_force;
+} ActorSteerData;
 
-    GLKVector3 location;
-    //GLKVector3 velocity;
-    //GLKVector3 acceleration;
-    //float mass;
-    //float max_speed;
-    //float max_force;
-} Actor; //176
 
 typedef struct {
     u16 x;
@@ -162,6 +161,7 @@ typedef struct {
 
     ActorPath *paths; //
     // doesnt need a count because it will be the same as actor
+    ActorSteerData *steer_data;
 
     Glyph *glyphs;//[16384];
     u32 glyph_count;

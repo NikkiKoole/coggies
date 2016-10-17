@@ -23,7 +23,7 @@
 
 const int SCREEN_WIDTH = 1224;
 const int SCREEN_HEIGHT = 1224;
-const int ACTOR_COUNT = 20000;
+const int ACTOR_COUNT = 25000;
 const float METER_2_PIXEL = 24;
 const float PIXEL_2_METER = 1.0f/24;
 #define GRID_WIDTH 64

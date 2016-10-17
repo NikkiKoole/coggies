@@ -8,10 +8,12 @@
 #include "level.h"
 #include "data_structures.h"
 
+
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
 //#define SORT_CMP(b, a) ((((a).y * 16384) - (a).z) - (((b).y * 16384) - (b).z))
-#define SORT_CMP(b, a) ((((a).location.y * 16384) - (a).location.z) - (((b).location.y * 16384) - (b).location.z))
+#define SORT_CMP(b, a) ((((a)._location.y * 16384) - (a)._location.z) - (((b)._location.y * 16384) - (b)._location.z))
+
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wunused-function"
 #pragma GCC diagnostic ignored "-Wmissing-prototypes"
@@ -116,6 +118,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->walls = (Wall*) PUSH_ARRAY(&permanent->arena, (16384), Wall);
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
+        permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
         for (int i = 0; i < 16384*4; i++) {
             Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
             permanent->paths[i].Sentinel = Sentinel;
@@ -373,14 +376,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         //prepare_renderer(permanent, renderer);
 
         for (u32 i = 0; i < 1; i++) {
-            permanent->actors[i].location.x = rand_int(permanent->dims.x) * permanent->block_size.x;
-            permanent->actors[i].location.y = rand_int(permanent->dims.y) * permanent->block_size.y;
-            permanent->actors[i].location.z = rand_int(0) * permanent->block_size.z_level;
-            permanent->actors[i].frame = rand_int(4);
+            permanent->steer_data[i].location.x = rand_int(permanent->dims.x) * permanent->block_size.x;
+            permanent->steer_data[i].location.y = rand_int(permanent->dims.y) * permanent->block_size.y;
+            permanent->steer_data[i].location.z = rand_int(0) * permanent->block_size.z_level;
+            //permanent->actors[i].frame = rand_int(4);
             float speed = 1; //10 + rand_int(10); // px per seconds
-            permanent->actors[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->actors[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->actors[i].palette_index = rand_float();
+            permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed;
+            permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed;
+            //permanent->actors[i].palette_index = rand_float();
         }
 
         set_actor_batch_sizes(permanent, renderer);
@@ -429,7 +432,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     First->Next = node16->Free->Next;
                     node16->Free->Next = First;
                     First->Prev = node16->Free;
-                    permanent->paths[i].counter = 20;
+                    permanent->paths[i].counter = 2000;
                 }
             }
 
@@ -531,46 +534,55 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         //printf("colored lines: %d\n", permanent->colored_line_count);
         set_colored_line_batch_sizes(permanent, renderer);
 
-        Node16 * fp2 = node16->Free;
-        int fp2_count = 0;
-        while(fp2->Next != node16->Free) {
-            fp2_count++;
-            fp2 = fp2->Next;
-        }
+        /* Node16 * fp2 = node16->Free; */
+        /* int fp2_count = 0; */
+        /* while(fp2->Next != node16->Free) { */
+        /*     fp2_count++; */
+        /*     fp2 = fp2->Next; */
+        /* } */
 
 
-        printf("Node16 used: %lu Freelist length: %d\n", node16->arena.used, fp2_count);
+        printf("Node16 used: %lu \n", node16->arena.used );
     }
 #endif
+
 
     BEGIN_PERFORMANCE_COUNTER(actors_update);
     // TODO: plenty of bugs are in this loop, never really cleaned up after
 
     for (u32 i = 0; i < permanent->actor_count; i++) {
-        if (permanent->actors[i].location.x <= 0 || permanent->actors[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-            if (permanent->actors[i].location.x < 0) {
-                permanent->actors[i].location.x = 0;
+        if (permanent->steer_data[i].location.x <= 0 || permanent->steer_data[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+            if (permanent->steer_data[i].location.x < 0) {
+                permanent->steer_data[i].location.x = 0;
             }
-            if (permanent->actors[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-                permanent->actors[i].location.x = ((permanent->dims.x - 1) * permanent->block_size.x);
+            if (permanent->steer_data[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
+                permanent->steer_data[i].location.x = ((permanent->dims.x - 1) * permanent->block_size.x);
             }
 
-            permanent->actors[i].dx *= -1.0f;
+            permanent->steer_data[i].dx *= -1.0f;
         }
-        permanent->actors[i].location.x += permanent->actors[i].dx * (last_frame_time_seconds);
+        permanent->steer_data[i].location.x += permanent->steer_data[i].dx * (last_frame_time_seconds);
 
-        if (permanent->actors[i].location.y <= 0 || permanent->actors[i].location.y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
-            if (permanent->actors[i].location.z < 0) {
-                permanent->actors[i].location.z = 0;
+        if (permanent->steer_data[i].location.y <= 0 || permanent->steer_data[i].location.y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
+            if (permanent->steer_data[i].location.z < 0) {
+                permanent->steer_data[i].location.z = 0;
             }
-            if (permanent->actors[i].location.y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
-                permanent->actors[i].location.y = ((permanent->dims.y - 1) * permanent->block_size.y);
+            if (permanent->steer_data[i].location.y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
+                permanent->steer_data[i].location.y = ((permanent->dims.y - 1) * permanent->block_size.y);
             }
 
-            permanent->actors[i].dy *= -1.0f;
+            permanent->steer_data[i].dy *= -1.0f;
         }
-        permanent->actors[i].location.y += permanent->actors[i].dy * (last_frame_time_seconds);
+        permanent->steer_data[i].location.y += permanent->steer_data[i].dy * (last_frame_time_seconds);
+
         //printf("is it a float: %f \n", permanent->actors[i].y);
+        permanent->actors[i]._location = permanent->steer_data[i].location;
+        //permanent->actors[i].y = permanent->steer_data[i].location.y;
+        //permanent->actors[i].z = permanent->steer_data[i].location.z;
+
+    }
+    for (u32 i = 0; i < permanent->actor_count; i++) {
+        permanent->actors[i]._location = permanent->steer_data[i].location;
     }
     END_PERFORMANCE_COUNTER(actors_update);
 

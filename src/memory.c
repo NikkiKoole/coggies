@@ -70,11 +70,16 @@ void actor_remove(PermanentState *state, u32 index) {
         state->actors[state->actor_count] = state->actors[index];
         state->actors[index] = temp;
 
+
         // because paths arent part of the actor struct but but will be found using the id, i need to reswap that data too.
         ActorPath tempPath = state->paths[state->actor_count];
         state->paths[state->actor_count] = state->paths[index];
         state->paths[index] = tempPath;
 
+
+        ActorSteerData tempSteer = state->steer_data[state->actor_count];
+        state->steer_data[state->actor_count] = state->steer_data[index];
+        state->steer_data[index] = tempSteer;
 
         state->actor_count--;
     }
