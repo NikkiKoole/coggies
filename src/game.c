@@ -470,8 +470,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-            grid_node * Start = GetNodeAt(permanent->grid,4,5,0);//  get_random_walkable_node(permanent->grid);
-            grid_node * End =  GetNodeAt(permanent->grid,5,10,0);//get_random_walkable_node(permanent->grid);
+            //grid_node * Start = GetNodeAt(permanent->grid,4,5,4);//  get_random_walkable_node(permanent->grid);
+            //grid_node * End =  GetNodeAt(permanent->grid,5,10,0);//get_random_walkable_node(permanent->grid);
+            grid_node * Start = get_random_walkable_node(permanent->grid);
+            grid_node * End =  get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
 

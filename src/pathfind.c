@@ -896,6 +896,7 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
         } else { //different z, just push both points
             if(sx == ex && sy == ey) {
                 //ladder
+                sz = Node->Z;
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);
                 setXYZinStruct(ex, ey, Node->Prev->Z, Point1);
                 DLIST_ADDLAST(Result, Point1);
@@ -906,7 +907,7 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
             } else {
                 //stairs;
                 // TODO something with this ez / sz
-                ez = Node->Z;
+                sz = Node->Z;
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);
                 setXYZinStruct(Node->Prev->X, Node->Prev->Y, Node->Prev->Z, Point1);
                 DLIST_ADDLAST(Result, Point1);

@@ -57,10 +57,12 @@ typedef struct {
     Node16 * Sentinel;
     int counter;
 } ActorPath;
+
 typedef struct {
     u16 frame;
     r32 palette_index;
 } ActorAnimData;
+
 typedef struct {
     GLKVector3 location;
     s16 dx;
