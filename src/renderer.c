@@ -419,7 +419,7 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             Actor data = permanent->actors[prepare_index];
 
             const float scale = 1.0f;
-            const float guyFrameX = 24.0f;//data.frame * 24.0f;
+            const float guyFrameX = data._frame * 24.0f;
 
             GLKVector3 location = data._location;
             const float guyDepth = location.y;
@@ -427,7 +427,7 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
             const float x2 = round(location.x);
             const float y2 = round((location.z) - (location.y) / 2.0f);
-            const float paletteIndex = 0.5f;//data.palette_index; //rand_float();
+            const float paletteIndex = data._palette_index; //rand_float();
 
             const float guyFrameY = 9.0f * 12.0f;
             const float guyFrameHeight = 108.0f ;
@@ -760,7 +760,7 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
 
     glDisable(GL_DEPTH_TEST);
 
-    //render_lines(permanent, renderer);
+    render_lines(permanent, renderer);
     renderer->mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view)); // get rid of translation
     render_text(permanent, renderer);
 

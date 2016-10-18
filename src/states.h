@@ -26,10 +26,41 @@ typedef struct {
     u8 is_floor;
 } Wall; //64
 
-typedef struct {
-    GLKVector3 _location;
-} Actor; //176
+typedef struct FoundPathNode {
+    GLKVector3 node;
+    float unused;
+} FoundPathNode;
 
+typedef struct {
+    float data[4];
+} BarNode;
+
+typedef struct Node16
+{
+    union
+    {
+        FoundPathNode path;
+        BarNode bar;
+        u8 reserved[16];
+    };
+    struct Node16 *Next, *Prev;
+} Node16;
+
+typedef struct {
+    MemoryArena arena;
+    Node16 *Free;
+    //Node16 *Sentinel;
+} Node16Arena;
+
+
+typedef struct {
+    Node16 * Sentinel;
+    int counter;
+} ActorPath;
+typedef struct {
+    u16 frame;
+    r32 palette_index;
+} ActorAnimData;
 typedef struct {
     GLKVector3 location;
     s16 dx;
@@ -40,6 +71,19 @@ typedef struct {
     float max_speed;
     float max_force;
 } ActorSteerData;
+
+
+typedef struct {
+    GLKVector3 _location;
+    //ActorPath path;
+    //ActorAnimData anim;
+    //ActorSteerData steer;
+    u32 _frame;
+    r32 _palette_index;
+    u32 index;
+} Actor; //176
+
+
 
 
 typedef struct {
@@ -118,37 +162,6 @@ typedef struct grid {
     grid_node* nodes;
 } Grid;
 
-typedef struct FoundPathNode {
-    GLKVector3 node;
-    float unused;
-} FoundPathNode;
-
-typedef struct {
-    float data[4];
-} BarNode;
-
-typedef struct Node16
-{
-    union
-    {
-        FoundPathNode path;
-        BarNode bar;
-        u8 reserved[16];
-    };
-    struct Node16 *Next, *Prev;
-} Node16;
-
-typedef struct {
-    MemoryArena arena;
-    Node16 *Free;
-    //Node16 *Sentinel;
-} Node16Arena;
-
-
-typedef struct {
-    Node16 * Sentinel;
-    int counter;
-} ActorPath;
 
 typedef struct {
     MemoryArena arena;
@@ -162,6 +175,7 @@ typedef struct {
     ActorPath *paths; //
     // doesnt need a count because it will be the same as actor
     ActorSteerData *steer_data;
+    ActorAnimData *anim_data;
 
     Glyph *glyphs;//[16384];
     u32 glyph_count;

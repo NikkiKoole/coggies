@@ -387,6 +387,91 @@ describe(grid_preprocessor) {
     }
 }
 
+
+
+typedef struct Node{
+    float value;
+    struct Node *Prev;
+    struct Node *Next;
+} Node;
+
+typedef struct NodeList {
+    Node *Sentinel;
+} NodeList;
+
+int get_length_count_forward(NodeList *List) {
+    int result = 0;
+    Node * n = List->Sentinel->Next;
+    while(n != List->Sentinel) {
+        result += 1;
+        n = n->Next;
+    }
+    return result;
+}
+int get_length_count_backward(NodeList *List) {
+    int result = 0;
+    Node * n = List->Sentinel->Prev;
+    while(n != List->Sentinel) {
+        result += 1;
+        n = n->Prev;
+    }
+    return result;
+}
+
+describe(dlist) {
+    it(can do things) {
+        INIT_MEMORY_PATHFINDER();
+
+        NodeList* List = PUSH_STRUCT(&scratch->arena, NodeList);
+        NEW_DLIST(List, &scratch->arena, Node);
+
+        for (int i = 0; i < 10 ; i++) {
+            Node *N = PUSH_STRUCT(&scratch->arena, Node);
+            N->value = i;
+            DLIST_ADDLAST(List, N);
+        }
+        expect(get_length_count_forward(List) == 10);
+        expect(get_length_count_backward(List) == 10);
+        expect(DLIST_PEEKFIRST(List)->value == 0);
+        expect(DLIST_PEEKLAST(List)->value == 9);
+
+        // CLONE THE LIST BY WALKING FORWARD AND ADDLASTING
+        NodeList* ClonedAddLast =  PUSH_STRUCT(&scratch->arena, NodeList);
+        NEW_DLIST(ClonedAddLast, &scratch->arena, Node);
+
+        Node * n = List->Sentinel->Next;
+        while(n != List->Sentinel) {
+            Node *M = PUSH_STRUCT(&scratch->arena, Node);
+            M->value = n->value;
+            DLIST_ADDLAST(ClonedAddLast, M);
+            n = n->Next;
+        }
+        expect(get_length_count_forward(ClonedAddLast) == 10);
+        expect(get_length_count_backward(ClonedAddLast) == 10);
+        expect(DLIST_PEEKFIRST(ClonedAddLast)->value == 0);
+        expect(DLIST_PEEKLAST(ClonedAddLast)->value == 9);
+
+
+        // CLONE THE LIST BY WALKING BACKWARD AND ADDFIRSTING
+        NodeList* ClonedAddFirst =  PUSH_STRUCT(&scratch->arena, NodeList);
+        NEW_DLIST(ClonedAddFirst, &scratch->arena, Node);
+        n = List->Sentinel->Prev;
+        while(n != List->Sentinel) {
+            Node *M = PUSH_STRUCT(&scratch->arena, Node);
+            M->value = n->value;
+            DLIST_ADDFIRST(ClonedAddFirst, M);
+            n = n->Prev;
+        }
+        expect(get_length_count_forward(ClonedAddFirst) == 10);
+        expect(get_length_count_backward(ClonedAddFirst) == 10);
+        expect(DLIST_PEEKFIRST(ClonedAddFirst)->value == 0);
+        expect(DLIST_PEEKLAST(ClonedAddFirst)->value == 9);
+    }
+
+
+}
+
+
 describe(pathfinder) {
     it(finds its way through a small narrow single floored maze (1000x) ) {
 
@@ -546,5 +631,6 @@ int main() {
     test(grid_preprocessor);
     test(pathfinder);
     test(slist);
+    test(dlist);
     return summary();
 }

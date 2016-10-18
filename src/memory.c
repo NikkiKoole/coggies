@@ -62,14 +62,14 @@ void perf_dict_sort_clone(PerfDict *source, PerfDict *clone) {
 void actor_remove(PermanentState *state, u32 index) {
     if (state->actor_count > 0) {
         // zero out everything
-        memset(&state->actors[index], 0, sizeof(state->actors[index]));
+        //memset(&state->actors[index], 0, sizeof(state->actors[index]));
         //state->actors[index] = {0};//(Actor) {0,0,{0,0},0,0,0,0.0f}; // kill the data in here, just to be sure.
 
         // now swap
         Actor temp = state->actors[state->actor_count];
         state->actors[state->actor_count] = state->actors[index];
         state->actors[index] = temp;
-
+        //state->actors[index].index = state->actor_count-1;
 
         // because paths arent part of the actor struct but but will be found using the id, i need to reswap that data too.
         ActorPath tempPath = state->paths[state->actor_count];
@@ -81,6 +81,11 @@ void actor_remove(PermanentState *state, u32 index) {
         state->steer_data[state->actor_count] = state->steer_data[index];
         state->steer_data[index] = tempSteer;
 
+
+        ActorAnimData tempAnim = state->anim_data[state->actor_count];
+        state->anim_data[state->actor_count] = state->anim_data[index];
+        state->anim_data[index] = tempAnim;
+
         state->actor_count--;
     }
 
@@ -88,6 +93,7 @@ void actor_remove(PermanentState *state, u32 index) {
 
 void actor_add(PermanentState *state) {
     state->actor_count++;
+    state->actors[state->actor_count].index = state->actor_count;
 }
 
 

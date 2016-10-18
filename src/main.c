@@ -387,7 +387,7 @@ int main(int argc, char **argv) {
     //reserve_memory(memory);
 
     void *base_address = (void *)GIGABYTES(0);
-    memory->permanent_size = MEGABYTES(8);
+    memory->permanent_size = MEGABYTES(10);
     memory->scratch_size = MEGABYTES(2);
     memory->node16_size = MEGABYTES(30);
     memory->debug_size = MEGABYTES(2);
@@ -403,7 +403,7 @@ int main(int argc, char **argv) {
 
 
     memory->is_initialized = false;
-    printf("Total amount of MB in use: %lu.\n\n",(unsigned long) total_storage_size / 1000000);
+    printf("\ntotal amount of MB in use: %lu.\n",(unsigned long) total_storage_size / 1000000);
     ASSERT(sizeof(PermanentState) <= memory->permanent_size);
     PermanentState *permanent = (PermanentState *)memory->permanent;
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);
@@ -414,7 +414,7 @@ int main(int argc, char **argv) {
     ASSERT(sizeof(DebugState) <= memory->debug_size);
     DebugState *debug = (DebugState *)memory->debug;
     RenderState _rstate; //TODO: make this use memory scheme instead of stack space, it gets in the order of 5-8 Mb now (when using 32bit floats)
-    //printf("sizeof renderstate: %lu\n", (unsigned long) sizeof _rstate);
+    printf("Renderstate size MB: %lu\n\n", ((unsigned long) sizeof _rstate)/1000000);
     RenderState *renderer = &_rstate;
 
     //printf("permanent struct size: %lu\n",(unsigned long)(sizeof(PermanentState)));
@@ -458,7 +458,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 1000
+#define ACTOR_BATCH 10
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);
@@ -544,11 +544,11 @@ int main(int argc, char **argv) {
                         permanent->steer_data[i].location.x = Start->X * permanent->block_size.x;
                         permanent->steer_data[i].location.y = Start->Y * permanent->block_size.y;
                         permanent->steer_data[i].location.z = Start->Z * permanent->block_size.z_level;
-                        //permanent->actors[i].frame = rand_int(4);
+                        permanent->anim_data[i].frame = rand_int(4);
                         float speed = 4 + rand_int(10); // px per seconds
                         permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed;
                         permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-                        //permanent->actors[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
+                        permanent->anim_data[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float();
                         set_actor_batch_sizes(permanent, renderer);
                     } else {
                         printf("Wont be adding actors reached max already\n");

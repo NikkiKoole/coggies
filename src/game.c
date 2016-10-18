@@ -24,6 +24,16 @@
 #pragma GCC diagnostic pop
 
 
+internal int path_length_at_index(PermanentState *permanent, int i) {
+    Node16 * fp = permanent->paths[i].Sentinel;
+    int fp_count = 0;
+    while(fp->Next != permanent->paths[i].Sentinel) {
+        fp_count++;
+        fp = fp->Next;
+    }
+    return fp_count;
+}
+
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 
 internal int wallsortfunc (const void * a, const void * b)
@@ -119,11 +129,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
         permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
+        permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
         for (int i = 0; i < 16384*4; i++) {
             Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
             permanent->paths[i].Sentinel = Sentinel;
             permanent->paths[i].Sentinel->Next = Sentinel;
             permanent->paths[i].Sentinel->Prev = Sentinel;
+            permanent->actors[i].index = i;
+            permanent->paths[i].Sentinel->path.node = GLKVector3Make(-999,-999,-999);
         }
         //node16->Sentinel = PUSH_STRUCT(&node16->arena, Node16);
         //node16->Sentinel->Next =  node16->Sentinel;
@@ -379,11 +392,11 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->steer_data[i].location.x = rand_int(permanent->dims.x) * permanent->block_size.x;
             permanent->steer_data[i].location.y = rand_int(permanent->dims.y) * permanent->block_size.y;
             permanent->steer_data[i].location.z = rand_int(0) * permanent->block_size.z_level;
-            //permanent->actors[i].frame = rand_int(4);
+            permanent->anim_data[i].frame = rand_int(4);
             float speed = 1; //10 + rand_int(10); // px per seconds
             permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed;
             permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-            //permanent->actors[i].palette_index = rand_float();
+            permanent->anim_data[i].palette_index = rand_float();
         }
 
         set_actor_batch_sizes(permanent, renderer);
@@ -404,27 +417,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->colored_line_count = 0;
         for (u32 i = 0; i < permanent->actor_count; i++) {
 
-            // this block removes the whole path and gives it to free
-            /*
-            if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
-                Node16 *First = permanent->paths[i].Sentinel->Next;
-                Node16 *Last  = permanent->paths[i].Sentinel->Prev;
-
-                Last->Next = node16->Free->Next;
-                node16->Free->Next->Prev = Last;
-
-                node16->Free->Next = First;
-                First->Prev = node16->Free;
-
-                permanent->paths[i].Sentinel->Next = permanent->paths[i].Sentinel;
-                permanent->paths[i].Sentinel->Prev = permanent->paths[i].Sentinel;
-            }
-            */
-
-            // this just gives the first of my pathnodes to free.
+#if 1
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 permanent->paths[i].counter--;
-
 
                 if (permanent->paths[i].counter <=0) {
                     Node16 *First = permanent->paths[i].Sentinel->Next;
@@ -432,23 +427,51 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     First->Next = node16->Free->Next;
                     node16->Free->Next = First;
                     First->Prev = node16->Free;
-                    permanent->paths[i].counter = 2000;
+                    permanent->paths[i].counter = 10; // this is faking some time it takes to get to the next node
                 }
             }
 
-            // if now my path is not empty, i dont need a new path yet
+            // here i should peek at the first node in permanent->paths[i].Sentinel->Next->path.node
+            // thats the position i want to steer towards
+            // here is where i shoudl put that colored debug line drawing, it'll come in handy still
+            if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
+                Node16 * d= permanent->paths[i].Sentinel->Next;
+                u32 c = permanent->colored_line_count;
+                while (d->Next != permanent->paths[i].Sentinel){
+
+                    permanent->colored_lines[c].x1 = d->path.node.x;
+                    permanent->colored_lines[c].y1 = d->path.node.y;
+                    permanent->colored_lines[c].z1 = d->path.node.z;
+                    permanent->colored_lines[c].x2 = d->Next->path.node.x;
+                    permanent->colored_lines[c].y2 = d->Next->path.node.y;
+                    permanent->colored_lines[c].z2 = d->Next->path.node.z;
+                    permanent->colored_lines[c].r = 0.0f;
+                    permanent->colored_lines[c].g = 0.0f;
+                    permanent->colored_lines[c].b = 0.0f;
+                    d = d->Next;
+                    c++;
+                }
+                permanent->colored_line_count = c;
+            }
+            ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
+#endif
+            //
+            //printf("line count: %d\n",permanent->colored_line_count);
+
+
+
+
+            // if already have a path, i dont need a new one,
+            // TODO somehow this makes all my paths appear unsmoothed ;) ??
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 continue;
             }
 
 
-
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-
-            grid_node * Start = get_random_walkable_node(permanent->grid);
-            grid_node * End = get_random_walkable_node(permanent->grid);
-
+            grid_node * Start = GetNodeAt(permanent->grid,4,5,0);//  get_random_walkable_node(permanent->grid);
+            grid_node * End =  GetNodeAt(permanent->grid,5,10,0);//get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
 
@@ -462,6 +485,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
                 //Path = PathRaw;
 
+
+
+#if 0
                 if (Path) {
                     u32 path_length = 0;
                     u32 c = permanent->colored_line_count;
@@ -478,10 +504,24 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->colored_lines[c].g = 0.0f;
                         permanent->colored_lines[c].b = 0.0f;
                         done = done->Next;
+                        c++;
+                        path_length++;
+                    }
+                    permanent->colored_line_count = c;
+                }
+#endif
 
 
-                        // addlast this node onto my path, use free list if you can.
 
+
+#if 1
+                if (Path) {
+
+                    // this is walking backwards, the path is in a dlist so its fine, i might rewrite this to work forward, but this works correct (forward doesnt, it trips over some freelist madness, TODO: investigate it)
+                    path_node * done= Path->Sentinel->Prev;
+                    while (done != Path->Sentinel) {
+
+                        // this block tries to reuse exitsing nodes on freelistm, if none are there make a new one
                         Node16 *N = NULL;
                         if ( node16->Free->Next !=  node16->Free) {
                             N = node16->Free->Next;
@@ -492,26 +532,15 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         }
 
                         ActorPath * p = &(permanent->paths[i]);
+                        N->path.node.x = done->X* permanent->block_size.x;
+                        N->path.node.y = done->Y* permanent->block_size.y;
+                        N->path.node.z = done->Z* permanent->block_size.z_level;
+
                         DLIST_ADDFIRST(p, N);
-
-                        c++;
-                        path_length++;
+                        done = done->Prev;
                     }
-                    //permanent->colored_line_count = i;
-
-                    //printf("pathlength: %d\n", path_length);
-                    BEGIN_PERFORMANCE_COUNTER(extra_walk);
-                    Node16 * fp = permanent->paths[i].Sentinel;
-                    int fp_count = 0;
-                    while(fp->Next != permanent->paths[i].Sentinel) {
-                        fp_count++;
-                        fp = fp->Next;
-                    }
-                    END_PERFORMANCE_COUNTER(extra_walk);
-
-                    //printf("found path length: %d\n", fp_count);
                 }
-                ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
+#endif
             }
             END_PERFORMANCE_COUNTER(mass_pathfinding);
             //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
@@ -533,16 +562,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
         //printf("colored lines: %d\n", permanent->colored_line_count);
         set_colored_line_batch_sizes(permanent, renderer);
-
-        /* Node16 * fp2 = node16->Free; */
-        /* int fp2_count = 0; */
-        /* while(fp2->Next != node16->Free) { */
-        /*     fp2_count++; */
-        /*     fp2 = fp2->Next; */
-        /* } */
-
-
-        printf("Node16 used: %lu \n", node16->arena.used );
+        //printf("Node16 used: %lu \n", node16->arena.used );
     }
 #endif
 
@@ -574,23 +594,40 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->steer_data[i].dy *= -1.0f;
         }
         permanent->steer_data[i].location.y += permanent->steer_data[i].dy * (last_frame_time_seconds);
-
-        //printf("is it a float: %f \n", permanent->actors[i].y);
-        permanent->actors[i]._location = permanent->steer_data[i].location;
-        //permanent->actors[i].y = permanent->steer_data[i].location.y;
-        //permanent->actors[i].z = permanent->steer_data[i].location.z;
-
     }
+    BEGIN_PERFORMANCE_COUNTER(actors_data_gathering);
+
+    // TODO for now this suffices, its the easiest and not TOO bad, but i loose 3ms for 64k actors on sorting this way
+    // what happens like this is the data is not sorted at all and then i sort it every frame.
+    // the solution (I think) would be using some index, so i can leave the renderable data sorted as is, and gather from the correct places.
+    // it costs a little in cache misses when gathering, but not as much as the sort is costing more now.
+    // maybe as an alternative I can look into using a separate thread to sort this data on, and flip flop data.
+    // btw not sorting only costs 10ms per frame (@64k) vs 17/18, but i think the sorting is specifically desired on rpi (TODO TEST THIS AGAiN)
+
+
     for (u32 i = 0; i < permanent->actor_count; i++) {
-        permanent->actors[i]._location = permanent->steer_data[i].location;
+        //printf("index: %d\n",permanent->actors[i].index);
+
+        //permanent->actors[i]._location = permanent->steer_data[permanent->actors[i].index].location;
+        //permanent->actors[i]._palette_index = permanent->anim_data[permanent->actors[i].index].palette_index;
+        //permanent->actors[i]._frame = permanent->anim_data[permanent->actors[i].index].frame;
+
+        permanent->actors[i]._location = permanent->steer_data[i].location;//
+        permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;//
+        permanent->actors[i]._frame = permanent->anim_data[i].frame;//
+
     }
+
+    END_PERFORMANCE_COUNTER(actors_data_gathering);
     END_PERFORMANCE_COUNTER(actors_update);
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
     //    qsort, timsort, quick_sort
     //64k 7.3    4.8      3.7
     //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
+    //TODO later on when I use binning for steering I might be able to improve sorting
     Actor_quick_sort(permanent->actors, permanent->actor_count);
+    //Actor_sqrt_sort(permanent->actors, permanent->actor_count);
     //Actor_tim_sort(permanent->actors,  permanent->actor_count);
     END_PERFORMANCE_COUNTER(actors_sort);
 
