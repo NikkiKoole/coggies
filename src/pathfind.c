@@ -89,7 +89,7 @@ internal int GridCanGoUpFrom(Grid *Grid, int x, int y, int z) {
     int to = GetNodeAt(Grid, x, y, z + 1)->type;
     int ladder = ((from == LadderUpDown || from == LadderUp) && (to == LadderDown || to == LadderUpDown));
     int stairs = (from == StairsUp1N || from == StairsUp1E || from == StairsUp1S || from == StairsUp1W);
-    return ladder || stairs; // TODO use new blockTypes
+    return ladder || stairs;
 }
 internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
     int from = GetNodeAt(Grid, x, y, z)->type;
@@ -97,8 +97,7 @@ internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
     int ladder = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
     from = GetNodeAt(Grid, x, y, z-1)->type;
     int stairs = (from == StairsUp4N || from == StairsUp4E || from == StairsUp4S || from == StairsUp4W);
-    //if (stairs) printf("can go down by stairs %d, %d, %d\n", x,y,z);
-    return ladder || stairs;//result;
+    return ladder || stairs;
 }
 
 
@@ -621,8 +620,6 @@ internal float Octile(int dx, int dy, int dz) {
 
 
 
-// TODO, give stairs some extra cost, so walking over them will be avoided if possible.
-// the sorting is done of the Nodes.F so this has to reflect when moving over a stair
 
 path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena) {
     jump_direction travelling_south[] = {west, sw, south, se, east, up, down};
@@ -869,16 +866,13 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
         ex = Node->X;
         ey = Node->Y;
         ez = Node->Z;
-        //printf("path node: %d,%d,%d\n",ex,ey,ez);
         if (sz == ez) {
             interpolate(sx,sy,ex,ey, Arena, interpolated);
             blocked = 0;
             coord2d * c = interpolated->Sentinel->Next->Next; //skipping the first
             while(c != interpolated->Sentinel) {
                 grid_node * n= GetNodeAt(pg, c->X,c->Y,sz);
-                if (! n->walkable ) { // line below works, but i think it needs optimizing
-                //if (! n->walkable || isStairOrLadder(pg, c->X,c->Y,sz)) {
-                    //printf("found blocking at : %d,%d,%d\n",n->X,n->Y,n->Z);
+                if (! n->walkable ) {
                     blocked = 1;
                     break;
                 }
@@ -906,7 +900,6 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
                 DLIST_ADDLAST(Result, Point2);
             } else {
                 //stairs;
-                // TODO something with this ez / sz
                 sz = Node->Z;
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);
                 setXYZinStruct(Node->Prev->X, Node->Prev->Y, Node->Prev->Z, Point1);
@@ -955,7 +948,6 @@ path_list * ExpandPath(path_list *compressed, MemoryArena * Arena) {
                 DLIST_ADDLAST(Result, Point);
                 c = c->Next;
             }
-            // done with interplated list I can recycle it now.
             FREE_DLIST(interpolated);
         } else {
             path_node * Point1 = PUSH_STRUCT(Arena, path_node);

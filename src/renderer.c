@@ -218,30 +218,14 @@ void initialize_GL(void) {
 }
 
 
-/* internal int cmpfunc(const void *a, const void *b) { */
-/*     // TODO  I dont understand it anymore ;) */
 
-/*     const Wall *a2 = (const Wall *)a; */
-/*     const Wall *b2 = (const Wall *)b; */
-/*     return ((a2->y) - (b2->y)); */
-/* } */
 
 void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    //int real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
-    //int real_world_depth = permanent->dims.y * (permanent->block_size.y);
-    int screenWidth = renderer->view.width;
-    int screenHeight = renderer->view.height;
-
-    //int offset_x_blocks = permanent->x_view_offset;
-    //int offset_y_blocks = permanent->y_view_offset;
     int texture_size = renderer->assets.sprite.width;
 
-    //u32 number_to_do = renderer->walls_layout.values_per_thing;
-    //ASSERT(number_to_do > 0);
-    //printf("walls \n");
     for (int wall_batch_index = 0; wall_batch_index < WALL_BATCH_COUNT; wall_batch_index++) {
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;

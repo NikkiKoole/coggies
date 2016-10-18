@@ -296,7 +296,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         //count_shadow++;
                         permanent->walls[used_wall_block].frame = texture_atlas_data[Shaded];
                         permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = (y * permanent->block_size.y)-4; //??
+                        permanent->walls[used_wall_block].y = (y * permanent->block_size.y)-4; //TODO : what is this madness -4 !
                         permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
                         used_wall_block++;
                     }
@@ -453,7 +453,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
 
             // if already have a path, i dont need a new one,
-            // TODO somehow this makes all my paths appear unsmoothed ;) ??
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 continue;
             }

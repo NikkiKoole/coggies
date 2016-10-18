@@ -245,13 +245,8 @@ internal u32 draw_text(char *str, u32 x, u32 y, BM_Font *font, PermanentState *p
             continue;
         }
 
-        //printf("(%d, %d) %d\n", currentX, currentY, str[i]);
-        //currentX += font->chars[(u8)(str[i])].xadvance;
         BM_Glyph glyph = font->chars[(u8)(str[i])];
-
         draw_glyph(permanent, drawn, currentX + glyph.xoffset, currentY + glyph.yoffset, glyph.x, glyph.y, glyph.width, glyph.height);
-
-
         currentX += (glyph.xadvance);
         drawn++;
     }
@@ -274,9 +269,6 @@ internal void print(PermanentState *permanent, RenderState *renderer, const char
     permanent->glyph_count += draw_text(buffer, debug_text_x, debug_text_y, &renderer->assets.menlo_font, permanent);
 }
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
-
-
-
 
 internal void center_view(PermanentState *permanent, RenderState *renderer) {
     // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
@@ -302,14 +294,6 @@ internal int wallsortfunc(const void *a, const void *b) {
     const Wall *b2 = (const Wall *)b;
     return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z));
 }
-
-/* internal int actorsortfunc(const void *a, const void *b) { */
-/*     //1536 = some guestimate, assuming the depth is maximum 128. */
-/*     // and the height of each block is 128 */
-/*     const Actor *a2 = (const Actor *)a; */
-/*     const Actor *b2 = (const Actor *)b; */
-/*     return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z)); */
-/* } */
 
 Shared_Library libgame = {
     .handle = NULL,
