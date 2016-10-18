@@ -402,12 +402,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         set_actor_batch_sizes(permanent, renderer);
 
         permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
-        // TODO memory for the grid needs to be in the permanent space, currently I am using scratch
-#if 1
         init_grid(permanent->grid, &permanent->arena, &permanent->level);
         preprocess_grid(permanent->grid);
         set_colored_line_batch_sizes(permanent, renderer);
-#endif
         memory->is_initialized = true;
     }
 
@@ -417,7 +414,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->colored_line_count = 0;
         for (u32 i = 0; i < permanent->actor_count; i++) {
 
-#if 1
+
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 permanent->paths[i].counter--;
 
@@ -454,12 +451,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 permanent->colored_line_count = c;
             }
             ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
-#endif
-            //
-            //printf("line count: %d\n",permanent->colored_line_count);
-
-
-
 
             // if already have a path, i dont need a new one,
             // TODO somehow this makes all my paths appear unsmoothed ;) ??
@@ -470,8 +461,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-            //grid_node * Start = GetNodeAt(permanent->grid,4,5,4);//  get_random_walkable_node(permanent->grid);
-            //grid_node * End =  GetNodeAt(permanent->grid,5,10,0);//get_random_walkable_node(permanent->grid);
             grid_node * Start = get_random_walkable_node(permanent->grid);
             grid_node * End =  get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
@@ -483,40 +472,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
             if (PathRaw) {
-                //printf("Smoothing path!\n");
                 Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
-                //Path = PathRaw;
 
 
-
-#if 0
-                if (Path) {
-                    u32 path_length = 0;
-                    u32 c = permanent->colored_line_count;
-
-                    path_node * done= Path->Sentinel->Next;
-                    while (done->Next != Path->Sentinel) {
-                        permanent->colored_lines[c].x1 = done->X * permanent->block_size.x;
-                        permanent->colored_lines[c].y1 = done->Y * permanent->block_size.y;
-                        permanent->colored_lines[c].z1 = done->Z * permanent->block_size.z_level;
-                        permanent->colored_lines[c].x2 = done->Next->X * permanent->block_size.x;;
-                        permanent->colored_lines[c].y2 = done->Next->Y * permanent->block_size.y;;
-                        permanent->colored_lines[c].z2 = done->Next->Z * permanent->block_size.z_level;;
-                        permanent->colored_lines[c].r = 0.0f;
-                        permanent->colored_lines[c].g = 0.0f;
-                        permanent->colored_lines[c].b = 0.0f;
-                        done = done->Next;
-                        c++;
-                        path_length++;
-                    }
-                    permanent->colored_line_count = c;
-                }
-#endif
-
-
-
-
-#if 1
                 if (Path) {
 
                     // this is walking backwards, the path is in a dlist so its fine, i might rewrite this to work forward, but this works correct (forward doesnt, it trips over some freelist madness, TODO: investigate it)
@@ -534,6 +492,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         }
 
                         ActorPath * p = &(permanent->paths[i]);
+
+                        // TODO maybe i can fix the stairs oriented east/west and how the path is differnt going up then down just here..
                         N->path.node.x = done->X* permanent->block_size.x;
                         N->path.node.y = done->Y* permanent->block_size.y;
                         N->path.node.z = done->Z* permanent->block_size.z_level;
@@ -542,13 +502,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         done = done->Prev;
                     }
                 }
-#endif
+
             }
             END_PERFORMANCE_COUNTER(mass_pathfinding);
             //path_list * Path = ExpandPath(PathSmooth, &scratch->arena);
-            //path_list * Path = NULL;
             BEGIN_PERFORMANCE_COUNTER(grid_cleaning);
-            //u64 before = SDL_GetPerformanceCounter();
+
             for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) {
                 permanent->grid->nodes[i].f = 0;
                 permanent->grid->nodes[i].g = 0;
