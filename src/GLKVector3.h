@@ -21,6 +21,7 @@ extern "C" {
 #pragma mark Prototypes
 #pragma mark -
 
+    static __inline__ GLKVector3 GLKVector3Limit(GLKVector3 vector, float max);
 static __inline__ GLKVector3 GLKVector3Make(float x, float y, float z);
 static __inline__ GLKVector3 GLKVector3MakeWithArray(float values[3]);
 
@@ -88,6 +89,15 @@ static __inline__ GLKVector3 GLKVector3Project(GLKVector3 vectorToProject, GLKVe
 #pragma mark -
 #pragma mark Implementations
 #pragma mark -
+
+
+static __inline__ GLKVector3 GLKVector3Limit(GLKVector3 vector, float max) {
+    if (GLKVector3Length(vector) > max) {
+        return GLKVector3MultiplyScalar(GLKVector3Normalize(vector),max);
+    } else {
+        return  vector;
+    }
+}
 
 static __inline__ GLKVector3 GLKVector3Make(float x, float y, float z)
 {

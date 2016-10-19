@@ -20,7 +20,7 @@ PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
 
-DEBUG:= -g3 -fsanitize=address -fno-omit-frame-pointer
+DEBUG:= #-g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:= -O3
 STD:= -std=gnu99

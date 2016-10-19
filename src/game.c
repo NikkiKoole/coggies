@@ -7,6 +7,7 @@
 #include "states.h"
 #include "level.h"
 #include "data_structures.h"
+#include "GLKMath.h"
 
 
 #define SORT_NAME Actor
@@ -23,6 +24,21 @@
 #include "sort.h"
 #pragma GCC diagnostic pop
 
+
+internal GLKVector3 seek_return(ActorSteerData *actor, GLKVector3 target) {
+    GLKVector3 desired = GLKVector3Subtract(target, actor->location);
+    if (desired.x != 0 || desired.y != 0 || desired.z != 0) {
+        desired = GLKVector3Normalize(desired);
+    }
+    desired = GLKVector3MultiplyScalar(desired, actor->max_speed);
+    GLKVector3 steer = GLKVector3Subtract(desired, actor->velocity);
+    steer = GLKVector3Limit(steer, actor->max_force);
+    return steer;
+}
+internal void actor_applyForce(ActorSteerData *a, GLKVector3 force) {
+    force = GLKVector3DivideScalar(force, a->mass);
+    a->acceleration = GLKVector3Add(a->acceleration, force);
+}
 
 internal int path_length_at_index(PermanentState *permanent, int i) {
     Node16 * fp = permanent->paths[i].Sentinel;
@@ -98,6 +114,19 @@ internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderStat
 }
 
 
+internal grid_node* get_neighboring_walkable_node(Grid *grid, int x, int y, int z){
+    grid_node *result = NULL;
+    for (int h = -1; h<2; h++) {
+        for (int v = -1; v <2; v++) {
+            result = GetNodeAt(grid, x+h, y+v, z);
+            if (result->walkable) {
+                return result;
+            }
+        }
+    }
+    return result;
+}
+
 internal grid_node* get_random_walkable_node(Grid *grid) {
     grid_node *result;// = GetNodeAt(grid, 0,0,0);
     do {
@@ -129,6 +158,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
         permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
+        for (int i = 0; i < 16384*4; i++) {
+            permanent->steer_data[i].mass = 1.0f;
+            permanent->steer_data[i].max_force = rand_float()+ 0.3f;
+            permanent->steer_data[i].max_speed = rand_float() + 0.3f;
+
+        }
         permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
         for (int i = 0; i < 16384*4; i++) {
             Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
@@ -418,7 +453,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 permanent->paths[i].counter--;
 
-                if (permanent->paths[i].counter <=0) {
+                float distance = GLKVector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
+                if (distance < 4){
+                //if (permanent->paths[i].counter <=0) {
                     Node16 *First = permanent->paths[i].Sentinel->Next;
                     permanent->paths[i].Sentinel->Next = First->Next;
                     First->Next = node16->Free->Next;
@@ -431,6 +468,28 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             // here i should peek at the first node in permanent->paths[i].Sentinel->Next->path.node
             // thats the position i want to steer towards
             // here is where i shoudl put that colored debug line drawing, it'll come in handy still
+
+
+
+            BEGIN_PERFORMANCE_COUNTER(actors_steering);
+            {
+            GLKVector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
+            seek_force = GLKVector3MultiplyScalar(seek_force, 1);
+            actor_applyForce(&permanent->steer_data[i], seek_force);
+
+            permanent->steer_data[i].velocity = GLKVector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
+            permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
+            permanent->steer_data[i].location = GLKVector3Add(permanent->steer_data[i].location, permanent->steer_data[i].velocity);
+            permanent->steer_data[i].acceleration = GLKVector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
+            }
+            END_PERFORMANCE_COUNTER(actors_steering);
+
+
+
+
+
+
+#if 0
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
@@ -450,6 +509,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 }
                 permanent->colored_line_count = c;
             }
+#endif
             ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
 
             // if already have a path, i dont need a new one,
@@ -460,7 +520,20 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-            grid_node * Start = get_random_walkable_node(permanent->grid);
+            //TODO something is off with this, the end of a path seems almost never to be walkable
+            grid_node * Start = GetNodeAt(permanent->grid,
+                                          permanent->steer_data[i].location.x/permanent->block_size.x,
+                                          permanent->steer_data[i].location.y/permanent->block_size.y,
+                                          (permanent->steer_data[i].location.z+10) /permanent->block_size.z_level);
+            if (Start->walkable) {
+            } else {
+                Start = get_neighboring_walkable_node(permanent->grid, Start->X, Start->Y, Start->Z);
+                if (!Start->walkable) {
+                    //printf("why wasnt my current node walkable? %d,%d,%d \n", Start->X, Start->Y, Start->Z);
+                    Start = get_random_walkable_node(permanent->grid);
+                }
+            }
+            //grid_node * Start = get_random_walkable_node(permanent->grid);
             grid_node * End =  get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
@@ -527,9 +600,18 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 #endif
 
 
+
+
+
+
+
+
+
+
+
     BEGIN_PERFORMANCE_COUNTER(actors_update);
     // TODO: plenty of bugs are in this loop, never really cleaned up after
-
+#if 0
     for (u32 i = 0; i < permanent->actor_count; i++) {
         if (permanent->steer_data[i].location.x <= 0 || permanent->steer_data[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
             if (permanent->steer_data[i].location.x < 0) {
@@ -555,6 +637,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         }
         permanent->steer_data[i].location.y += permanent->steer_data[i].dy * (last_frame_time_seconds);
     }
+#endif
     BEGIN_PERFORMANCE_COUNTER(actors_data_gathering);
 
     // TODO for now this suffices, its the easiest and not TOO bad, but i loose 3ms for 64k actors on sorting this way
