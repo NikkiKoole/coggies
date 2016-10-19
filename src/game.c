@@ -8,7 +8,7 @@
 #include "level.h"
 #include "data_structures.h"
 #include "GLKMath.h"
-
+#include <math.h>
 
 #define SORT_NAME Actor
 #define SORT_TYPE Actor
@@ -23,7 +23,7 @@
 
 #include "sort.h"
 #pragma GCC diagnostic pop
-
+//#define PI 3.14159265
 
 internal GLKVector3 seek_return(ActorSteerData *actor, GLKVector3 target) {
     GLKVector3 desired = GLKVector3Subtract(target, actor->location);
@@ -160,8 +160,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
         for (int i = 0; i < 16384*4; i++) {
             permanent->steer_data[i].mass = 1.0f;
-            permanent->steer_data[i].max_force = rand_float()+ 0.3f;
-            permanent->steer_data[i].max_speed = rand_float() + 0.3f;
+            permanent->steer_data[i].max_force = rand_float()/2 + 0.3f;
+            permanent->steer_data[i].max_speed = rand_float()/2 + 0.3f;
 
         }
         permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
@@ -481,10 +481,24 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
             permanent->steer_data[i].location = GLKVector3Add(permanent->steer_data[i].location, permanent->steer_data[i].velocity);
             permanent->steer_data[i].acceleration = GLKVector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
+
+            // left = frame 0, down = frame 1 right = frame 2,up = frame 3
+            double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
+            angle = angle + 180;
+            //printf("%f \n",angle);
+            if (angle > 315 || angle < 45) {
+                permanent->anim_data[i].frame = 3;
+            } else if (angle >= 45 && angle <= 135) {
+                permanent->anim_data[i].frame = 0;
+            } else if (angle >=135 && angle <= 225) {
+                permanent->anim_data[i].frame = 1;
+            } else if (angle > 225 && angle <= 315) {
+                permanent->anim_data[i].frame = 2;
             }
+
             END_PERFORMANCE_COUNTER(actors_steering);
 
-
+            }
 
 
 
