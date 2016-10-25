@@ -21,9 +21,9 @@
 extern "C" {
 #endif
 
-#pragma mark -
-#pragma mark Prototypes
-#pragma mark -
+    //#pragma mark -
+    //#pragma mark Prototypes
+    //#pragma mark -
 
 static __inline__ GLKVector4 GLKVector4Make(float x, float y, float z, float w);
 static __inline__ GLKVector4 GLKVector4MakeWithArray(float values[4]);
@@ -93,9 +93,9 @@ static __inline__ GLKVector4 GLKVector4CrossProduct(GLKVector4 vectorLeft, GLKVe
  */
 static __inline__ GLKVector4 GLKVector4Project(GLKVector4 vectorToProject, GLKVector4 projectionVector);
 
-#pragma mark -
-#pragma mark Implementations
-#pragma mark -
+    //#pragma mark -
+    //#pragma mark Implementations
+    //#pragma mark -
 
 static __inline__ GLKVector4 GLKVector4Make(float x, float y, float z, float w)
 {

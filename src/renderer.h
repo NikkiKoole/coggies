@@ -15,32 +15,34 @@
 // TODO Add some more info into the textures (I need the dimenison for UV creation down the line)
 
 
-
-
-
-#ifdef USES_HALF_FLOAT
-#define VERTEX_FLOAT_TYPE __fp16
-#ifdef GL3
-#define GL_FLOAT_TYPE GL_HALF_FLOAT
-#endif
-
-#ifdef GLES
-#define GL_FLOAT_TYPE GL_HALF_FLOAT_OES
-#endif
-#else
 #define VERTEX_FLOAT_TYPE GLfloat
 #define GL_FLOAT_TYPE GL_FLOAT
-#endif
 
-// for flycheck on osx
-#ifndef GL_FLOAT_TYPE
-#ifdef USES_HALF_FLOAT
-#define GL_FLOAT_TYPE GL_HALF_FLOAT
-#else
-#define GL_FLOAT_TYPE GL_FLOAT
-#endif
 
-#endif
+
+/* #ifdef USES_HALF_FLOAT */
+/* #define VERTEX_FLOAT_TYPE __fp16 */
+/* #ifdef GL3 */
+/* #define GL_FLOAT_TYPE GL_HALF_FLOAT */
+/* #endif */
+
+/* #ifdef GLES */
+/* #define GL_FLOAT_TYPE GL_HALF_FLOAT_OES */
+/* #endif */
+/* #else */
+/* #define VERTEX_FLOAT_TYPE GLfloat */
+/* #define GL_FLOAT_TYPE GL_FLOAT */
+/* #endif */
+
+/* // for flycheck on osx */
+/* #ifndef GL_FLOAT_TYPE */
+/* #ifdef USES_HALF_FLOAT */
+/* #define GL_FLOAT_TYPE GL_HALF_FLOAT */
+/* #else */
+/* #define GL_FLOAT_TYPE GL_FLOAT */
+/* #endif */
+
+/* #endif */
 
 
 
@@ -96,10 +98,10 @@ typedef struct DrawBuffer {
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
 } DrawBuffer;
 
-#define WALL_BATCH_COUNT 8
-#define ACTOR_BATCH_COUNT 32
+#define WALL_BATCH_COUNT 4
+#define ACTOR_BATCH_COUNT 16
 #define GLYPH_BATCH_COUNT 2
-#define LINE_BATCH_COUNT 8
+#define LINE_BATCH_COUNT 2
 
 
 typedef struct RenderState {

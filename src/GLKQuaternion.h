@@ -20,9 +20,9 @@
 extern "C" {
 #endif
 
-#pragma mark -
-#pragma mark Prototypes
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Prototypes */
+/* #pragma mark - */
 
 extern const GLKQuaternion GLKQuaternionIdentity;
 
@@ -84,9 +84,9 @@ void GLKQuaternionRotateVector3Array(GLKQuaternion quaternion, GLKVector3 *vecto
 static __inline__ GLKVector4 GLKQuaternionRotateVector4(GLKQuaternion quaternion, GLKVector4 vector);
 void GLKQuaternionRotateVector4Array(GLKQuaternion quaternion, GLKVector4 *vectors, size_t vectorCount);
 
-#pragma mark -
-#pragma mark Implementations
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Implementations */
+/* #pragma mark - */
 
 static __inline__ GLKQuaternion GLKQuaternionMake(float x, float y, float z, float w)
 {

@@ -33,7 +33,7 @@ osx:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -DOSX ${STD} -lSDL2_mixer ${DEBUG} -lglew -framework OpenGL ${BACKEND_FILES} -o $(PROGRAM_NAME)
 
 linux:
-	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
+	${CC} -I/usr/local/include/  $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) -DLINUX ${STD} -lSDL2_mixer   ${DEBUG} -lGL  -lGLEW  ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
 
 pi:
 	${CC} -I/usr/local/include/ $(SDL_CFLAGS) $(SDL_LFLAGS) $(WARNINGS) $(OPTIMIZE) -mfp16-format=alternative -mfpu=neon-fp16 -mfloat-abi=hard -DRPI ${STD} -lSDL2_mixer -L/opt/vc/lib -lEGL -lGLESv2 ${BACKEND_FILES} -lm -o $(PROGRAM_NAME)
@@ -47,6 +47,14 @@ gamelibrary:
 	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE)   -DOSX -fPIC src/level.c src/game.c src/random.c src/renderer.c src/memory.c src/pathfind.c
 	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DOSX   -shared -o $(LIBRARY_NAME) level.o game.o random.o renderer.o memory.o pathfind.o -lglew -framework OpenGL  $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
+
+gamelibrary-linux:
+	mkdir -p $(OBJDIR)
+	${CC} -c -I/usr/local/include  $(SDL_CFLAGS) $(WARNINGS) ${STD} ${DEBUGFLAG} $(OPTIMIZE)   -DLINUX -fPIC src/level.c src/game.c src/random.c src/renderer.c src/memory.c src/pathfind.c
+	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DLINUX   -shared -o $(LIBRARY_NAME) level.o game.o random.o renderer.o memory.o pathfind.o -lGL  -lGLEW   $(SDL_LFLAGS)
+	mv *.o $(OBJDIR)
+
+
 
 test:
 	gcc -std=c99 spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c  src/random.c  -lm  && ./a.out

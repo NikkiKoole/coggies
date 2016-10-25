@@ -22,9 +22,9 @@
 extern "C" {
 #endif
 
-#pragma mark -
-#pragma mark Prototypes
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Prototypes */
+/* #pragma mark - */
 
 /*
 static __inline__ float InvSqrt(float x){
@@ -107,9 +107,9 @@ static __inline__ float GLKVector2LengthSquared(GLKVector2 vector);
  */
 static __inline__ GLKVector2 GLKVector2Project(GLKVector2 vectorToProject, GLKVector2 projectionVector);
 
-#pragma mark -
-#pragma mark Implementations
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Implementations */
+/* #pragma mark - */
 
 
 

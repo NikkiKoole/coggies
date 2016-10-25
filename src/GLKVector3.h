@@ -17,9 +17,9 @@
 extern "C" {
 #endif
 
-#pragma mark -
-#pragma mark Prototypes
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Prototypes */
+/* #pragma mark - */
 
     static __inline__ GLKVector3 GLKVector3Limit(GLKVector3 vector, float max);
 static __inline__ GLKVector3 GLKVector3Make(float x, float y, float z);
@@ -86,9 +86,9 @@ static __inline__ GLKVector3 GLKVector3CrossProduct(GLKVector3 vectorLeft, GLKVe
  */
 static __inline__ GLKVector3 GLKVector3Project(GLKVector3 vectorToProject, GLKVector3 projectionVector);
 
-#pragma mark -
-#pragma mark Implementations
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Implementations */
+/* #pragma mark - */
 
 
 static __inline__ GLKVector3 GLKVector3Limit(GLKVector3 vector, float max) {

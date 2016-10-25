@@ -25,9 +25,9 @@
 extern "C" {
 #endif
 
-#pragma mark -
-#pragma mark Prototypes
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Prototypes */
+/* #pragma mark - */
 
 extern const GLKMatrix4 GLKMatrix4Identity;
 
@@ -208,9 +208,9 @@ static __inline__ GLKVector4 GLKMatrix4MultiplyVector4(GLKMatrix4 matrixLeft, GL
 
 static __inline__ void GLKMatrix4MultiplyVector4Array(GLKMatrix4 matrix, GLKVector4 *vectors, size_t vectorCount);
 
-#pragma mark -
-#pragma mark Implementations
-#pragma mark -
+/* #pragma mark - */
+/* #pragma mark Implementations */
+/* #pragma mark - */
 
 static __inline__ GLKMatrix4 GLKMatrix4Make(float m00, float m01, float m02, float m03,
                                             float m10, float m11, float m12, float m13,

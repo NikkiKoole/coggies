@@ -531,10 +531,10 @@ void render_walls(PermanentState *permanent, RenderState *renderer) {
     //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
     //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
 
-    //printf("\nused wall batches: %d\n",renderer->used_wall_batches);
+    printf("\nused wall batches: %d\n",renderer->used_wall_batches);
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_wall_batches; wall_batch_index++) {
-        //printf("\nindex used wall batch: %d\n",wall_batch_index);
+        printf("\nindex used wall batch: %d\n",wall_batch_index);
 
         DrawBuffer *batch = &renderer->walls[wall_batch_index];
         UNUSED(batch);
