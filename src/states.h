@@ -16,6 +16,10 @@ typedef struct {
 typedef struct {
     int x_pos;
     int y_pos;
+    int width;
+    int height;
+    int x_off;
+    int y_off;
 } BlockTextureAtlasPosition;
 
 typedef struct {
@@ -24,7 +28,22 @@ typedef struct {
     u16 z;
     BlockTextureAtlasPosition frame;
     u8 is_floor;
-} Wall; //64
+} StaticBlock; //64
+
+typedef struct {
+    u16 x;
+    u16 y;
+    u16 z;
+    BlockTextureAtlasPosition frame;
+    u8 is_floor;
+    u8 total_frames;
+    u8 current_frame;
+    u16 start_frame_x;
+    r32 duration_per_frame;
+    r32 frame_duration_left;
+} DynamicBlock; //64
+
+
 
 typedef struct FoundPathNode {
     GLKVector3 node;
@@ -61,6 +80,7 @@ typedef struct {
 typedef struct {
     u16 frame;
     r32 palette_index;
+    r32 frame_duration_left;
 } ActorAnimData;
 
 typedef struct {
@@ -168,8 +188,16 @@ typedef struct grid {
 typedef struct {
     MemoryArena arena;
     LevelData level;
-    Wall *walls;//[16384];
-    u32 wall_count;
+
+
+    StaticBlock *static_blocks;//[16384];
+    u32 static_block_count;
+
+    DynamicBlock *dynamic_blocks;//[16384];
+    u32 dynamic_block_count;
+
+    StaticBlock *transparent_blocks;//[16384];
+    u32 transparent_block_count;
 
     Actor *actors;//[16384*4];
     u32 actor_count;
@@ -178,6 +206,8 @@ typedef struct {
     // doesnt need a count because it will be the same as actor
     ActorSteerData *steer_data;
     ActorAnimData *anim_data;
+
+
 
     Glyph *glyphs;//[16384];
     u32 glyph_count;

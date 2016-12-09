@@ -20,7 +20,7 @@ internal int starts_with(const char *pre, const char *str)
 }
 
 internal World_Size validate_and_get_dimensions(const char * path){
-    World_Size result;
+  World_Size result = {0,0,0};
     char str[BUF_SIZE];
 
     FILE *f = fopen(path, "rb");

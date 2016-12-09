@@ -140,7 +140,7 @@
 #define HEAP_POP(Heap, Type)                                            \
     {                                                                   \
         u32 index, swap, other;                                         \
-        Type temp = Heap->data[--Heap->count];                          \
+        Type temp = Heap->data[--Heap->count];                           \
         for(index = 0; 1; index = swap) {                               \
             swap = (index << 1) + 1;                                    \
             if (swap >= Heap->count) break;                             \
@@ -153,6 +153,9 @@
     };                                                                  \
 
 //adapted from https://gist.github.com/martinkunev/1365481
+//TODO this code is a bit meh, for some reason the swap index can become huge!
+// like 300.000 or something, this overwrites memory out of bounds.
+// for now a simple fix is just have a bit larger scratch space, so the memory is atleast not in another Arena.
 
 #define HEAP_UPDATE_AT(Heap, Type, StartIndex)                          \
     {                                                                   \
@@ -169,6 +172,7 @@
                 if ((other < count) && CMP(Heap->data[other], Heap->data[swap])) swap = other; \
                 if CMP(temp, Heap->data[swap]) break;                   \
                 Heap->data[index] = Heap->data[swap];                   \
+                ASSERT(swap <= Heap->size);                              \
             }                                                           \
             if (index != item) Heap->data[index] = temp;                \
             if (!item) break;                                           \

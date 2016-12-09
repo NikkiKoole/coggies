@@ -100,13 +100,13 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/flatje2.txt");
+    resource_level(permanent, &permanent->level, "levels/two_floors.txt");
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
     resource_texture(&renderer->assets.menlo, "fonts/osaka.tga");
-    resource_texture(&renderer->assets.sprite, "textures/Untitled4.tga");
-    resource_texture(&renderer->assets.palette, "textures/palette2.tga");
+    resource_texture(&renderer->assets.sprite, "textures/texture.tga");
+    resource_texture(&renderer->assets.palette, "textures/palette.tga");
 
 #ifdef GL3
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GL330.vert", "shaders/xyz_uv_palette.GL330.frag");
@@ -140,22 +140,22 @@ internal void update_frame(void *param) {
 }
 
 
-// TODO generalise these three into a reusable function
-internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->wall_count / 2048.0f);
-    renderer->used_wall_batches = used_batches;
+/* // TODO generalise these three into a reusable function */
+/* internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
+/*     u32 used_batches = ceil(permanent->static_block_count / 2048.0f); */
+/*     renderer->used_wall_batches = used_batches; */
 
-    if (used_batches == 1) {
-        renderer->walls[0].count = permanent->wall_count;
-    } else if (used_batches > 1) {
-        for (u32 i = 0; i < used_batches - 1; i++) {
-            renderer->walls[i].count = 2048;
-        }
-        renderer->walls[used_batches - 1].count = permanent->wall_count % 2048;
-    } else {
-        renderer->used_wall_batches = 0;
-    }
-}
+/*     if (used_batches == 1) { */
+/*         renderer->static_blocks[0].count = permanent->static_block_count; */
+/*     } else if (used_batches > 1) { */
+/*         for (u32 i = 0; i < used_batches - 1; i++) { */
+/*             renderer->static_blocks[i].count = 2048; */
+/*         } */
+/*         renderer->static_blocks[used_batches - 1].count = permanent->static_block_count % 2048; */
+/*     } else { */
+/*         renderer->used_wall_batches = 0; */
+/*     } */
+/* } */
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
     u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f));
@@ -189,21 +189,21 @@ internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *rend
         renderer->used_glyph_batches = 0;
     }
 }
-internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->colored_line_count / (MAX_IN_BUFFER * 1.0f));
-    renderer->used_colored_lines_batches = used_batches;
+/* internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
+/*     u32 used_batches = ceil(permanent->colored_line_count / (MAX_IN_BUFFER * 1.0f)); */
+/*     renderer->used_colored_lines_batches = used_batches; */
 
-    if (used_batches == 1) {
-        renderer->colored_lines[0].count = permanent->colored_line_count;
-    } else if (used_batches > 1) {
-        for (u32 i = 0; i < used_batches - 1; i++) {
-            renderer->colored_lines[i].count = MAX_IN_BUFFER;
-        }
-        renderer->colored_lines[used_batches - 1].count = permanent->colored_line_count % MAX_IN_BUFFER;
-    } else {
-        renderer->used_colored_lines_batches = 0;
-    }
-}
+/*     if (used_batches == 1) { */
+/*         renderer->colored_lines[0].count = permanent->colored_line_count; */
+/*     } else if (used_batches > 1) { */
+/*         for (u32 i = 0; i < used_batches - 1; i++) { */
+/*             renderer->colored_lines[i].count = MAX_IN_BUFFER; */
+/*         } */
+/*         renderer->colored_lines[used_batches - 1].count = permanent->colored_line_count % MAX_IN_BUFFER; */
+/*     } else { */
+/*         renderer->used_colored_lines_batches = 0; */
+/*     } */
+/* } */
 
 
 internal void draw_glyph(PermanentState *permanent, u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
@@ -290,8 +290,8 @@ internal void center_view(PermanentState *permanent, RenderState *renderer) {
 internal int wallsortfunc(const void *a, const void *b) {
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
-    const Wall *a2 = (const Wall *)a;
-    const Wall *b2 = (const Wall *)b;
+    const StaticBlock *a2 = (const StaticBlock *)a;
+    const StaticBlock *b2 = (const StaticBlock *)b;
     return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z));
 }
 
@@ -372,7 +372,7 @@ int main(int argc, char **argv) {
 
     void *base_address = (void *)GIGABYTES(0);
     memory->permanent_size = MEGABYTES(10);
-    memory->scratch_size = MEGABYTES(2);
+    memory->scratch_size = MEGABYTES(10);
     memory->node16_size = MEGABYTES(30);
     memory->debug_size = MEGABYTES(2);
 
@@ -442,7 +442,7 @@ int main(int argc, char **argv) {
 
 
 
-#define ACTOR_BATCH 10
+#define ACTOR_BATCH 100
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);

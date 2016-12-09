@@ -9,7 +9,7 @@
 
 
 internal u64 hash(const char *str) {
-    // http://www.cse.yorku.ca/~oz/hash.html  // djb2 by dan bernstein
+    // http://www.cse.yorku.ca/~oz/hash.html  // djb2 by Dan Bernstein
     u64 hash = 5381;
     int c;
 
@@ -132,9 +132,8 @@ void *push_size_(MemoryArena *arena, memory_index size) {
     if (result_pointer & allignment_mask) {
         allignment_offset = allignment - (result_pointer & allignment_mask);
     }
-
+    //printf("push size: %lu on arena with size %lu used now: %lu\n", size, arena->size, arena->used);
     size += allignment_offset;
-
     ASSERT(arena->used + size <= arena->size);
     arena->used += size;
 

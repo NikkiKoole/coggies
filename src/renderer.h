@@ -98,7 +98,9 @@ typedef struct DrawBuffer {
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
 } DrawBuffer;
 
-#define WALL_BATCH_COUNT 4
+#define STATIC_BLOCK_BATCH_COUNT 4
+#define DYNAMIC_BLOCK_BATCH_COUNT 1
+#define TRANSPARENT_BLOCK_BATCH_COUNT 1
 #define ACTOR_BATCH_COUNT 16
 #define GLYPH_BATCH_COUNT 2
 #define LINE_BATCH_COUNT 2
@@ -111,8 +113,16 @@ typedef struct RenderState {
     SDL_Window *window;
     SDL_GLContext context;
     Assets assets;
-    DrawBuffer walls[WALL_BATCH_COUNT];
-    int used_wall_batches;
+
+    DrawBuffer static_blocks[STATIC_BLOCK_BATCH_COUNT];
+    int used_static_block_batches;
+
+    DrawBuffer dynamic_blocks[DYNAMIC_BLOCK_BATCH_COUNT];
+    int used_dynamic_block_batches;
+
+    DrawBuffer transparent_blocks[TRANSPARENT_BLOCK_BATCH_COUNT];
+    int used_transparent_block_batches;
+
     DrawBuffer actors[ACTOR_BATCH_COUNT]; //was 32
     int used_actor_batches;
     DrawBuffer glyphs[GLYPH_BATCH_COUNT];

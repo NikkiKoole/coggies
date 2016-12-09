@@ -19,7 +19,6 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
     g->height = m->y;
     g->depth = m->z_level;
     g->nodes = PUSH_ARRAY(Arena, g->width * g->height * g->depth, grid_node);
-    //printf("x: %d, y: %d, z: %d\n", g->width, g->height, g->depth);
 
     for (int z = 0; z < g->depth; z++) {
         for (int y = 0; y < g->height; y++) {
@@ -623,7 +622,7 @@ internal float Octile(int dx, int dy, int dz) {
 
 path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena) {
     jump_direction travelling_south[] = {west, sw, south, se, east, up, down};
-    jump_direction travelling_southEast[] = {south, se, east, up, down};
+mm    jump_direction travelling_southEast[] = {south, se, east, up, down};
     jump_direction travelling_east[] = {south, se, east, ne, north, up, down};
     jump_direction travelling_northEast[] = {east, ne, north, up, down};
     jump_direction travelling_north[] = {east, ne, north, nw, west, up, down};
@@ -634,9 +633,9 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
     jump_direction travelling_down[] = {north, nw, west, sw, south, se, east, ne, down};
     jump_direction travelling_all[] = {north, nw, west, sw, south, se, east, ne, up, down};
 
-
+    //TODO: this heap, maybe it should be put outside this function, and be reused.
     grid_node_heap * OpenList = PUSH_STRUCT(Arena, grid_node_heap);
-    NEW_HEAP(OpenList, 5000, grid_node*, Arena);
+    NEW_HEAP(OpenList, 1024*1024/2, grid_node*, Arena); // the way the heap works it can write values quite far into it.
 
     startNode->g = 0.0f;
     startNode->f = 0.0f;
@@ -814,6 +813,7 @@ internal void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, c
 
     err = dx - dy;
 
+    //int steps = 0;
     while(1) {
         PUSH_COORD(x0, y0, List);
 
@@ -829,6 +829,8 @@ internal void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, c
             err = err + dx;
             y0 = y0 + sy;
         }
+        //steps++;
+        //printf("steps in interpolation: %d\n", steps);
     }
 
 }
@@ -861,8 +863,10 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
     coord_list * interpolated = PUSH_STRUCT(Arena, coord_list);
     NEW_DLIST_FREE(interpolated, Arena, coord2d);
 
+    //int steps = 0;
     while (Node != compressed->Sentinel) {
-
+        //steps++;
+        //printf("steps in smooth: %d\n", steps);
         ex = Node->X;
         ey = Node->Y;
         ez = Node->Z;

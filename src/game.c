@@ -50,20 +50,44 @@ internal int path_length_at_index(PermanentState *permanent, int i) {
     return fp_count;
 }
 
+internal int get_node16_freelist_length(Node16Arena * arena) {
+    int count = 0;
+    Node16 * node = arena->Free;
+    while (node->Next != arena->Free) {
+        node = node->Next;
+        //if (count % 100 == 0 ) printf("%d\n",count);
+        count++;
+    }
+    return count;
+}
+
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 
-internal int wallsortfunc (const void * a, const void * b)
+internal int sort_static_blocks_back_front (const void * a, const void * b)
 {
     //1536 = some guestimate, assuming the depth is maximum 128.
     // and the height of each block is 128
-    const Wall *a2 = (const Wall *) a;
-    const Wall *b2 = (const Wall *) b;
+    const StaticBlock *a2 = (const StaticBlock *) a;
+    const StaticBlock *b2 = (const StaticBlock *) b;
 
     // TODO maybe I need a special batch of tranparant things that are drawn back to front, so the rest can be faster
     // TODO heyhey the back to front order shows the same artifacts i see when trying to get actors drawn on top of all floors
     return (  (a2->y*16384 + a2->z ) - ( b2->y*16384 + b2->z));
     //return (  (a2->y*16384 -  a2->z) - ( b2->y*16384 - b2->z)); // this sorts walls back to front (needed for transparancy)
     //return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z)); //// this sorts walls front to back (much faster rendering)
+}
+internal int sort_static_blocks_front_back (const void * a, const void * b)
+{
+    //1536 = some guestimate, assuming the depth is maximum 128.
+    // and the height of each block is 128
+    const StaticBlock *a2 = (const StaticBlock *) a;
+    const StaticBlock *b2 = (const StaticBlock *) b;
+
+    // TODO maybe I need a special batch of tranparant things that are drawn back to front, so the rest can be faster
+    // TODO heyhey the back to front order shows the same artifacts i see when trying to get actors drawn on top of all floors
+    //return (  (a2->y*16384 + a2->z ) - ( b2->y*16384 + b2->z));
+    //return (  (a2->y*16384 -  a2->z) - ( b2->y*16384 - b2->z)); // this sorts walls back to front (needed for transparancy)
+    return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z)); //// this sorts walls front to back (much faster rendering)
 }
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
@@ -82,19 +106,52 @@ internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *rend
     }
 }
 
-internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->wall_count / 2048.0f);
-    renderer->used_wall_batches = used_batches;
+internal void set_dynamic_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->dynamic_block_count / 2048.0f);
+    renderer->used_dynamic_block_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->walls[0].count = permanent->wall_count;
+        renderer->dynamic_blocks[0].count = permanent->dynamic_block_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
-            renderer->walls[i].count = 2048;
+            renderer->dynamic_blocks[i].count = 2048;
         }
-        renderer->walls[used_batches-1].count = permanent->wall_count % 2048;
+        renderer->dynamic_blocks[used_batches-1].count = permanent->dynamic_block_count % 2048;
     } else {
-        renderer->used_wall_batches = 0;
+        renderer->used_dynamic_block_batches = 0;
+    }
+}
+
+internal void set_transparent_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->transparent_block_count / 2048.0f);
+    renderer->used_transparent_block_batches = used_batches;
+
+    if (used_batches == 1) {
+        renderer->transparent_blocks[0].count = permanent->transparent_block_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches-1; i++) {
+            renderer->transparent_blocks[i].count = 2048;
+        }
+        renderer->transparent_blocks[used_batches-1].count = permanent->transparent_block_count % 2048;
+    } else {
+        renderer->used_transparent_block_batches = 0;
+    }
+}
+
+
+internal void set_static_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
+    u32 used_batches = ceil(permanent->static_block_count / 2048.0f);
+    renderer->used_static_block_batches = used_batches;
+
+    if (used_batches == 1) {
+        renderer->static_blocks[0].count = permanent->static_block_count;
+    } else if (used_batches > 1) {
+        for (u32 i = 0; i < used_batches-1; i++) {
+            renderer->static_blocks[i].count = 2048;
+        }
+        renderer->static_blocks[used_batches-1].count = permanent->static_block_count % 2048;
+    } else {
+        renderer->used_static_block_batches = 0;
     }
 }
 internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) {
@@ -154,14 +211,16 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     if (memory->is_initialized == false) {
         //printf("Used at permanent:  %lu\n", (unsigned long) permanent->arena.used);
-        permanent->walls = (Wall*) PUSH_ARRAY(&permanent->arena, (16384), Wall);
+        permanent->dynamic_blocks = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
+        permanent->static_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
+        permanent->transparent_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
         permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
         permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
         permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
         for (int i = 0; i < 16384*4; i++) {
             permanent->steer_data[i].mass = 1.0f;
-            permanent->steer_data[i].max_force = rand_float()/2 + 0.3f;
-            permanent->steer_data[i].max_speed = rand_float()/2 + 0.3f;
+            permanent->steer_data[i].max_force = 10;//rand_float()*100;// + 0.1f;
+            permanent->steer_data[i].max_speed = 50 + rand_float()*80;//rand_float()*100;// + 0.1f;
 
         }
         permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
@@ -180,7 +239,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         node16->Free = PUSH_STRUCT(&node16->arena, Node16);
         node16->Free->Next = node16->Free;//node16->Sentinel;
         node16->Free->Prev = node16->Free;//node16->Sentinel;
-        printf("Node16 used: %lu\n", node16->arena.used);
+        //printf("Node16 used: %lu\n", node16->arena.used);
         permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
         permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
 
@@ -189,33 +248,53 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         //printf("blocktotal %d\n", BlockTotal);
 
-        texture_atlas_data[Floor]       =  (BlockTextureAtlasPosition){0,0};
-        texture_atlas_data[WallBlock]   =  (BlockTextureAtlasPosition){1,0};
-        texture_atlas_data[LadderUpDown]=  (BlockTextureAtlasPosition){2,0};
-        texture_atlas_data[LadderUp]    =  (BlockTextureAtlasPosition){5,1};
-        texture_atlas_data[WindowBlock]    =  (BlockTextureAtlasPosition){7,1};
-        texture_atlas_data[LadderDown]  =  (BlockTextureAtlasPosition){6,1};
-        texture_atlas_data[StairsUp1N]  =  (BlockTextureAtlasPosition){3,0};
-        texture_atlas_data[StairsUp2N]  =  (BlockTextureAtlasPosition){4,0};
-        texture_atlas_data[StairsUp3N]  =  (BlockTextureAtlasPosition){5,0};
-        texture_atlas_data[StairsUp4N]  =  (BlockTextureAtlasPosition){6,0};
-        texture_atlas_data[StairsUp1S]  =  (BlockTextureAtlasPosition){7,0};
-        texture_atlas_data[StairsUp2S]  =  (BlockTextureAtlasPosition){8,0};
-        texture_atlas_data[StairsUp3S]  =  (BlockTextureAtlasPosition){9,0};
-        texture_atlas_data[StairsUp4S]  =  (BlockTextureAtlasPosition){10,0};
-        texture_atlas_data[StairsUp1E]  =  (BlockTextureAtlasPosition){11,0};
-        texture_atlas_data[StairsUp2E]  =  (BlockTextureAtlasPosition){12,0};
-        texture_atlas_data[StairsUp3E]  =  (BlockTextureAtlasPosition){13,0};
-        texture_atlas_data[StairsUp4E]  =  (BlockTextureAtlasPosition){14,0};
-        texture_atlas_data[StairsUp1W]  =  (BlockTextureAtlasPosition){15,0};
-        texture_atlas_data[StairsUp2W]  =  (BlockTextureAtlasPosition){16,0};
-        texture_atlas_data[StairsUp3W]  =  (BlockTextureAtlasPosition){17,0};
-        texture_atlas_data[StairsUp4W]  =  (BlockTextureAtlasPosition){18,0};
-        texture_atlas_data[Shaded]      =  (BlockTextureAtlasPosition){19,0};
+        // TODO: spriteoffsetY
 
-        ////
 
-        int used_wall_block =0;
+        // NOTE this offset is from the top left, normally I assume a 'block' is represented by
+        // a sprite 24px wide and 108px high, the texture position is looking at that from the top left.
+        // soo for example the floor is only 14px high, and thus in this case i
+
+        texture_atlas_data[Floor]          =  (BlockTextureAtlasPosition){0*24 , 94,  24, 14 , 0, 0};
+        texture_atlas_data[WallBlock]      =  (BlockTextureAtlasPosition){1*24 , 0,   24, 108, 0, 0};
+        texture_atlas_data[LadderUpDown]   =  (BlockTextureAtlasPosition){2*24 , 0,   24, 108, 0, 0};
+        texture_atlas_data[LadderUp]       =  (BlockTextureAtlasPosition){1*24 , 108, 24, 108, 0, 0};
+        texture_atlas_data[WindowBlock]    =  (BlockTextureAtlasPosition){3*24 , 108, 24, 108, 0, 0};
+        texture_atlas_data[LadderDown]     =  (BlockTextureAtlasPosition){6*24 , 108, 24, 108, 0, 0};
+
+        //texture_atlas_data[StairsUp1N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 0};
+        //texture_atlas_data[StairsUp2N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 24};
+        //texture_atlas_data[StairsUp3N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 48};
+        //texture_atlas_data[StairsUp4N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 72};
+
+        texture_atlas_data[StairsUp1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0};
+        texture_atlas_data[StairsUp2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24};
+        texture_atlas_data[StairsUp3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48};
+        texture_atlas_data[StairsUp4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72};
+
+
+
+        texture_atlas_data[StairsUp1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0};
+        texture_atlas_data[StairsUp2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24};
+        texture_atlas_data[StairsUp3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48};
+        texture_atlas_data[StairsUp4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72};
+
+        texture_atlas_data[StairsUp1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0};
+        texture_atlas_data[StairsUp2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24};
+        texture_atlas_data[StairsUp3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48};
+        texture_atlas_data[StairsUp4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72};
+
+        texture_atlas_data[StairsUp1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0};
+        texture_atlas_data[StairsUp2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24};
+        texture_atlas_data[StairsUp3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48};
+        texture_atlas_data[StairsUp4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72};
+
+        texture_atlas_data[Shaded]         =  (BlockTextureAtlasPosition){19*24, 0,   24, 108, 0, 0};
+
+        //int used_wall_block =0;
+        int used_static_block_count = 0;
+        int used_dynamic_block_count = 0;
+        int used_transparent_block_count = 0;
         //int count_shadow = 0;
         int used_floors = 0;
         int used_walls = 0;
@@ -235,77 +314,119 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     } else {
                         simplecount++;
                     }
-                    permanent->walls[used_wall_block].is_floor = 0;
+                    permanent->static_blocks[used_static_block_count].is_floor = 0;
                     switch (b->object){
                     case Floor:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = (y * permanent->block_size.y) ;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        permanent->walls[used_wall_block].is_floor = 1;
-                        used_wall_block++;
+                        permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
+                        permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
+                        permanent->static_blocks[used_static_block_count].y = (y * permanent->block_size.y) ;
+                        permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
+                        permanent->static_blocks[used_static_block_count].is_floor = 1;
+                        used_static_block_count++;
                         used_floors++;
                         break;
                     case WallBlock:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
+                        permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
+                        permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
+                        permanent->static_blocks[used_static_block_count].y = y * permanent->block_size.y;
+                        permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
+                        used_static_block_count++;
                         used_walls++;
                         wall_count++;
                         break;
                     case WindowBlock:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                        used_walls++;
-                        wall_count++;
+                        permanent->transparent_blocks[used_transparent_block_count].frame = texture_atlas_data[b->object];
+                        permanent->transparent_blocks[used_transparent_block_count].x = x * permanent->block_size.x;
+                        permanent->transparent_blocks[used_transparent_block_count].y = y * permanent->block_size.y;
+                        permanent->transparent_blocks[used_transparent_block_count].z = z * permanent->block_size.z_level;
+                        used_transparent_block_count++;
+                        //used_walls++;
+                        //wall_count++;
                         break;
                     case LadderUpDown:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
+                        permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
+                        permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
+                        permanent->static_blocks[used_static_block_count].y = y * permanent->block_size.y;
+                        permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
+                        used_static_block_count++;
                         break;
                     case LadderUp:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
+                        permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
+                        permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
+                        permanent->static_blocks[used_static_block_count].y = y * permanent->block_size.y;
+                        permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
+                        used_static_block_count++;
                         break;
                     case LadderDown:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
+                        permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
+                        permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
+                        permanent->static_blocks[used_static_block_count].y = y * permanent->block_size.y;
+                        permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
+                        used_static_block_count++;
                         break;
                     case StairsUp1N:
-                    case StairsUp1E:
-                    case StairsUp1S:
-                    case StairsUp1W:
                     case StairsUp2N:
-                    case StairsUp2E:
-                    case StairsUp2S:
-                    case StairsUp2W:
                     case StairsUp3N:
-                    case StairsUp3E:
-                    case StairsUp3S:
-                    case StairsUp3W:
                     case StairsUp4N:
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 12;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 12;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].start_frame_x = texture_atlas_data[b->object].x_pos;
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
+
+                    case StairsUp1E:
+                    case StairsUp2E:
+                    case StairsUp3E:
                     case StairsUp4E:
-                    case StairsUp4S:
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
+
+                    case StairsUp1W:
+                    case StairsUp2W:
+                    case StairsUp3W:
                     case StairsUp4W:
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
+
+                    case StairsUp1S:
+                    case StairsUp2S:
+                    case StairsUp3S:
+                    case StairsUp4S:
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
                         break;
                     case Grass:
                     case Wood:
@@ -325,101 +446,38 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         break;
                     }
 
-                    WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)];
+                    /* WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)]; */
 
-                    if (one_above->object == Floor && z+1 < permanent->dims.z_level ){
-                        //count_shadow++;
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[Shaded];
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = (y * permanent->block_size.y)-4; //TODO : what is this madness -4 !
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                    }
-
-                        /*
-                    if (b->object == Floor){
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                        used_floors++;
-                    }
-
-                    if (b->object == WallBlock){
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                        used_walls++;
-                        wall_count++;
-                    }
+                    /* if (one_above->object == Floor && z+1 < permanent->dims.z_level ){ */
+                    /*     //count_shadow++; */
+                    /*     permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[Shaded]; */
+                    /*     permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x; */
+                    /*     permanent->static_blocks[used_static_block_count].y = (y * permanent->block_size.y)-4; //TODO : what is this madness -4 ! */
+                    /*     permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level; */
+                    /*     used_static_block_count++; */
+                    /* } */
 
 
-                    if (b->object == StairsUp1N || b->object == StairsUp2N || b->object == StairsUp3N || b->object == StairsUp4N) {
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-
-                    }
-                    if (b->object == StairsUp1S || b->object == StairsUp2S || b->object == StairsUp3S || b->object == StairsUp4S) {
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-
-                    }
-                    if (b->object == StairsUp1E || b->object == StairsUp2E || b->object == StairsUp3E || b->object == StairsUp4E) {
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-
-                    }
-                    if (b->object == StairsUp1W || b->object == StairsUp2W || b->object == StairsUp3W || b->object == StairsUp4W) {
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                    }
-
-
-                    if (b->object == Ladder){
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[b->object].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                    }
-                    // Shadow
-                    WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)];
-
-                    if (one_above->object == Floor && z+1 < permanent->dims.z_level){
-                        count_shadow++;
-                        permanent->walls[used_wall_block].frame = texture_atlas_data[Shaded].x_pos;
-                        permanent->walls[used_wall_block].x = x * permanent->block_size.x;
-                        permanent->walls[used_wall_block].y = y * permanent->block_size.y;
-                        permanent->walls[used_wall_block].z = z * permanent->block_size.z_level;
-                        used_wall_block++;
-                    }
-                        */
                 }
             }
         }
         //printf("simple block count : %d, floors:%d, walls:%d\n",simplecount, used_floors, used_walls);
-        permanent->wall_count = used_wall_block;
-        qsort(permanent->walls, used_wall_block, sizeof(Wall), wallsortfunc);
+        permanent->static_block_count = used_static_block_count;
+        set_static_block_batch_sizes(permanent, renderer);
 
+        permanent->dynamic_block_count = used_dynamic_block_count;
+        set_dynamic_block_batch_sizes(permanent, renderer);
+
+        permanent->transparent_block_count = used_transparent_block_count;
+        set_transparent_block_batch_sizes(permanent, renderer);
+
+
+        qsort(permanent->static_blocks, used_static_block_count, sizeof(StaticBlock), sort_static_blocks_front_back);
+        qsort(permanent->transparent_blocks, used_transparent_block_count, sizeof(StaticBlock), sort_static_blocks_back_front);
         //set_wall_batch_sizes(permanent, renderer);
 
         //printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
-        set_wall_batch_sizes(permanent, renderer);
+
         renderer->needs_prepare = 1;
         //prepare_renderer(permanent, renderer);
 
@@ -443,16 +501,29 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         memory->is_initialized = true;
     }
 
+    // dynamic blocks
+    for (u32 i = 0; i < permanent->dynamic_block_count; i++) {
+        if ( permanent->dynamic_blocks[i].total_frames > 1) {
+            permanent->dynamic_blocks[i].frame_duration_left += last_frame_time_seconds;
+            if (permanent->dynamic_blocks[i].frame_duration_left >= permanent->dynamic_blocks[i].duration_per_frame) {
+                int frame_index = permanent->dynamic_blocks[i].current_frame + 1 ;
+                frame_index = frame_index % permanent->dynamic_blocks[i].total_frames;
+                permanent->dynamic_blocks[i].current_frame = frame_index;
+                permanent->dynamic_blocks[i].frame_duration_left = 0;
+                permanent->dynamic_blocks[i].frame.x_pos = permanent->dynamic_blocks[i].start_frame_x + (permanent->dynamic_blocks[i].frame.width * frame_index);
+                //                printf("new frame for index: %d x: %d, y: %d\n", i, permanent->dynamic_blocks[i].frame.x_pos, permanent->dynamic_blocks[i].frame.y_pos);
+            }
+        }
+    }
+
+
 
 #if 1
     {
         permanent->colored_line_count = 0;
         for (u32 i = 0; i < permanent->actor_count; i++) {
 
-
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
-                permanent->paths[i].counter--;
-
                 float distance = GLKVector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
                 if (distance < 4){
                 //if (permanent->paths[i].counter <=0) {
@@ -461,7 +532,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     First->Next = node16->Free->Next;
                     node16->Free->Next = First;
                     First->Prev = node16->Free;
-                    permanent->paths[i].counter = 10; // this is faking some time it takes to get to the next node
                 }
             }
 
@@ -473,31 +543,38 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(actors_steering);
             {
-            GLKVector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
-            seek_force = GLKVector3MultiplyScalar(seek_force, 1);
-            actor_applyForce(&permanent->steer_data[i], seek_force);
+                GLKVector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
+                seek_force = GLKVector3MultiplyScalar(seek_force, 1);
+                actor_applyForce(&permanent->steer_data[i], seek_force);
 
-            permanent->steer_data[i].velocity = GLKVector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
-            permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
-            permanent->steer_data[i].location = GLKVector3Add(permanent->steer_data[i].location, permanent->steer_data[i].velocity);
-            permanent->steer_data[i].acceleration = GLKVector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
+                permanent->steer_data[i].velocity = GLKVector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
+                permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
+                permanent->steer_data[i].location = GLKVector3Add(permanent->steer_data[i].location,   GLKVector3MultiplyScalar(permanent->steer_data[i].velocity, last_frame_time_seconds));
+                permanent->steer_data[i].acceleration = GLKVector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
 
-            // left = frame 0, down = frame 1 right = frame 2,up = frame 3
-            double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
-            angle = angle + 180;
-            //printf("%f \n",angle);
-            if (angle > 315 || angle < 45) {
-                permanent->anim_data[i].frame = 3;
-            } else if (angle >= 45 && angle <= 135) {
-                permanent->anim_data[i].frame = 0;
-            } else if (angle >=135 && angle <= 225) {
-                permanent->anim_data[i].frame = 1;
-            } else if (angle > 225 && angle <= 315) {
-                permanent->anim_data[i].frame = 2;
-            }
+                // left = frame 0, down = frame 1 right = frame 2,up = frame 3
+                double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
+                angle = angle + 180;
+                //printf("%f \n",angle);
+                if (angle > 315 || angle < 45) {
+                    permanent->anim_data[i].frame = 10; //11
+                } else if (angle >= 45 && angle <= 135) {
+                    permanent->anim_data[i].frame = 4;// 5
+                } else if (angle >=135 && angle <= 225) {
+                    permanent->anim_data[i].frame = 6; //7
+                } else if (angle > 225 && angle <= 315) {
+                    permanent->anim_data[i].frame = 8; //9
+                }
 
-            END_PERFORMANCE_COUNTER(actors_steering);
+                permanent->anim_data[i].frame_duration_left += last_frame_time_seconds;
+                if (permanent->anim_data[i].frame_duration_left > 0.1f) {
+                    permanent->anim_data[i].frame += 1;
+                }
+                if (permanent->anim_data[i].frame_duration_left > 0.2f) {
+                    permanent->anim_data[i].frame_duration_left = 0;
+                }
 
+                END_PERFORMANCE_COUNTER(actors_steering);
             }
 
 
@@ -532,6 +609,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             }
 
 
+
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
             //TODO something is off with this, the end of a path seems almost never to be walkable
@@ -552,23 +630,19 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
 
+
             path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
             path_list *Path = NULL;
-
-
 
             if (PathRaw) {
                 Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
 
-
                 if (Path) {
-
-                    // this is walking backwards, the path is in a dlist so its fine, i might rewrite this to work forward, but this works correct (forward doesnt, it trips over some freelist madness, TODO: investigate it)
                     path_node * done= Path->Sentinel->Prev;
                     while (done != Path->Sentinel) {
 
-                        // this block tries to reuse exitsing nodes on freelistm, if none are there make a new one
                         Node16 *N = NULL;
+
                         if ( node16->Free->Next !=  node16->Free) {
                             N = node16->Free->Next;
                             node16->Free->Next = N->Next;
@@ -583,7 +657,27 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         N->path.node.x = done->X* permanent->block_size.x;
                         N->path.node.y = done->Y* permanent->block_size.y;
                         N->path.node.z = done->Z* permanent->block_size.z_level;
-
+			// if this is part of a stair move going up east/west
+#if 1 // pathing movemenst going up on east/west stairs
+                        if (done->Prev != Path->Sentinel) {
+                            if (done->Z > done->Prev->Z) {
+                                if (done->X < done->Prev->X){
+                                    N->path.node.x += permanent->block_size.x;
+                                } else if (done->X > done->Prev->X){
+                                    N->path.node.x -= permanent->block_size.x;
+                                }
+                            }
+                        }
+                        if (done->Next != Path->Sentinel) {
+                            if (done->Z < done->Next->Z) {
+                                if (done->X < done->Next->X){
+                                    N->path.node.x -= permanent->block_size.x;
+                                } else if (done->X > done->Next->X){
+                                    N->path.node.x += permanent->block_size.x;
+                                }
+                            }
+                        }
+#endif
                         DLIST_ADDFIRST(p, N);
                         done = done->Prev;
                     }
@@ -623,35 +717,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
 
-    BEGIN_PERFORMANCE_COUNTER(actors_update);
-    // TODO: plenty of bugs are in this loop, never really cleaned up after
-#if 0
-    for (u32 i = 0; i < permanent->actor_count; i++) {
-        if (permanent->steer_data[i].location.x <= 0 || permanent->steer_data[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-            if (permanent->steer_data[i].location.x < 0) {
-                permanent->steer_data[i].location.x = 0;
-            }
-            if (permanent->steer_data[i].location.x >= ((permanent->dims.x - 1) * permanent->block_size.x)) {
-                permanent->steer_data[i].location.x = ((permanent->dims.x - 1) * permanent->block_size.x);
-            }
 
-            permanent->steer_data[i].dx *= -1.0f;
-        }
-        permanent->steer_data[i].location.x += permanent->steer_data[i].dx * (last_frame_time_seconds);
-
-        if (permanent->steer_data[i].location.y <= 0 || permanent->steer_data[i].location.y >= ((permanent->dims.y - 1) * permanent->block_size.y)) {
-            if (permanent->steer_data[i].location.z < 0) {
-                permanent->steer_data[i].location.z = 0;
-            }
-            if (permanent->steer_data[i].location.y > ((permanent->dims.y - 1) * permanent->block_size.y)) {
-                permanent->steer_data[i].location.y = ((permanent->dims.y - 1) * permanent->block_size.y);
-            }
-
-            permanent->steer_data[i].dy *= -1.0f;
-        }
-        permanent->steer_data[i].location.y += permanent->steer_data[i].dy * (last_frame_time_seconds);
-    }
-#endif
     BEGIN_PERFORMANCE_COUNTER(actors_data_gathering);
 
     // TODO for now this suffices, its the easiest and not TOO bad, but i loose 3ms for 64k actors on sorting this way
@@ -676,7 +742,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     }
 
     END_PERFORMANCE_COUNTER(actors_data_gathering);
-    END_PERFORMANCE_COUNTER(actors_update);
+
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
     //    qsort, timsort, quick_sort

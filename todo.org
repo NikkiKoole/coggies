@@ -1,17 +1,43 @@
-* Currently doing / Next up
-  - move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
-  - make the pathfindcode use the common style i am using now
-  - play around a little with the "keys for doors" concept,
-    a few things ahead: the jumppoints shouldnt be diagonally placed but before & after the door directly
-    closing doors for a new actor at pathfind beginning means also changing distances, so I think just having a jumppoint ON the door TOO is easiest
-    i can just set its distance east & west OR north & south temporary to 0 and set them back to 1 and 1 after I am done.
-  - make actors use pathfinding (just pick random walkable points in the plan)
-  - do a little bit of animation, at the bare minimum show a different frame when actor moves north/east/south/west/up/down
-  - Ive done Reynolds steering behaviours, but its still a bit too much bouncing ball like, eventually i want it to be smarter, more human like
-    In Game AI PRO 2 chapter 19 there is a Guide to Anticipatory Collision Avoidance (Guy, Karamouzas) which seems promising.
+idea:
+escalators in London underground
 
+foot-planting on stairs
+walking stairs vs standing still on escalator
+walking escalator
+
+
+bug: shadow gets in way of stairs below
+
+the social life of small urban spaces
+
+Renzo Martens (Institute human activities)
+ Keller Easterling Infrastructure Space
+
+tegenlicht de barbaren (http://www.vpro.nl/programmas/tegenlicht/kijk/afleveringen/2016-2017/cultuurbarbaren.html)
+
+* Currently doing / Next up
+
+  - make a dedicated batch for alpha blended static objects (windows, shadows)
+
+  - look at extra pivot data, so i can crop images in sheets, and reuse stair images for the 4 parts
+
+  - animating bodyparts
+
+  - have 'dynamic architecture' animatable (door open and closes, escalator running)
+
+  - move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
+
+  - make the pathfindcode use the common style i am using now
+
+  - clean up the GLKMath code, preferably into 1 header file and get rid of all the unneeded cruft
 
 * Todo
+- [ ] play around a little with the "keys for doors" concept,
+  a few things ahead: the jumppoints shouldnt be diagonally placed but before & after the door directly
+  closing doors for a new actor at pathfind beginning means also changing distances, so I think just having a jumppoint ON the door TOO is easiest
+  i can just set its distance east & west OR north & south temporary to 0 and set them back to 1 and 1 after I am done.
+- [ ] Ive done Reynolds steering behaviours, but its still a bit too much bouncing ball like, eventually i want it to be smarter, more human like
+    In Game AI PRO 2 chapter 19 there is a Guide to Anticipatory Collision Avoidance (Guy, Karamouzas) which seems promising.
 - [ ] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
 - [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
@@ -44,12 +70,13 @@
     I've the feeling the zsorting without using a depth  buffer actually will be better(faster) in my case. And it might make more items/larger buffers possible
     since I don't have to move the Z in the VBO's and the depth buffer func doesn't need to run.
     it will mean a lot of rewriting though for now I just want to move forward and not care about this.
-  - [ ] make world position, screen position more stable and the same for everything
+  - [X] make world position, screen position more stable and the same for everything
     now we have Glyphs, Actors and Walls, there will be more but I want to take the time to generalize them now.
   - [ ] frame based animation using ±4 body parts
     - [ ] head
-    - [ ] mouth
-    - [ ] upper body
+    - [ ] torso
+    - [ ] left arm
+    - [ ] right arm
     - [ ] lower body
   - [ ] sprite sheet texture atlasses.
   - [-] pan & zoom functionality.
@@ -277,6 +304,14 @@
   then combine both these libs into 1 universal with
   lipo libSDL2_mixerDev.a libSDL2_mixerSim.a -create -output libSDL2_mixer.a
 **** rpi
+
+     prerequisistes:
+     apt-get install vorbis-tools (ogg)
+     apt-get install libudev-dev
+
+     sudo apt-get install build-essential xorg-dev libudev-dev libts-dev libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libpulse-dev libopenal-dev libogg-dev libvorbis-dev libaudiofile-dev libpng12-dev libfreetype6-dev libusb-dev libdbus-1-dev zlib1g-dev libdirectfb-dev
+     ../configure --host=armv7l-raspberry-linux-gnueabihf --disable-pulseaudio --disable-esd --disable-video-mir --disable-video-wayland --disable-video-x11 --disable-video-opengl
+
     Download the zip
     mkdir build
     cd build
