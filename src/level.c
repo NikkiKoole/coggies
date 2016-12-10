@@ -95,11 +95,11 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
                         b->object = WallBlock;
                         break;
                     }
-                    case 'S':{
+                    case 'L':{
                         b->object = LadderUp;
                         break;
                     }
-                    case 'E':{
+                    case 'l':{
                         b->object = LadderDown;
                         break;
                     }
@@ -107,14 +107,15 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
                         b->object = LadderUpDown;
                         break;
                     }
+                    case 'S':{
+                        b->object = StairsMeta;
+                        break;
+                    }
                     case 'U':{
-                        b->object = StairsUpMeta;
+                        b->object = EscalatorUpMeta;
                         break;
                     }
-                    case 'D':{
-                        b->object = StairsDownMeta;
-                        break;
-                    }
+
                     case '=':{
                         b->object = StairsFollowUpMeta;
                         break;
@@ -242,11 +243,17 @@ internal void set_meta_block_at(LevelData *level, u32 x, u32 y, u32 z_level, Blo
 }
 
 internal void add_stairs(LevelData *level){
-    //printf("add_stairs\n");
     for (int z = 0; z < level->z_level; z++){
         for (int y = 0; y < level->y; y++){
             for (int x = 0; x < level->x; x++){
-                if (has_block_at(level, x, y, z, StairsUpMeta)) {
+                Block b = Nothing;
+                if (has_block_at(level, x, y, z, StairsMeta)) {
+                    b = StairsMeta;
+                } else if(has_block_at(level, x, y, z, EscalatorUpMeta)) {
+                    b = EscalatorUpMeta;
+                }
+                
+                if (b != Nothing) {
                     if (y-4 >= 0) {
                         b32 is_stairs_north = true;
 
@@ -257,13 +264,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_north) {
-                            //printf("stairs going north found!\n");
-                            set_block_at(level, x, y, z, StairsUp1N);
-                            set_block_at(level, x, y-1, z, StairsUp2N);
-                            set_block_at(level, x, y-2, z, StairsUp3N);
-                            set_block_at(level, x, y-3, z, StairsUp4N);
-                            //set_meta_block_at(level, x, y-3, z+1, StairsDownMeta);
-                            //set_block_at(level, x, y-3, z+1, StairsDown1S);
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1N : (b == EscalatorUpMeta) ? EscalatorUp1N : Nothing);
+                            set_block_at(level, x, y-1, z, (b == StairsMeta) ? Stairs2N : (b == EscalatorUpMeta) ? EscalatorUp2N : Nothing);
+                            set_block_at(level, x, y-2, z, (b == StairsMeta) ? Stairs3N : (b == EscalatorUpMeta) ? EscalatorUp3N : Nothing);
+                            set_block_at(level, x, y-3, z, (b == StairsMeta) ? Stairs4N : (b == EscalatorUpMeta) ? EscalatorUp4N : Nothing);
                         }
                     }
 
@@ -277,15 +281,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_east) {
-                            //printf("stairs going east found!\n");
-                            set_block_at(level, x, y, z, StairsUp1E);
-                            set_block_at(level, x+1, y, z, StairsUp2E);
-                            set_block_at(level, x+2, y, z, StairsUp3E);
-                            set_block_at(level, x+3, y, z, StairsUp4E);
-                            //set_meta_block_at(level, x+3, y, z+1, StairsDownMeta);
-
-                            //set_block_at(level, x+3, y, z+1, StairsDown1W);
-
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1E : (b == EscalatorUpMeta) ? EscalatorUp1E : Nothing);
+                            set_block_at(level, x+1, y, z, (b == StairsMeta) ? Stairs2E : (b == EscalatorUpMeta) ? EscalatorUp2E : Nothing);
+                            set_block_at(level, x+2, y, z, (b == StairsMeta) ? Stairs3E : (b == EscalatorUpMeta) ? EscalatorUp3E : Nothing);
+                            set_block_at(level, x+3, y, z, (b == StairsMeta) ? Stairs4E : (b == EscalatorUpMeta) ? EscalatorUp4E : Nothing);
                         }
                     }
                     if (y+4 < level->y) {
@@ -298,15 +297,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_south) {
-                            //printf("STAORS SOUTH!\n");
-                            set_block_at(level, x, y, z, StairsUp1S);
-                            set_block_at(level, x, y+1, z, StairsUp2S);
-                            set_block_at(level, x, y+2, z, StairsUp3S);
-                            set_block_at(level, x, y+3, z, StairsUp4S);
-                            //set_meta_block_at(level, x, y+3, z+1, StairsDownMeta);
-
-                            //set_block_at(level, x, y+3, z+1, StairsDown1N);
-
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1S : (b == EscalatorUpMeta) ? EscalatorUp1S : Nothing);
+                            set_block_at(level, x, y+1, z, (b == StairsMeta) ? Stairs2S : (b == EscalatorUpMeta) ? EscalatorUp2S : Nothing);
+                            set_block_at(level, x, y+2, z, (b == StairsMeta) ? Stairs3S : (b == EscalatorUpMeta) ? EscalatorUp3S : Nothing);
+                            set_block_at(level, x, y+3, z, (b == StairsMeta) ? Stairs4S : (b == EscalatorUpMeta) ? EscalatorUp4S : Nothing);
                         }
                     }
                     if (x-4 >= 0){
@@ -319,15 +313,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_west) {
-                            //printf("stairs going west found!\n");
-                            set_block_at(level, x, y, z, StairsUp1W);
-                            set_block_at(level, x-1, y, z, StairsUp2W);
-                            set_block_at(level, x-2, y, z, StairsUp3W);
-                            set_block_at(level, x-3, y, z, StairsUp4W);
-                            //set_meta_block_at(level, x-3, y, z+1, StairsDownMeta);
-
-                            //set_block_at(level, x-3, y, z+1, StairsDown1E);
-
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1W : (b == EscalatorUpMeta) ? EscalatorUp1W : Nothing);
+                            set_block_at(level, x-1, y, z, (b == StairsMeta) ? Stairs2W : (b == EscalatorUpMeta) ? EscalatorUp2W : Nothing);
+                            set_block_at(level, x-2, y, z, (b == StairsMeta) ? Stairs3W : (b == EscalatorUpMeta) ? EscalatorUp3W : Nothing);
+                            set_block_at(level, x-3, y, z, (b == StairsMeta) ? Stairs4W : (b == EscalatorUpMeta) ? EscalatorUp4W : Nothing);
                         }
                     }
 

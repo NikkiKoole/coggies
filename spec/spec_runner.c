@@ -1,6 +1,10 @@
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
+#include <sys/mman.h> //mmap
+#include <sys/stat.h>   //struct stat
+
+
 #include "c89spec.h"
 #include "../src/states.h"
 #include "../src/pathfind.h"
@@ -239,14 +243,14 @@ describe(leveldata) {
 
         char string[] =
             "+------+\n"
-            "|.U===.|\n"
+            "|.S===.|\n"
             "+------+\n"
             "|......|\n"
             "+------+";
 
         make_level_str(permanent, &permanent->level , size, string);
-        expect(block_at_xyz_is(1,0,0, StairsUp1E, &permanent->level));
-        expect(block_at_xyz_is(4,0,0, StairsUp4E, &permanent->level));
+        expect(block_at_xyz_is(1,0,0, Stairs1E, &permanent->level));
+        expect(block_at_xyz_is(4,0,0, Stairs4E, &permanent->level));
     }
 }
 
@@ -349,11 +353,11 @@ describe(grid_preprocessor) {
         char string[] =
             "+------+\n"
             "|......|\n"
-            "|..S...|\n"
+            "|..L...|\n"
             "|......|\n"
             "+------+\n"
             "|......|\n"
-            "|..E...|\n"
+            "|..l...|\n"
             "|......|\n"
             "+------+";
 
@@ -524,7 +528,7 @@ describe(pathfinder) {
             "| ##.### |\n"
             "| #....# |\n"
             "| #....# |\n"
-            "| #.S..# |\n"
+            "| #.L..# |\n"
             "| #....# |\n"
             "| ###### |\n"
             "|        |\n"
@@ -546,7 +550,7 @@ describe(pathfinder) {
             "| ##.### |\n"
             "| #....# |\n"
             "| #....# |\n"
-            "| #.E..# |\n"
+            "| #.l..# |\n"
             "| #....# |\n"
             "| ###### |\n"
             "|        |\n"
@@ -569,7 +573,7 @@ describe(pathfinder) {
             "|.#...................#.|\n"
             "|.#...................#.|\n"
             "|.#...................#.|\n"
-            "|.#.......U===........#.|\n"
+            "|.#.......S===........#.|\n"
             "|.#...................#.|\n"
             "|.##########.##########.|\n"
             "|.......................|\n"
@@ -580,7 +584,7 @@ describe(pathfinder) {
             "| ##.######.#######.### |\n"
             "| #....#.......#......# |\n"
             "| #..#.#.......#......# |\n"
-            "| #.S..#.......#....S.# |\n"
+            "| #.L..#.......#....L.# |\n"
             "| #....#.......#......# |\n"
             "| ##################### |\n"
             "|                       |\n"
@@ -591,7 +595,7 @@ describe(pathfinder) {
             "| ##.######.#######.### |\n"
             "| #....#.......#......# |\n"
             "| #.#..#.......#......# |\n"
-            "| #.Z..#.......#....E.# |\n"
+            "| #.Z..#.......#....l.# |\n"
             "| #....#.......#......# |\n"
             "| ##################### |\n"
             "|                       |\n"

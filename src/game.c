@@ -262,32 +262,52 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         texture_atlas_data[WindowBlock]    =  (BlockTextureAtlasPosition){3*24 , 108, 24, 108, 0, 0};
         texture_atlas_data[LadderDown]     =  (BlockTextureAtlasPosition){6*24 , 108, 24, 108, 0, 0};
 
-        //texture_atlas_data[StairsUp1N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 0};
-        //texture_atlas_data[StairsUp2N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 24};
-        //texture_atlas_data[StairsUp3N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 48};
-        //texture_atlas_data[StairsUp4N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 72};
+        //texture_atlas_data[Stairs1N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 0};
+        //texture_atlas_data[Stairs2N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 24};
+        //texture_atlas_data[Stairs3N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 48};
+        //texture_atlas_data[Stairs4N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 72};
 
-        texture_atlas_data[StairsUp1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0};
-        texture_atlas_data[StairsUp2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24};
-        texture_atlas_data[StairsUp3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48};
-        texture_atlas_data[StairsUp4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72};
+        texture_atlas_data[Stairs1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0};
+        texture_atlas_data[Stairs2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24};
+        texture_atlas_data[Stairs3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48};
+        texture_atlas_data[Stairs4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72};
 
+        texture_atlas_data[Stairs1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0};
+        texture_atlas_data[Stairs2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24};
+        texture_atlas_data[Stairs3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48};
+        texture_atlas_data[Stairs4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72};
 
+        texture_atlas_data[Stairs1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0};
+        texture_atlas_data[Stairs2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24};
+        texture_atlas_data[Stairs3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48};
+        texture_atlas_data[Stairs4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72};
 
-        texture_atlas_data[StairsUp1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0};
-        texture_atlas_data[StairsUp2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24};
-        texture_atlas_data[StairsUp3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48};
-        texture_atlas_data[StairsUp4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72};
+        texture_atlas_data[Stairs1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0};
+        texture_atlas_data[Stairs2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24};
+        texture_atlas_data[Stairs3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48};
+        texture_atlas_data[Stairs4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72};
 
-        texture_atlas_data[StairsUp1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0};
-        texture_atlas_data[StairsUp2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24};
-        texture_atlas_data[StairsUp3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48};
-        texture_atlas_data[StairsUp4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72};
+        //
+        texture_atlas_data[EscalatorUp1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0};
+        texture_atlas_data[EscalatorUp2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24};
+        texture_atlas_data[EscalatorUp3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48};
+        texture_atlas_data[EscalatorUp4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72};
 
-        texture_atlas_data[StairsUp1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0};
-        texture_atlas_data[StairsUp2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24};
-        texture_atlas_data[StairsUp3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48};
-        texture_atlas_data[StairsUp4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72};
+        texture_atlas_data[EscalatorUp1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0};
+        texture_atlas_data[EscalatorUp2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24};
+        texture_atlas_data[EscalatorUp3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48};
+        texture_atlas_data[EscalatorUp4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72};
+
+        texture_atlas_data[EscalatorUp1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0};
+        texture_atlas_data[EscalatorUp2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24};
+        texture_atlas_data[EscalatorUp3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48};
+        texture_atlas_data[EscalatorUp4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72};
+
+        texture_atlas_data[EscalatorUp1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0};
+        texture_atlas_data[EscalatorUp2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24};
+        texture_atlas_data[EscalatorUp3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48};
+        texture_atlas_data[EscalatorUp4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72};
+
 
         texture_atlas_data[Shaded]         =  (BlockTextureAtlasPosition){19*24, 0,   24, 108, 0, 0};
 
@@ -340,8 +360,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->transparent_blocks[used_transparent_block_count].y = y * permanent->block_size.y;
                         permanent->transparent_blocks[used_transparent_block_count].z = z * permanent->block_size.z_level;
                         used_transparent_block_count++;
-                        //used_walls++;
-                        //wall_count++;
                         break;
                     case LadderUpDown:
                         permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
@@ -364,12 +382,13 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level;
                         used_static_block_count++;
                         break;
-                    case StairsUp1N:
-                    case StairsUp2N:
-                    case StairsUp3N:
-                    case StairsUp4N:
+                    case Stairs1N:
+                    case Stairs2N:
+                    case Stairs3N:
+                    case Stairs4N:
+
                         permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
-                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 12;
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 1;
                         permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
                         permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 12;
                         permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
@@ -379,12 +398,30 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
                         used_dynamic_block_count++;
                         break;
+                    case EscalatorUp1N:
+                    case EscalatorUp2N:
+                    case EscalatorUp3N:
+                    case EscalatorUp4N:
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 12;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 12;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].plays_forward = 1;
+                        
+                        permanent->dynamic_blocks[used_dynamic_block_count].start_frame_x = texture_atlas_data[b->object].x_pos;
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+
 		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
 
-                    case StairsUp1E:
-                    case StairsUp2E:
-                    case StairsUp3E:
-                    case StairsUp4E:
+                    case Stairs1E:
+                    case Stairs2E:
+                    case Stairs3E:
+                    case Stairs4E:
                         permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
                         permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
                         permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
@@ -395,12 +432,27 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
                         used_dynamic_block_count++;
                         break;
+                    case EscalatorUp1E:
+                    case EscalatorUp2E:
+                    case EscalatorUp3E:
+                    case EscalatorUp4E:
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+
 		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
 
-                    case StairsUp1W:
-                    case StairsUp2W:
-                    case StairsUp3W:
-                    case StairsUp4W:
+                    case Stairs1W:
+                    case Stairs2W:
+                    case Stairs3W:
+                    case Stairs4W:
                         permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
                         permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
                         permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
@@ -412,12 +464,28 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
                         used_dynamic_block_count++;
                         break;
+                    case EscalatorUp1W:
+                    case EscalatorUp2W:
+                    case EscalatorUp3W:
+                    case EscalatorUp4W:
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+                        permanent->dynamic_blocks[used_dynamic_block_count].duration_per_frame = 0.5f / 8;
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+
 		      //permanent->static_blocks[used_static_block_count].is_floor = 1;
 
-                    case StairsUp1S:
-                    case StairsUp2S:
-                    case StairsUp3S:
-                    case StairsUp4S:
+                    case Stairs1S:
+                    case Stairs2S:
+                    case Stairs3S:
+                    case Stairs4S:
                         permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 1;
                         permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
 
@@ -428,14 +496,29 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
                         used_dynamic_block_count++;
                         break;
+                    case EscalatorUp1S:
+                    case EscalatorUp2S:
+                    case EscalatorUp3S:
+                    case EscalatorUp4S:
+                        permanent->dynamic_blocks[used_dynamic_block_count].total_frames = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].current_frame = 0;
+
+                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                        permanent->dynamic_blocks[used_dynamic_block_count].frame = texture_atlas_data[b->object];
+                        permanent->dynamic_blocks[used_dynamic_block_count].x = x * permanent->block_size.x;
+                        permanent->dynamic_blocks[used_dynamic_block_count].y = y * permanent->block_size.y;
+                        permanent->dynamic_blocks[used_dynamic_block_count].z = z * permanent->block_size.z_level;
+                        used_dynamic_block_count++;
+                        break;
+
                     case Grass:
                     case Wood:
                     case Concrete:
                     case Nothing:
                     case Tiles:
                     case Carpet:
-                    case StairsUpMeta:
-                    case StairsDownMeta:
+                    case EscalatorUpMeta:
+                    case StairsMeta:
                     case StairsFollowUpMeta:
                     case Shaded:
                     case BlockTotal:

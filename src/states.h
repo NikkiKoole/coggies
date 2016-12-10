@@ -41,6 +41,7 @@ typedef struct {
     u16 start_frame_x;
     r32 duration_per_frame;
     r32 frame_duration_left;
+    u8 plays_forward;
 } DynamicBlock; //64
 
 
@@ -136,12 +137,19 @@ typedef enum {
     WindowBlock,
     Floor, Grass, Wood, Concrete, Tiles, Carpet,
     LadderUpDown, LadderUp, LadderDown,
-    StairsUpMeta, StairsDownMeta,
+    StairsMeta, /*StairsDownMeta,*/
     StairsFollowUpMeta,
-    StairsUp1N, StairsUp2N, StairsUp3N, StairsUp4N,
-    StairsUp1E, StairsUp2E, StairsUp3E, StairsUp4E,
-    StairsUp1S, StairsUp2S, StairsUp3S, StairsUp4S,
-    StairsUp1W, StairsUp2W, StairsUp3W, StairsUp4W,
+    Stairs1N, Stairs2N, Stairs3N, Stairs4N,
+    Stairs1E, Stairs2E, Stairs3E, Stairs4E,
+    Stairs1S, Stairs2S, Stairs3S, Stairs4S,
+    Stairs1W, Stairs2W, Stairs3W, Stairs4W,
+
+    EscalatorUpMeta,
+    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N, EscalatorUp4N,
+    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E, EscalatorUp4E,
+    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,
+    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,
+
     Shaded,
     BlockTotal
 } Block;

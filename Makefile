@@ -20,7 +20,7 @@ PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
 
-DEBUG:= #-g3 -fsanitize=address -fno-omit-frame-pointer
+DEBUG:= -g3 -fsanitize=address -fno-omit-frame-pointer
 
 OPTIMIZE:= -O3
 STD:= -std=gnu99
@@ -57,7 +57,7 @@ gamelibrary-linux:
 
 
 test:
-	gcc -std=c99 spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c  src/random.c  -lm  && ./a.out
+	gcc ${STD} ${DEBUG} spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c  src/random.c  -lm  && ./a.out
 	rm ./a.out
 
 tags:
