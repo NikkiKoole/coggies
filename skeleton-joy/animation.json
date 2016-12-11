@@ -1,0 +1,30 @@
+
+// how to describe an animation?
+// body animations are build from parts
+// leg sprite
+// body sprite
+// left arm sprite
+// right arm sprite
+// head sprite
+
+// sprites have atleast an orientation (north/east/south/west)
+// a frame also has a notion which part to draw in front of which other part eg:
+// when walking to the east, the right arm is visible on top of the body, the left arm is below
+// when walking west its the opposite.
+
+// also poses have a root thats on the floor (the handle which is being moved) the feet dont neccesaaryly are here, best example, when sprinting a pose could have both feet in the air, but the handle will always remian on the floor, I need to know the offset to that handle from some point
+// speaking of which, i also need to know what point to attach the other part to.
+// and I might want to have extra handles for where the hands are, so i can attach some object to them.
+
+
+// the draw order is always the same when facing east/west/north or south. so no need to complex this further.
+
+
+pose = {
+    order:[left arm, torso, right arm] // [right arm, torso, left arm]
+    head:{frame:}
+    torso:{frame:"img123"}
+    left_arm:{}
+    right_arm:{}
+    legs:{}
+}
