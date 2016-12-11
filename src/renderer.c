@@ -265,7 +265,6 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float wallHeight = data.frame.height;
                 float tempX = data.x;
                 float tempY = (data.z) - (data.y) / 2;
-
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
                     wallDepth = data.y - 20;
@@ -350,8 +349,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float pivotY = 1.0f;
                 float wallHeight = data.frame.height;
                 float tempX = data.x;
-                float tempY = (data.z) - (data.y) / 2;
-
+                float tempY = (data.z+data.frame.y_off) - (data.y) / 2;
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
                     wallDepth = data.y - 20;
@@ -360,7 +358,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 }
 
 
-                Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
+                Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
                 Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, 0.5, pivotY);
                 //printf("%d\n",i);

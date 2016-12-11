@@ -115,7 +115,10 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
                         b->object = EscalatorUpMeta;
                         break;
                     }
-
+                    case 'D':{
+                        b->object = EscalatorDownMeta;
+                        break;
+                    }
                     case '=':{
                         b->object = StairsFollowUpMeta;
                         break;
@@ -251,8 +254,10 @@ internal void add_stairs(LevelData *level){
                     b = StairsMeta;
                 } else if(has_block_at(level, x, y, z, EscalatorUpMeta)) {
                     b = EscalatorUpMeta;
+                } else if(has_block_at(level, x, y, z, EscalatorDownMeta)) {
+                    b = EscalatorDownMeta;
                 }
-                
+
                 if (b != Nothing) {
                     if (y-4 >= 0) {
                         b32 is_stairs_north = true;
@@ -264,10 +269,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_north) {
-                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1N : (b == EscalatorUpMeta) ? EscalatorUp1N : Nothing);
-                            set_block_at(level, x, y-1, z, (b == StairsMeta) ? Stairs2N : (b == EscalatorUpMeta) ? EscalatorUp2N : Nothing);
-                            set_block_at(level, x, y-2, z, (b == StairsMeta) ? Stairs3N : (b == EscalatorUpMeta) ? EscalatorUp3N : Nothing);
-                            set_block_at(level, x, y-3, z, (b == StairsMeta) ? Stairs4N : (b == EscalatorUpMeta) ? EscalatorUp4N : Nothing);
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1N : (b == EscalatorUpMeta) ? EscalatorUp1N : EscalatorDown1N);
+                            set_block_at(level, x, y-1, z, (b == StairsMeta) ? Stairs2N : (b == EscalatorUpMeta) ? EscalatorUp2N : EscalatorDown2N);
+                            set_block_at(level, x, y-2, z, (b == StairsMeta) ? Stairs3N : (b == EscalatorUpMeta) ? EscalatorUp3N : EscalatorDown3N);
+                            set_block_at(level, x, y-3, z, (b == StairsMeta) ? Stairs4N : (b == EscalatorUpMeta) ? EscalatorUp4N : EscalatorDown4N);
                         }
                     }
 
@@ -281,10 +286,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_east) {
-                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1E : (b == EscalatorUpMeta) ? EscalatorUp1E : Nothing);
-                            set_block_at(level, x+1, y, z, (b == StairsMeta) ? Stairs2E : (b == EscalatorUpMeta) ? EscalatorUp2E : Nothing);
-                            set_block_at(level, x+2, y, z, (b == StairsMeta) ? Stairs3E : (b == EscalatorUpMeta) ? EscalatorUp3E : Nothing);
-                            set_block_at(level, x+3, y, z, (b == StairsMeta) ? Stairs4E : (b == EscalatorUpMeta) ? EscalatorUp4E : Nothing);
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1E : (b == EscalatorUpMeta) ? EscalatorUp1E : EscalatorDown1E);
+                            set_block_at(level, x+1, y, z, (b == StairsMeta) ? Stairs2E : (b == EscalatorUpMeta) ? EscalatorUp2E : EscalatorDown2E);
+                            set_block_at(level, x+2, y, z, (b == StairsMeta) ? Stairs3E : (b == EscalatorUpMeta) ? EscalatorUp3E : EscalatorDown3E);
+                            set_block_at(level, x+3, y, z, (b == StairsMeta) ? Stairs4E : (b == EscalatorUpMeta) ? EscalatorUp4E : EscalatorDown4E);
                         }
                     }
                     if (y+4 < level->y) {
@@ -297,10 +302,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_south) {
-                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1S : (b == EscalatorUpMeta) ? EscalatorUp1S : Nothing);
-                            set_block_at(level, x, y+1, z, (b == StairsMeta) ? Stairs2S : (b == EscalatorUpMeta) ? EscalatorUp2S : Nothing);
-                            set_block_at(level, x, y+2, z, (b == StairsMeta) ? Stairs3S : (b == EscalatorUpMeta) ? EscalatorUp3S : Nothing);
-                            set_block_at(level, x, y+3, z, (b == StairsMeta) ? Stairs4S : (b == EscalatorUpMeta) ? EscalatorUp4S : Nothing);
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1S : (b == EscalatorUpMeta) ? EscalatorUp1S : EscalatorDown1S);
+                            set_block_at(level, x, y+1, z, (b == StairsMeta) ? Stairs2S : (b == EscalatorUpMeta) ? EscalatorUp2S : EscalatorDown2S);
+                            set_block_at(level, x, y+2, z, (b == StairsMeta) ? Stairs3S : (b == EscalatorUpMeta) ? EscalatorUp3S : EscalatorDown3S);
+                            set_block_at(level, x, y+3, z, (b == StairsMeta) ? Stairs4S : (b == EscalatorUpMeta) ? EscalatorUp4S : EscalatorDown4S);
                         }
                     }
                     if (x-4 >= 0){
@@ -313,10 +318,10 @@ internal void add_stairs(LevelData *level){
                             }
                         }
                         if (is_stairs_west) {
-                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1W : (b == EscalatorUpMeta) ? EscalatorUp1W : Nothing);
-                            set_block_at(level, x-1, y, z, (b == StairsMeta) ? Stairs2W : (b == EscalatorUpMeta) ? EscalatorUp2W : Nothing);
-                            set_block_at(level, x-2, y, z, (b == StairsMeta) ? Stairs3W : (b == EscalatorUpMeta) ? EscalatorUp3W : Nothing);
-                            set_block_at(level, x-3, y, z, (b == StairsMeta) ? Stairs4W : (b == EscalatorUpMeta) ? EscalatorUp4W : Nothing);
+                            set_block_at(level, x, y, z,   (b == StairsMeta) ? Stairs1W : (b == EscalatorUpMeta) ? EscalatorUp1W : EscalatorDown1W);
+                            set_block_at(level, x-1, y, z, (b == StairsMeta) ? Stairs2W : (b == EscalatorUpMeta) ? EscalatorUp2W : EscalatorDown2W);
+                            set_block_at(level, x-2, y, z, (b == StairsMeta) ? Stairs3W : (b == EscalatorUpMeta) ? EscalatorUp3W : EscalatorDown3W);
+                            set_block_at(level, x-3, y, z, (b == StairsMeta) ? Stairs4W : (b == EscalatorUpMeta) ? EscalatorUp4W : EscalatorDown4W);
                         }
                     }
 

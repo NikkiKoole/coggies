@@ -150,6 +150,12 @@ typedef enum {
     EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,
     EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,
 
+    EscalatorDownMeta,
+    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N, EscalatorDown4N,
+    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E, EscalatorDown4E,
+    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S, EscalatorDown4S,
+    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W, EscalatorDown4W,
+
     Shaded,
     BlockTotal
 } Block;

@@ -11,7 +11,14 @@ internal inline int InBounds(Grid *Grid, int x, int y, int z) {
 internal int canMoveDown(Grid *Grid, int x, int y, int z) {
     if (z -1 < 0) return false;
     int from = GetNodeAt(Grid, x, y, z-1)->type;
-    return (InBounds(Grid, x, y, z) && (from == Stairs4N || from == Stairs4E || from == Stairs4S || from == Stairs4W));
+    return (InBounds(Grid, x, y, z) && (from == Stairs4N ||
+                                        from == Stairs4E ||
+                                        from == Stairs4S ||
+                                        from == Stairs4W ||
+                                        from == EscalatorDown4N ||
+                                        from == EscalatorDown4E ||
+                                        from == EscalatorDown4S ||
+                                        from == EscalatorDown4W ));
 }
 
 
@@ -62,6 +69,16 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
 
                     g->nodes[i].walkable = 1;
 
+                } else if (m->blocks[i].object == EscalatorUp1N ||
+                           m->blocks[i].object == EscalatorUp1E ||
+                           m->blocks[i].object == EscalatorUp1S ||
+                           m->blocks[i].object == EscalatorUp1W) {
+                    //g->nodes[i].g = 1000.0f;
+                    //printf("setting cost to 1000\n");
+                    g->nodes[i].h = 10.0f;
+
+                    g->nodes[i].walkable = 1;
+
                 } else if (canMoveDown(g,x,y,z)) {
                     g->nodes[i].walkable = 1;
                     g->nodes[i].h = 10.0f;
@@ -85,21 +102,36 @@ grid_node *GetNodeAt(Grid *Grid, int x, int y, int z) {
     return &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
 }
 internal int GridCanGoUpFrom(Grid *Grid, int x, int y, int z) {
-    if (z+1 >= Grid->depth ) return 0; 
+    if (z+1 >= Grid->depth ) return 0;
     int from = GetNodeAt(Grid, x, y, z)->type;
     int to = GetNodeAt(Grid, x, y, z + 1)->type;
-    int ladder = ((from == LadderUpDown || from == LadderUp) && (to == LadderDown || to == LadderUpDown));
-    int stairs = (from == Stairs1N || from == Stairs1E || from == Stairs1S || from == Stairs1W);
+    int ladder = ((from == LadderUpDown ||
+                   from == LadderUp) && (to == LadderDown || to == LadderUpDown));
+    int stairs = (from == Stairs1N ||
+                  from == Stairs1E ||
+                  from == Stairs1S ||
+                  from == Stairs1W ||
+                  from == EscalatorUp1N ||
+                  from == EscalatorUp1E ||
+                  from == EscalatorUp1S ||
+                  from == EscalatorUp1W );
     return ladder || stairs;
 }
 internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
-    if (z-1 <0 ) return 0; 
+    if (z-1 <0 ) return 0;
 
     int from = GetNodeAt(Grid, x, y, z)->type;
     int to = GetNodeAt(Grid, x, y, z - 1)->type;
     int ladder = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
     from = GetNodeAt(Grid, x, y, z-1)->type;
-    int stairs = (from == Stairs4N || from == Stairs4E || from == Stairs4S || from == Stairs4W);
+    int stairs = (from == Stairs4N ||
+                  from == Stairs4E ||
+                  from == Stairs4S ||
+                  from == Stairs4W ||
+                  from == EscalatorDown4N ||
+                  from == EscalatorDown4E ||
+                  from == EscalatorDown4S ||
+                  from == EscalatorDown4W );
     return ladder || stairs;
 }
 
@@ -112,11 +144,20 @@ internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
 internal int isStairOrLadder(Grid *Grid, int x, int y, int z) {
     //grid_node *level = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
     int type = GetNodeAt(Grid, x,y,z)->type;
-    int up = InBounds(Grid, x, y, z) && (type == Stairs1N || type == Stairs1E || type == Stairs1S || type == Stairs1W || type == LadderUp || type == LadderUpDown || type == LadderDown);
+    int up = InBounds(Grid, x, y, z) && (type == LadderUp || type == LadderUpDown || type == LadderDown ||
+                                         type == Stairs1N || type == Stairs1E || type == Stairs1S || type == Stairs1W ||
+                                         type == EscalatorUp1N || type == EscalatorUp1E || type == EscalatorUp1S || type == EscalatorUp1W );
     if (up) return 1;
     if (z-1 < 0) return false;
     type = GetNodeAt(Grid, x,y,z-1)->type;
-    int down = InBounds(Grid, x, y, z-1) && (type == Stairs4N || type == Stairs4E || type == Stairs4S || type == Stairs4W);
+    int down = InBounds(Grid, x, y, z-1) && (type == Stairs4N ||
+                                             type == Stairs4E ||
+                                             type == Stairs4S ||
+                                             type == Stairs4W ||
+                                             type == EscalatorDown4N ||
+                                             type == EscalatorDown4E ||
+                                             type == EscalatorDown4S ||
+                                             type == EscalatorDown4W);
     return down;
 }
 
@@ -200,7 +241,7 @@ void preprocess_grid(Grid *g) {
                 if (!node->walkable) {
                     continue;
                 }
-                
+
                 int canGoUp = GridCanGoUpFrom(g, x, y, z);
                 int canGoDown = GridCanGoDownFrom(g, x, y, z);
 
@@ -573,13 +614,13 @@ internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_
         Result = GetNodeAt(Grid,x-distance, y+distance, z);
         break;
     case up:
-        if (Current->type == Stairs1N) {
+        if (Current->type == Stairs1N || Current->type == EscalatorUp1N ) {
             Result = GetNodeAt(Grid,x, y-stair_offset, z+distance);
-        } else if (Current->type == Stairs1E) {
+        } else if (Current->type == Stairs1E || Current->type == EscalatorUp1E) {
             Result = GetNodeAt(Grid,x+stair_offset, y, z+distance);
-        } else if (Current->type == Stairs1S) {
+        } else if (Current->type == Stairs1S || Current->type == EscalatorUp1S) {
             Result = GetNodeAt(Grid,x, y+stair_offset, z+distance);
-        } else if (Current->type == Stairs1W) {
+        } else if (Current->type == Stairs1W || Current->type == EscalatorUp1W) {
             Result = GetNodeAt(Grid,x-stair_offset, y, z+distance);
         }else {
             Result = GetNodeAt(Grid,x, y, z+distance);
@@ -588,15 +629,16 @@ internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_
     case down:
         //stair_offset = 5;
         one_down = GetNodeAt(Grid,x, y, z - 1);
-        if (one_down->type == Stairs4S) {
+        if (one_down->type == Stairs4S || one_down->type == EscalatorDown4S) {
             Result = GetNodeAt(Grid,x, y-stair_offset, z-distance);
-        } else if (one_down->type == Stairs4W) {
+        } else if (one_down->type == Stairs4W || one_down->type == EscalatorDown4W) {
             Result = GetNodeAt(Grid,x + stair_offset, y, z-distance);
-        } else if (one_down->type == Stairs4N) {
+        } else if (one_down->type == Stairs4N || one_down->type == EscalatorDown4N) {
             Result = GetNodeAt(Grid,x, y+stair_offset, z-distance);
-        } else if (one_down->type == Stairs4E) {
+        } else if (one_down->type == Stairs4E || one_down->type == EscalatorDown4E) {
             Result = GetNodeAt(Grid,x - stair_offset, y, z-distance);
         }else {
+            //printf("derp huh!\n");
             Result = GetNodeAt(Grid,x, y, z-distance);
         }
         break;
