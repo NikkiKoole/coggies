@@ -1,0 +1,107 @@
+{ "frames": {
+   "ascending_stairs_man 0.ase": {
+    "frame": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 1.ase": {
+    "frame": { "x": 49, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 2.ase": {
+    "frame": { "x": 98, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 3.ase": {
+    "frame": { "x": 147, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 4.ase": {
+    "frame": { "x": 196, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 5.ase": {
+    "frame": { "x": 245, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 6.ase": {
+    "frame": { "x": 294, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 7.ase": {
+    "frame": { "x": 343, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 8.ase": {
+    "frame": { "x": 392, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 9.ase": {
+    "frame": { "x": 441, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 10.ase": {
+    "frame": { "x": 490, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   },
+   "ascending_stairs_man 11.ase": {
+    "frame": { "x": 539, "y": 0, "w": 49, "h": 103 },
+    "rotated": false,
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 49, "h": 103 },
+    "sourceSize": { "w": 49, "h": 103 },
+    "duration": 100
+   }
+ },
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.1.0-dev",
+  "image": "/Users/nikkikoole/Projects/cc/coggies/skeleton-joy/asesprite/ascending_stairs_man.png",
+  "format": "RGBA8888",
+  "size": { "w": 588, "h": 103 },
+  "scale": "1"
+ }
+}

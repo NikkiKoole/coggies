@@ -1,0 +1,17 @@
+{
+	"meta": {
+		"image": "spritesheet.png",
+		"size": {"w":14,"h":35},
+		"scale": "1"
+	},
+	"frames": {
+		"03.png":
+		{
+			"frame": {"x":0,"y":0,"w":14,"h":35},
+			"rotated": false,
+			"trimmed": true,
+			"spriteSourceSize": {"x":164,"y":55,"w":14,"h":35},
+			"sourceSize": {"w":588,"h":103}
+		}
+	}
+}

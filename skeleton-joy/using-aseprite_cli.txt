@@ -1,0 +1,1 @@
+aseprite/build/bin/aseprite -b ascending_stairs_man.ase --trim --inner-padding 1  --sheet-pack --sheet atlas-bestfit.png --data atlast-bestfit.json
