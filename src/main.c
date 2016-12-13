@@ -354,7 +354,7 @@ internal void maybe_load_libgame(DebugState *debug) {
 internal grid_node* get_random_walkable_node(Grid *grid) {
     grid_node *result;// = GetNodeAt(grid, 0,0,0);
     do {
-        result = GetNodeAt(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
+        result = get_node_at(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
     } while (!result->walkable);
     return result;
 }

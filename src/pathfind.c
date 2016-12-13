@@ -2,16 +2,16 @@
 #include "data_structures.h"
 #include "random.h"
 
-internal inline int InBounds(Grid *Grid, int x, int y, int z) {
+internal inline int in_bounds(Grid *Grid, int x, int y, int z) {
     return ((x >= 0 && x < Grid->width) &&
             (y >= 0 && y < Grid->height) &&
             (z >= 0 && z < Grid->depth));
 }
 
-internal int canMoveDown(Grid *Grid, int x, int y, int z) {
+internal int can_move_down(Grid *Grid, int x, int y, int z) {
     if (z -1 < 0) return false;
-    int from = GetNodeAt(Grid, x, y, z-1)->type;
-    return (InBounds(Grid, x, y, z) && (from == Stairs4N ||
+    int from = get_node_at(Grid, x, y, z-1)->type;
+    return (in_bounds(Grid, x, y, z) && (from == Stairs4N ||
                                         from == Stairs4E ||
                                         from == Stairs4S ||
                                         from == Stairs4W ||
@@ -79,7 +79,7 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
 
                     g->nodes[i].walkable = 1;
 
-                } else if (canMoveDown(g,x,y,z)) {
+                } else if (can_move_down(g,x,y,z)) {
                     g->nodes[i].walkable = 1;
                     g->nodes[i].h = 10.0f;
                 }/* else if (m->blocks[i].meta_object == StairsDownMeta) { */
@@ -98,42 +98,10 @@ void init_grid(Grid *g, MemoryArena *Arena, LevelData *m) {
 
 #define FLATTEN_3D_INDEX(x, y, z, width, height) (x + (y * width) + (z * width * height))
 
-grid_node *GetNodeAt(Grid *Grid, int x, int y, int z) {
+grid_node *get_node_at(Grid *Grid, int x, int y, int z) {
     return &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
 }
-internal int GridCanGoUpFrom(Grid *Grid, int x, int y, int z) {
-    if (z+1 >= Grid->depth ) return 0;
-    int from = GetNodeAt(Grid, x, y, z)->type;
-    int to = GetNodeAt(Grid, x, y, z + 1)->type;
-    int ladder = ((from == LadderUpDown ||
-                   from == LadderUp) && (to == LadderDown || to == LadderUpDown));
-    int stairs = (from == Stairs1N ||
-                  from == Stairs1E ||
-                  from == Stairs1S ||
-                  from == Stairs1W ||
-                  from == EscalatorUp1N ||
-                  from == EscalatorUp1E ||
-                  from == EscalatorUp1S ||
-                  from == EscalatorUp1W );
-    return ladder || stairs;
-}
-internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
-    if (z-1 <0 ) return 0;
 
-    int from = GetNodeAt(Grid, x, y, z)->type;
-    int to = GetNodeAt(Grid, x, y, z - 1)->type;
-    int ladder = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
-    from = GetNodeAt(Grid, x, y, z-1)->type;
-    int stairs = (from == Stairs4N ||
-                  from == Stairs4E ||
-                  from == Stairs4S ||
-                  from == Stairs4W ||
-                  from == EscalatorDown4N ||
-                  from == EscalatorDown4E ||
-                  from == EscalatorDown4S ||
-                  from == EscalatorDown4W );
-    return ladder || stairs;
-}
 
 
 /* internal int isStairsDownMeta(Grid *Grid, int x, int y, int z) { */
@@ -141,16 +109,18 @@ internal int GridCanGoDownFrom(Grid *Grid, int x, int y, int z) {
 /* } */
 
 
-internal int isStairOrLadder(Grid *Grid, int x, int y, int z) {
-    //grid_node *level = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
-    int type = GetNodeAt(Grid, x,y,z)->type;
-    int up = InBounds(Grid, x, y, z) && (type == LadderUp || type == LadderUpDown || type == LadderDown ||
-                                         type == Stairs1N || type == Stairs1E || type == Stairs1S || type == Stairs1W ||
-                                         type == EscalatorUp1N || type == EscalatorUp1E || type == EscalatorUp1S || type == EscalatorUp1W );
+internal int is_stair_or_ladder(Grid *Grid, int x, int y, int z) {
+    int type = get_node_at(Grid, x,y,z)->type;
+    int up = in_bounds(Grid, x, y, z) &&
+        (type == LadderUp || type == LadderUpDown || type == LadderDown ||
+         type == Stairs1N || type == Stairs1E || type == Stairs1S || type == Stairs1W ||
+         type == EscalatorUp1N || type == EscalatorUp1E || type == EscalatorUp1S || type == EscalatorUp1W );
+
     if (up) return 1;
     if (z-1 < 0) return false;
-    type = GetNodeAt(Grid, x,y,z-1)->type;
-    int down = InBounds(Grid, x, y, z-1) && (type == Stairs4N ||
+
+    type = get_node_at(Grid, x,y,z-1)->type;
+    int down = in_bounds(Grid, x, y, z-1) && (type == Stairs4N ||
                                              type == Stairs4E ||
                                              type == Stairs4S ||
                                              type == Stairs4W ||
@@ -162,26 +132,27 @@ internal int isStairOrLadder(Grid *Grid, int x, int y, int z) {
 }
 
 
-internal int isStairs(Grid *Grid, int x, int y, int z) {
-    grid_node *node = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
-    return (InBounds(Grid, x, y, z) && (node->type == Stairs1N || node->type == Stairs1E || node->type == Stairs1S || node->type == Stairs1W));
+/* internal int is_stairs(Grid *Grid, int x, int y, int z) { */
+/*     grid_node *node = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)]; */
+/*     return (in_bounds(Grid, x, y, z) && (node->type == Stairs1N || node->type == Stairs1E || node->type == Stairs1S || node->type == Stairs1W)); */
+/* } */
+/* internal int isAnyLadder(Grid *Grid, int x, int y, int z) { */
+/*     grid_node *node = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)]; */
+/*     return (in_bounds(Grid, x, y, z) && (node->type == LadderUp || node->type == LadderDown || node->type == LadderUpDown )); */
+/* } */
+
+internal int grid_walkable_at(Grid *Grid, int x, int y, int z) {
+    return (in_bounds(Grid, x, y, z) && Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)].walkable);
 }
-internal int isAnyLadder(Grid *Grid, int x, int y, int z) {
-    grid_node *node = &Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)];
-    return (InBounds(Grid, x, y, z) && (node->type == LadderUp || node->type == LadderDown || node->type == LadderUpDown ));
+internal inline int is_jumpnode(Grid *Grid, int x, int y, int z, int dx, int dy) {
+    return (grid_walkable_at(Grid, x - dx, y - dy, z) &&
+            ((grid_walkable_at(Grid, x + dy, y + dx, z) &&
+              !grid_walkable_at(Grid, x - dx + dy, y - dy + dx, z)) ||
+             ((grid_walkable_at(Grid, x - dy, y - dx, z) &&
+               !grid_walkable_at(Grid, x - dx - dy, y - dy - dx, z)))));
 }
-internal int GridWalkableAt(Grid *Grid, int x, int y, int z) {
-    return (InBounds(Grid, x, y, z) && Grid->nodes[FLATTEN_3D_INDEX(x, y, z, Grid->width, Grid->height)].walkable);
-}
-internal inline int isJumpNode(Grid *Grid, int x, int y, int z, int dx, int dy) {
-    return (GridWalkableAt(Grid, x - dx, y - dy, z) &&
-            ((GridWalkableAt(Grid, x + dy, y + dx, z) &&
-              !GridWalkableAt(Grid, x - dx + dy, y - dy + dx, z)) ||
-             ((GridWalkableAt(Grid, x - dy, y - dx, z) &&
-               !GridWalkableAt(Grid, x - dx - dy, y - dy - dx, z)))));
-}
-#define isWall(x, y, z) !GridWalkableAt(g, x, y, z)
-#define isEmpty(x, y, z) GridWalkableAt(g, x, y, z)
+#define isWall(x, y, z) !grid_walkable_at(g, x, y, z)
+#define isEmpty(x, y, z) grid_walkable_at(g, x, y, z)
 
 typedef enum jump_direction {
     north,
@@ -206,12 +177,12 @@ internal void display_processed(Grid *g){
     for (int z =0 ; z <g->depth; z++) {
         for (int y = 0; y < g->height; y++) {
             for (int x = 0; x < g->width; x++) {
-                grid_node *n = GetNodeAt(g, x, y, z);
+                grid_node *n = get_node_at(g, x, y, z);
                 //printf("%d", n->distance[sw] > 0 ? n->distance[sw] : 9 );
                 if (n->type == WallBlock) {
                     printf("#");
                 }
-                else if (n->isJumpNode) {
+                else if (n->is_jumpnode) {
                    printf("J");
                 }
                 else if (n->type == Nothing ){
@@ -228,7 +199,40 @@ internal void display_processed(Grid *g){
         }
     }
 }
+internal int grid_can_go_up_from(Grid *Grid, int x, int y, int z) {
+    if (z+1 >= Grid->depth ) return 0;
+    int from = get_node_at(Grid, x, y, z)->type;
+    int to = get_node_at(Grid, x, y, z + 1)->type;
+    int ladder = ((from == LadderUpDown ||
+                   from == LadderUp) && (to == LadderDown || to == LadderUpDown));
+    int stairs = (from == Stairs1N ||
+                  from == Stairs1E ||
+                  from == Stairs1S ||
+                  from == Stairs1W ||
+                  from == EscalatorUp1N ||
+                  from == EscalatorUp1E ||
+                  from == EscalatorUp1S ||
+                  from == EscalatorUp1W );
+    return ladder || stairs;
+}
 
+internal int grid_can_go_down_from(Grid *Grid, int x, int y, int z) {
+    if (z-1 <0 ) return 0;
+
+    int from = get_node_at(Grid, x, y, z)->type;
+    int to = get_node_at(Grid, x, y, z - 1)->type;
+    int ladder = ((from == LadderUpDown || from == LadderDown) && (to == LadderUp || to == LadderUpDown));
+    from = get_node_at(Grid, x, y, z-1)->type;
+    int stairs = (from == Stairs4N ||
+                  from == Stairs4E ||
+                  from == Stairs4S ||
+                  from == Stairs4W ||
+                  from == EscalatorDown4N ||
+                  from == EscalatorDown4E ||
+                  from == EscalatorDown4S ||
+                  from == EscalatorDown4W );
+    return ladder || stairs;
+}
 void preprocess_grid(Grid *g) {
     int depth = g->depth;
     int width = g->width;
@@ -242,11 +246,11 @@ void preprocess_grid(Grid *g) {
                     continue;
                 }
 
-                int canGoUp = GridCanGoUpFrom(g, x, y, z);
-                int canGoDown = GridCanGoDownFrom(g, x, y, z);
+                int canGoUp = grid_can_go_up_from(g, x, y, z);
+                int canGoDown = grid_can_go_down_from(g, x, y, z);
 
                 if (canGoUp || canGoDown) {
-                    node->isJumpNode = 1;
+                    node->is_jumpnode = 1;
                     node->distance[up] = canGoUp ? 1 : 0;
                     node->distance[down] = canGoDown ? 1 : 0;
                 } else {
@@ -255,25 +259,25 @@ void preprocess_grid(Grid *g) {
                 }
 
                 // points around corners or voids turn to jumppoints
-                if (isJumpNode(g, x, y, z, 0, 1) ||
-                    isJumpNode(g, x, y, z, 0, -1) ||
-                    isJumpNode(g, x, y, z, 1, 0) ||
-                    isJumpNode(g, x, y, z, -1, 0)) {
-                    node->isJumpNode = 1;
+                if (is_jumpnode(g, x, y, z, 0, 1) ||
+                    is_jumpnode(g, x, y, z, 0, -1) ||
+                    is_jumpnode(g, x, y, z, 1, 0) ||
+                    is_jumpnode(g, x, y, z, -1, 0)) {
+                    node->is_jumpnode = 1;
                 }
 
                 // diagonally around stairs and ladders I place jumppoints
-                if (isStairOrLadder(g,x-1,y-1,z) ||
-                    isStairOrLadder(g,x+1,y+1,z) ||
-                    isStairOrLadder(g,x+1,y-1,z) ||
-                    isStairOrLadder(g,x-1,y+1,z)) {
-                    node->isJumpNode = 1;
+                if (is_stair_or_ladder(g,x-1,y-1,z) ||
+                    is_stair_or_ladder(g,x+1,y+1,z) ||
+                    is_stair_or_ladder(g,x+1,y-1,z) ||
+                    is_stair_or_ladder(g,x-1,y+1,z)) {
+                    node->is_jumpnode = 1;
                 }
-                if (isStairOrLadder(g,x-1,y,z) ||
-                    isStairOrLadder(g,x+1,y,z) ||
-                    isStairOrLadder(g,x,y-1,z) ||
-                    isStairOrLadder(g,x,y+1,z)) {
-                    node->isJumpNode = 1;
+                if (is_stair_or_ladder(g,x-1,y,z) ||
+                    is_stair_or_ladder(g,x+1,y,z) ||
+                    is_stair_or_ladder(g,x,y-1,z) ||
+                    is_stair_or_ladder(g,x,y+1,z)) {
+                    node->is_jumpnode = 1;
                 }
             }
         }
@@ -302,8 +306,8 @@ void preprocess_grid(Grid *g) {
                     } else {
                         node->distance[west] = -countMovingWest;
                     }
-                    if (node->isJumpNode) {
-                        //if (node->isJumpNode && countMovingWest > 0) {
+                    if (node->is_jumpnode) {
+                        //if (node->is_jumpnode && countMovingWest > 0) {
                         countMovingWest = 0;
                         jumpPointLastSeen = 1;
                     }
@@ -328,8 +332,8 @@ void preprocess_grid(Grid *g) {
                     } else {
                         node->distance[east] = -countMovingEast;
                     }
-                    if (node->isJumpNode) {
-                        //  if (node->isJumpNode && countMovingEast > 0) {
+                    if (node->is_jumpnode) {
+                        //  if (node->is_jumpnode && countMovingEast > 0) {
                         countMovingEast = 0;
                         jumpPointLastSeen = 1;
                     }
@@ -357,8 +361,8 @@ void preprocess_grid(Grid *g) {
                     } else {
                         node->distance[north] = -countMovingNorth;
                     }
-                    //if (node->isJumpNode && countMovingNorth > 0) {
-                    if (node->isJumpNode) {
+                    //if (node->is_jumpnode && countMovingNorth > 0) {
+                    if (node->is_jumpnode) {
                         countMovingNorth = 0;
                         jumpPointLastSeen = 1;
                     }
@@ -382,8 +386,8 @@ void preprocess_grid(Grid *g) {
                     } else {
                         node->distance[south] = -countMovingSouth;
                     }
-                    if (node->isJumpNode) {
-                        //if (node->isJumpNode && countMovingSouth > 0) {
+                    if (node->is_jumpnode) {
+                        //if (node->is_jumpnode && countMovingSouth > 0) {
                         countMovingSouth = 0;
                         jumpPointLastSeen = 1;
                     }
@@ -400,11 +404,11 @@ void preprocess_grid(Grid *g) {
                     if (y == 0 || x == 0 || isWall(x, y - 1, z) || isWall(x - 1, y, z) || isWall(x - 1, y - 1, z)) {
                         node->distance[nw] = 0;
                     } else if (isEmpty(x - 1, y, z) && isEmpty(x, y - 1, z) &&
-                               ((GetNodeAt(g, x - 1, y - 1, z)->distance[north] > 0) ||
-                                (GetNodeAt(g, x - 1, y - 1, z)->distance[west] > 0))) {
+                               ((get_node_at(g, x - 1, y - 1, z)->distance[north] > 0) ||
+                                (get_node_at(g, x - 1, y - 1, z)->distance[west] > 0))) {
                         node->distance[nw] = 1;
                     } else { // start incrementing
-                        int jumpDistance = GetNodeAt(g, x - 1, y - 1, z)->distance[nw];
+                        int jumpDistance = get_node_at(g, x - 1, y - 1, z)->distance[nw];
                         if (jumpDistance > 0) {
                             node->distance[nw] = 1 + jumpDistance;
                         } else { // jumpDistance <= 0
@@ -416,11 +420,11 @@ void preprocess_grid(Grid *g) {
                     if (y == 0 || x == width - 1 || (isWall(x, y - 1, z) || isWall(x + 1, y, z) || isWall(x + 1, y - 1, z))) {
                         node->distance[ne] = 0;
                     } else if (isEmpty(x, y - 1, z) && isEmpty(x + 1, y, z) &&
-                               ((GetNodeAt(g, x + 1, y - 1, z)->distance[north] > 0) ||
-                                GetNodeAt(g, x + 1, y - 1, z)->distance[east] > 0)) {
+                               ((get_node_at(g, x + 1, y - 1, z)->distance[north] > 0) ||
+                                get_node_at(g, x + 1, y - 1, z)->distance[east] > 0)) {
                         node->distance[ne] = 1;
                     } else {
-                        int jumpDistance = GetNodeAt(g, x + 1, y - 1, z)->distance[ne];
+                        int jumpDistance = get_node_at(g, x + 1, y - 1, z)->distance[ne];
                         if (jumpDistance > 0) {
                             node->distance[ne] = 1 + jumpDistance;
                         } else { // jumpDistance <= 0
@@ -440,11 +444,11 @@ void preprocess_grid(Grid *g) {
                     if (y == height - 1 || x == 0 || isWall(x, y + 1, z) || isWall(x - 1, y, z) || isWall(x - 1, y + 1, z)) {
                         node->distance[sw] = 0;
                     } else if (isEmpty(x, y + 1, z) && isEmpty(x - 1, y, z) &&
-                               (GetNodeAt(g, x - 1, y + 1, z)->distance[south] > 0 ||
-                                GetNodeAt(g, x - 1, y + 1, z)->distance[west] > 0)) {
+                               (get_node_at(g, x - 1, y + 1, z)->distance[south] > 0 ||
+                                get_node_at(g, x - 1, y + 1, z)->distance[west] > 0)) {
                         node->distance[sw] = 1;
                     } else {
-                        int jumpDistance = GetNodeAt(g, x - 1, y + 1, z)->distance[sw];
+                        int jumpDistance = get_node_at(g, x - 1, y + 1, z)->distance[sw];
                         if (jumpDistance > 0) {
                             node->distance[sw] = 1 + jumpDistance;
                         } else {
@@ -456,11 +460,11 @@ void preprocess_grid(Grid *g) {
                     if (y == height - 1 || x == width - 1 || isWall(x, y + 1, z) || isWall(x + 1, y, z) || isWall(x + 1, y + 1, z)) {
                         node->distance[se] = 0;
                     } else if (isEmpty(x, y + 1, z) && isEmpty(x + 1, y, z) &&
-                               (GetNodeAt(g, x + 1, y + 1, z)->distance[south] > 0 ||
-                                GetNodeAt(g, x + 1, y + 1, z)->distance[east] > 0)) {
+                               (get_node_at(g, x + 1, y + 1, z)->distance[south] > 0 ||
+                                get_node_at(g, x + 1, y + 1, z)->distance[east] > 0)) {
                         node->distance[se] = 1;
                     } else {
-                        int jumpDistance = GetNodeAt(g, x + 1, y + 1, z)->distance[se];
+                        int jumpDistance = get_node_at(g, x + 1, y + 1, z)->distance[se];
                         if (jumpDistance > 0) {
                             node->distance[se] = 1 + jumpDistance;
                         } else {
@@ -480,14 +484,14 @@ void preprocess_grid(Grid *g) {
 
 
 
-inline internal grid_node* HeapPop(grid_node_heap *h) {
+inline internal grid_node* heap_pop(grid_node_heap *h) {
     grid_node * Result = HEAP_PEEKFIRST(h);
     HEAP_POP(h, grid_node*);
     return Result;
 }
 #define NODE_EQUALS(node1, node2) (node1->X == node2->X && node1->Y == node2->Y && node1->Z == node2->Z)
 
-internal path_list * BacktrackPath(grid_node * Original, MemoryArena *Arena) {
+internal path_list * backtrack_path(grid_node * Original, MemoryArena *Arena) {
     path_list * Result = PUSH_STRUCT(Arena, path_list);
     NEW_DLIST(Result, Arena, path_node);
 
@@ -516,7 +520,7 @@ internal path_list * BacktrackPath(grid_node * Original, MemoryArena *Arena) {
 #define IS_CARDINAL(direction) (direction == north || direction == south || direction == west || direction == east || direction == up || direction == down)
 
 
-internal jump_direction getDirection(grid_node *Current, grid_node *Parent) {
+internal jump_direction get_direction(grid_node *Current, grid_node *Parent) {
     int dx = Current->X - Parent->X;
     int dy = Current->Y - Parent->Y;
     int dz = Current->Z - Parent->Z;
@@ -556,7 +560,7 @@ internal jump_direction getDirection(grid_node *Current, grid_node *Parent) {
 
 
 
-internal inline int diffXY(grid_node *Current, grid_node *Parent) {
+internal inline int diff_XY(grid_node *Current, grid_node *Parent) {
     int dx = Current->X - Parent->X;
     int dy = Current->Y - Parent->Y;
     //if (dy) assert(dx==0);
@@ -564,7 +568,7 @@ internal inline int diffXY(grid_node *Current, grid_node *Parent) {
     return ABS(dx+dy);
 }
 
-internal inline int otherIsInGeneralDirectionOfDiagonal(jump_direction diagonal, jump_direction other) {
+internal inline int other_is_in_general_diagonal(jump_direction diagonal, jump_direction other) {
     if (diagonal == ne) {
         return (other == north || other == ne || other == east);
     } else if (diagonal == nw) {
@@ -576,7 +580,8 @@ internal inline int otherIsInGeneralDirectionOfDiagonal(jump_direction diagonal,
     }
     return 0;
 }
-internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_direction direction, Grid * Grid, int distance ){
+
+internal grid_node * get_node_given_dir_and_dist(grid_node * Current, jump_direction direction, Grid * Grid, int distance ){
     //    printf("distance: %d\n", distance);
     int x = Current->X;
     int y = Current->Y;
@@ -584,62 +589,62 @@ internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_
     grid_node *Result = NULL;
     int stair_offset = 4; // TODO sometimes you want 4, in some cases things break though.
 
-    grid_node * one_down;// = GetNodeAt(Grid,x, y, z - 1);
+    grid_node * one_down;// = get_node_at(Grid,x, y, z - 1);
 
 
 
     switch(direction) {
     case north:
-        Result = GetNodeAt(Grid,x, y-distance, z);
+        Result = get_node_at(Grid,x, y-distance, z);
         break;
     case east:
-        Result = GetNodeAt(Grid,x+distance, y, z);
+        Result = get_node_at(Grid,x+distance, y, z);
         break;
     case south:
-        Result = GetNodeAt(Grid,x, y+distance, z);
+        Result = get_node_at(Grid,x, y+distance, z);
         break;
     case west:
-        Result = GetNodeAt(Grid,x-distance, y, z);
+        Result = get_node_at(Grid,x-distance, y, z);
         break;
     case ne:
-        Result = GetNodeAt(Grid,x+distance, y-distance, z);
+        Result = get_node_at(Grid,x+distance, y-distance, z);
         break;
     case se:
-        Result = GetNodeAt(Grid,x+distance, y+distance, z);
+        Result = get_node_at(Grid,x+distance, y+distance, z);
         break;
     case nw:
-        Result = GetNodeAt(Grid,x-distance, y-distance, z);
+        Result = get_node_at(Grid,x-distance, y-distance, z);
         break;
     case sw:
-        Result = GetNodeAt(Grid,x-distance, y+distance, z);
+        Result = get_node_at(Grid,x-distance, y+distance, z);
         break;
     case up:
         if (Current->type == Stairs1N || Current->type == EscalatorUp1N ) {
-            Result = GetNodeAt(Grid,x, y-stair_offset, z+distance);
+            Result = get_node_at(Grid,x, y-stair_offset, z+distance);
         } else if (Current->type == Stairs1E || Current->type == EscalatorUp1E) {
-            Result = GetNodeAt(Grid,x+stair_offset, y, z+distance);
+            Result = get_node_at(Grid,x+stair_offset, y, z+distance);
         } else if (Current->type == Stairs1S || Current->type == EscalatorUp1S) {
-            Result = GetNodeAt(Grid,x, y+stair_offset, z+distance);
+            Result = get_node_at(Grid,x, y+stair_offset, z+distance);
         } else if (Current->type == Stairs1W || Current->type == EscalatorUp1W) {
-            Result = GetNodeAt(Grid,x-stair_offset, y, z+distance);
+            Result = get_node_at(Grid,x-stair_offset, y, z+distance);
         }else {
-            Result = GetNodeAt(Grid,x, y, z+distance);
+            Result = get_node_at(Grid,x, y, z+distance);
         }
         break;
     case down:
         //stair_offset = 5;
-        one_down = GetNodeAt(Grid,x, y, z - 1);
+        one_down = get_node_at(Grid,x, y, z - 1);
         if (one_down->type == Stairs4S || one_down->type == EscalatorDown4S) {
-            Result = GetNodeAt(Grid,x, y-stair_offset, z-distance);
+            Result = get_node_at(Grid,x, y-stair_offset, z-distance);
         } else if (one_down->type == Stairs4W || one_down->type == EscalatorDown4W) {
-            Result = GetNodeAt(Grid,x + stair_offset, y, z-distance);
+            Result = get_node_at(Grid,x + stair_offset, y, z-distance);
         } else if (one_down->type == Stairs4N || one_down->type == EscalatorDown4N) {
-            Result = GetNodeAt(Grid,x, y+stair_offset, z-distance);
+            Result = get_node_at(Grid,x, y+stair_offset, z-distance);
         } else if (one_down->type == Stairs4E || one_down->type == EscalatorDown4E) {
-            Result = GetNodeAt(Grid,x - stair_offset, y, z-distance);
+            Result = get_node_at(Grid,x - stair_offset, y, z-distance);
         }else {
             //printf("derp huh!\n");
-            Result = GetNodeAt(Grid,x, y, z-distance);
+            Result = get_node_at(Grid,x, y, z-distance);
         }
         break;
     case invalid:
@@ -649,25 +654,27 @@ internal grid_node * getNodeGivenDirectionAndDistance(grid_node * Current, jump_
 
     return Result;
 }
-internal grid_node * getNodeGivenDirection(grid_node * Current, jump_direction direction, Grid * grid) {
+
+internal grid_node * get_node_given_dir(grid_node * Current, jump_direction direction, Grid * grid) {
     int distance = Current->distance[direction];
-    return getNodeGivenDirectionAndDistance(Current, direction, grid, distance);
+    return get_node_given_dir_and_dist(Current, direction, grid, distance);
 }
 
 #define SQRT2_OVER_1 0.41421356237309515
 #define SQRT2 1.4142135623730951
 
-internal float ManHattan(int dx, int dy, int dz) {
+internal float manhatten(int dx, int dy, int dz) {
     return (dx + dy + dz);
 }
-internal float Octile(int dx, int dy, int dz) {
+
+internal float octile(int dx, int dy, int dz) {
     return (dx < dy ? SQRT2_OVER_1 * dx + dy + (dz) : SQRT2_OVER_1 * dy + dx + (dz));
 }
 
 
 
 
-path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena) {
+path_list * find_path(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena) {
     jump_direction travelling_south[] = {west, sw, south, se, east, up, down};
     jump_direction travelling_southEast[] = {south, se, east, up, down};
     jump_direction travelling_east[] = {south, se, east, ne, north, up, down};
@@ -694,14 +701,14 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
     jump_direction *allowed = NULL;
     int allowedSize = 0;
     while (OpenList->count > 0) {
-        grid_node * Node = HeapPop(OpenList);
+        grid_node * Node = heap_pop(OpenList);
         grid_node *Parent = Node->parent;
         float givenCost;
 
         Node->closed = true;
         if (NODE_EQUALS(Node, endNode)) {
             //printf("found path! using jps plus\n");
-            return BacktrackPath(Node, Arena);
+            return backtrack_path(Node, Arena);
         }
 
         int dx;
@@ -765,14 +772,14 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
 
             if ((Node->Z == endNode->Z) &&
                 (IS_CARDINAL(direction)) &&
-                ((int) getDirection(endNode, Node) == direction) &&
-                ((diffXY(endNode, Node)) <= ABS(Node->distance[direction])))  {
+                ((int) get_direction(endNode, Node) == direction) &&
+                ((diff_XY(endNode, Node)) <= ABS(Node->distance[direction])))  {
                 Successor = endNode;
-                givenCost = Node->g + (diffXY(endNode, Node));
+                givenCost = Node->g + (diff_XY(endNode, Node));
                 //givenCost += Node->cost;
             }  else if ((Node->Z == endNode->Z) &&
                        (!IS_CARDINAL(direction)) &&
-                        (otherIsInGeneralDirectionOfDiagonal((jump_direction)direction, getDirection(endNode, Node)) ) &&
+                        (other_is_in_general_diagonal((jump_direction)direction, get_direction(endNode, Node)) ) &&
                        ((ABS(Node->X - endNode->X) <= ABS(Node->distance[direction])) ||
                         (ABS(Node->Y - endNode->Y) <= ABS(Node->distance[direction]))))  {
 
@@ -781,14 +788,14 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                     minDiff = ABS(Node->distance[direction]);
                 }
 
-                Successor = getNodeGivenDirectionAndDistance(Node, (jump_direction)direction, Grid, minDiff );
+                Successor = get_node_given_dir_and_dist(Node, (jump_direction)direction, Grid, minDiff );
                 givenCost = Node->g + (SQRT2 * minDiff);
                 //givenCost += Node->cost;
 
             }else if (Node->distance[direction] > 0){
 
-                Successor = getNodeGivenDirection(Node, (jump_direction)direction, Grid);
-                givenCost = ABS(ManHattan(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
+                Successor = get_node_given_dir(Node, (jump_direction)direction, Grid);
+                givenCost = ABS(manhatten(ABS(Node->X-Successor->X), ABS(Node->Y-Successor->Y),ABS(Node->Z-Successor->Z)));
                 if (!IS_CARDINAL(direction)) {givenCost *= SQRT2;}
                 givenCost += Node->g;
             }
@@ -798,7 +805,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                     Successor->opened = true;
                     Successor->parent = Node;
                     Successor->g = givenCost;
-                    Successor->f = givenCost + Octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
+                    Successor->f = givenCost + octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
                     Successor->f += Successor->h; // TODO can i reuse one of my f,g,h values? H perhaps?
                     HEAP_PUSH(OpenList, Successor);
                     //printf("pushing %d %d %d\n", Successor->X, Successor->Y, Successor->Z);
@@ -808,7 +815,7 @@ path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid
                 } else if (givenCost < Successor->g) {
                     Successor->parent = Node;
                     Successor->g = givenCost;
-                    Successor->f = givenCost + Octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
+                    Successor->f = givenCost + octile(ABS(Successor->X-endNode->X), ABS(Successor->Y-endNode->Y),ABS( Successor->Z- endNode->Z));
 
                     HEAP_UPDATE_ITEM(OpenList, grid_node* , Successor);
                 } else {
@@ -882,7 +889,7 @@ internal void interpolate(int x0, int y0, int x1, int y1, MemoryArena * Arena, c
 
 }
 
-path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) {
+path_list * smooth_path(path_list *compressed, MemoryArena * Arena, Grid * pg) {
     int x0 = compressed->Sentinel->Next->X;
     int y0 = compressed->Sentinel->Next->Y;
     int z0 = compressed->Sentinel->Next->Z;
@@ -922,7 +929,7 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
             blocked = 0;
             coord2d * c = interpolated->Sentinel->Next->Next; //skipping the first
             while(c != interpolated->Sentinel) {
-                grid_node * n= GetNodeAt(pg, c->X,c->Y,sz);
+                grid_node * n= get_node_at(pg, c->X,c->Y,sz);
                 if (! n->walkable ) {
                     blocked = 1;
                     break;
@@ -972,7 +979,7 @@ path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg) 
     return Result;
 }
 
-path_list * ExpandPath(path_list *compressed, MemoryArena * Arena) {
+path_list * expand_path(path_list *compressed, MemoryArena * Arena) {
 
     path_node * Node = compressed->Sentinel->Next;
     int x1, y1, z1;

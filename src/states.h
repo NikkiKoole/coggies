@@ -186,7 +186,7 @@ typedef struct grid_node {
     struct grid_node *parent; //used for backtracking
     struct grid_node *Next; // used when in neighbour slist; // not needed in in jpsplus
     //#ifdef JPS_PLUS
-    b32 isJumpNode;
+    b32 is_jumpnode;
     s8 distance[10]; // 4 cardinal, 4 diagonal, 2 up/down / only used when doing jps plus
     //#endif
 } grid_node;

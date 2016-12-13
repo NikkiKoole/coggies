@@ -31,8 +31,8 @@ typedef struct jump_point {
 
 void init_grid(Grid * g, MemoryArena * Arena, LevelData * m);
 void preprocess_grid(Grid *g);
-grid_node *GetNodeAt(Grid *Grid, int x, int y, int z);
-path_list * FindPathPlus(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena);
-path_list * SmoothenPath(path_list *compressed, MemoryArena * Arena, Grid * pg);
-path_list * ExpandPath(path_list *compressed, MemoryArena * Arena);
+grid_node *get_node_at(Grid *Grid, int x, int y, int z);
+path_list * find_path(grid_node * startNode, grid_node * endNode, Grid * Grid, MemoryArena * Arena);
+path_list * smooth_path(path_list *compressed, MemoryArena * Arena, Grid * pg);
+path_list * expand_path(path_list *compressed, MemoryArena * Arena);
 #endif

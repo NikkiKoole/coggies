@@ -18,16 +18,16 @@ bool block_at_xyz_is(int x, int y, int z, Block b, LevelData * level) {
 }
 
 bool four_diagonals_are_jumps(Grid *grid, int x, int y, int z) {
-    return (GetNodeAt(grid, x-1, y-1, z)->isJumpNode &&
-            GetNodeAt(grid, x-1, y+1, z)->isJumpNode &&
-            GetNodeAt(grid, x+1, y+1, z)->isJumpNode &&
-            GetNodeAt(grid, x+1, y-1, z)->isJumpNode);
+    return (get_node_at(grid, x-1, y-1, z)->is_jumpnode &&
+            get_node_at(grid, x-1, y+1, z)->is_jumpnode &&
+            get_node_at(grid, x+1, y+1, z)->is_jumpnode &&
+            get_node_at(grid, x+1, y-1, z)->is_jumpnode);
 }
 bool four_cardinals_are_jumps(Grid *grid, int x, int y, int z) {
-    return (GetNodeAt(grid, x-1, y, z)->isJumpNode &&
-            GetNodeAt(grid, x-1, y, z)->isJumpNode &&
-            GetNodeAt(grid, x, y+1, z)->isJumpNode &&
-            GetNodeAt(grid, x, y-1, z)->isJumpNode);
+    return (get_node_at(grid, x-1, y, z)->is_jumpnode &&
+            get_node_at(grid, x-1, y, z)->is_jumpnode &&
+            get_node_at(grid, x, y+1, z)->is_jumpnode &&
+            get_node_at(grid, x, y-1, z)->is_jumpnode);
 }
 
 int total_jumppoints(Grid *grid) {
@@ -35,7 +35,7 @@ int total_jumppoints(Grid *grid) {
     for (int z = 0; z < grid->depth; z++) {
         for (int y = 0; y < grid->height; y++) {
             for (int x = 0; x< grid->width; x++) {
-                if (GetNodeAt(grid, x, y, z)->isJumpNode) result++;
+                if (get_node_at(grid, x, y, z)->is_jumpnode) result++;
             }
         }
     }
@@ -52,7 +52,7 @@ int total_jumppoints(Grid *grid) {
         for (int i = 0; i < times; i++) {                               \
             grid_node * Start = get_random_walkable_node(permanent->grid); \
             grid_node * End = get_random_walkable_node(permanent->grid); \
-            path_list * Path = FindPathPlus(Start, End, permanent->grid, &scratch->arena); \
+            path_list * Path = find_path(Start, End, permanent->grid, &scratch->arena); \
             if (!Path) printf("FAILED from: %d,%d,%d to %d,%d,%d\n", Start->X, Start->Y, Start->Z, End->X, End->Y, End->Z); \
             expect(Path);                                               \
             for (int i = 0; i < permanent->grid->width * permanent->grid->height * permanent->grid->depth;i++) { \
@@ -78,9 +78,9 @@ int total_jumppoints(Grid *grid) {
 
 
 grid_node* get_random_walkable_node(Grid *grid) {
-    grid_node *result;// = GetNodeAt(grid, 0,0,0);
+    grid_node *result;// = get_node_at(grid, 0,0,0);
     do {
-        result = GetNodeAt(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
+        result = get_node_at(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
     } while (!result->walkable);
     return result;
 }
@@ -278,10 +278,10 @@ describe(grid_preprocessor) {
         init_grid(permanent->grid, &permanent->arena, &permanent->level);
         expect(permanent->grid->width == 6 && permanent->grid->height == 3);
         preprocess_grid(permanent->grid);
-        expect(GetNodeAt(permanent->grid, 1, 0, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 4, 0, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 1, 2, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 4, 2, 0)->isJumpNode);
+        expect(get_node_at(permanent->grid, 1, 0, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 4, 0, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 1, 2, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 4, 2, 0)->is_jumpnode);
     }
     it (places jumppoints at wallcorners and void corners) {
         Memory _memory;
@@ -325,14 +325,14 @@ describe(grid_preprocessor) {
         permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
         init_grid(permanent->grid, &permanent->arena, &permanent->level);
         preprocess_grid(permanent->grid);
-        expect(GetNodeAt(permanent->grid, 0, 0, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 11, 0, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 11, 10, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 0, 10, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 4, 3, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 7, 3, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 4, 7, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 7, 7, 0)->isJumpNode);
+        expect(get_node_at(permanent->grid, 0, 0, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 11, 0, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 11, 10, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 0, 10, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 4, 3, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 7, 3, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 4, 7, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 7, 7, 0)->is_jumpnode);
 
     }
 
@@ -384,8 +384,8 @@ describe(grid_preprocessor) {
         expect(four_cardinals_are_jumps(permanent->grid,2,1,0));
         expect(four_cardinals_are_jumps(permanent->grid,2,1,1));
 
-        expect(GetNodeAt(permanent->grid, 2, 1, 0)->isJumpNode);
-        expect(GetNodeAt(permanent->grid, 2, 1, 1)->isJumpNode);
+        expect(get_node_at(permanent->grid, 2, 1, 0)->is_jumpnode);
+        expect(get_node_at(permanent->grid, 2, 1, 1)->is_jumpnode);
         expect(total_jumppoints(permanent->grid) == 18);
 
     }

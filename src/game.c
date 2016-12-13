@@ -35,7 +35,7 @@ internal GLKVector3 seek_return(ActorSteerData *actor, GLKVector3 target) {
     steer = GLKVector3Limit(steer, actor->max_force);
     return steer;
 }
-internal void actor_applyForce(ActorSteerData *a, GLKVector3 force) {
+internal void actor_apply_force(ActorSteerData *a, GLKVector3 force) {
     force = GLKVector3DivideScalar(force, a->mass);
     a->acceleration = GLKVector3Add(a->acceleration, force);
 }
@@ -175,7 +175,7 @@ internal grid_node* get_neighboring_walkable_node(Grid *grid, int x, int y, int 
     grid_node *result = NULL;
     for (int h = -1; h<2; h++) {
         for (int v = -1; v <2; v++) {
-            result = GetNodeAt(grid, x+h, y+v, z);
+            result = get_node_at(grid, x+h, y+v, z);
             if (result->walkable) {
                 return result;
             }
@@ -187,7 +187,7 @@ internal grid_node* get_neighboring_walkable_node(Grid *grid, int x, int y, int 
 internal grid_node* get_random_walkable_node(Grid *grid) {
     grid_node *result;// = GetNodeAt(grid, 0,0,0);
     do {
-        result = GetNodeAt(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
+        result = get_node_at(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
     } while (!result->walkable);
     return result;
 }
@@ -708,7 +708,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             {
                 GLKVector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
                 seek_force = GLKVector3MultiplyScalar(seek_force, 1);
-                actor_applyForce(&permanent->steer_data[i], seek_force);
+                actor_apply_force(&permanent->steer_data[i], seek_force);
 
                 permanent->steer_data[i].velocity = GLKVector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
                 permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
@@ -776,7 +776,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
             //TODO something is off with this, the end of a path seems almost never to be walkable
-            grid_node * Start = GetNodeAt(permanent->grid,
+            grid_node * Start = get_node_at(permanent->grid,
                                           permanent->steer_data[i].location.x/permanent->block_size.x,
                                           permanent->steer_data[i].location.y/permanent->block_size.y,
                                           (permanent->steer_data[i].location.z+10) /permanent->block_size.z_level);
@@ -794,11 +794,11 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             ASSERT(End->walkable);
 
 
-            path_list * PathRaw = FindPathPlus(Start, End, permanent->grid, &scratch->arena);
+            path_list * PathRaw = find_path(Start, End, permanent->grid, &scratch->arena);
             path_list *Path = NULL;
 
             if (PathRaw) {
-                Path = SmoothenPath(PathRaw,  &scratch->arena, permanent->grid);
+                Path = smooth_path(PathRaw,  &scratch->arena, permanent->grid);
 
                 if (Path) {
                     path_node * done= Path->Sentinel->Prev;

@@ -5,7 +5,6 @@ foot-planting on stairs
 walking stairs vs standing still on escalator
 walking escalator
 
-
 bug: shadow gets in way of stairs below
 
 the social life of small urban spaces
@@ -17,17 +16,9 @@ tegenlicht de barbaren (http://www.vpro.nl/programmas/tegenlicht/kijk/aflevering
 
 * Currently doing / Next up
 
-  - make a dedicated batch for alpha blended static objects (windows, shadows)
-
-  - look at extra pivot data, so i can crop images in sheets, and reuse stair images for the 4 parts
-
   - animating bodyparts
 
-  - have 'dynamic architecture' animatable (door open and closes, escalator running)
-
   - move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
-
-  - make the pathfindcode use the common style i am using now
 
   - clean up the GLKMath code, preferably into 1 header file and get rid of all the unneeded cruft
 
