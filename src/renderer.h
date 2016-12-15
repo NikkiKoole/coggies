@@ -123,7 +123,7 @@ typedef struct RenderState {
     DrawBuffer transparent_blocks[TRANSPARENT_BLOCK_BATCH_COUNT];
     int used_transparent_block_batches;
 
-    DrawBuffer actors[ACTOR_BATCH_COUNT]; //was 32
+    DrawBuffer actors[ACTOR_BATCH_COUNT];
     int used_actor_batches;
     DrawBuffer glyphs[GLYPH_BATCH_COUNT];
     int used_glyph_batches;
