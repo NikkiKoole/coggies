@@ -500,7 +500,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     case Stairs2W:
                     case Stairs3W:
                     case Stairs4W:
-                         permanent->static_blocks[used_static_block_count].is_floor = 1;
+                        permanent->static_blocks[used_static_block_count].is_floor = 1;
                         permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[b->object];
                         permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x;
                         permanent->static_blocks[used_static_block_count].y = y * permanent->block_size.y;

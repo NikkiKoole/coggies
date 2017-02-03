@@ -61,4 +61,4 @@ test:
 	rm ./a.out
 
 tags:
-	find . -type f -iname "*.[chS]" | xargs etags -a
+	find src/ -type f -iname "*.[chS]" | xargs etags -a
