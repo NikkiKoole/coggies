@@ -17,6 +17,16 @@
     - then there's the whole way of describing an animation in body parts to solve, and making use of the extra options using parts offer, like random stances on torso vs arm or legs etc.
 
 
+  - havent really done anything with this for a good few weeks/months,
+    looking at it the simplest way back in is:
+    start using the json and generated texture atlasses for blocks first
+    then look into the characters
+    I really should have different ways of combining, for example for  the escalator work I could really just have a head and the rest of a body (meaning just 2 draws per character instead of 8)
+    For something else the fully separated one migh be better, so I have to support both.
+    The simpler thing would be to start with just the 2 part draw (heads and body) then we can grow from there when its needed.
+
+
+
 * known bugs
  - bug: shadow gets in way of stairs below
 

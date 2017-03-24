@@ -6,6 +6,15 @@
 #include "memory.h"
 #include "level.h"
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wcast-align"
+#pragma GCC diagnostic ignored "-Wunused-parameter"
+#define STB_IMAGE_IMPLEMENTATION
+#define STBI_ONLY_PNG
+#include "stb_image.h"
+#pragma GCC diagnostic pop
+
+
 internal b32 exists(const char *fname) {
     FILE *f;
     if ((f = fopen(fname, "r"))) {
@@ -188,7 +197,7 @@ internal b32 is_power_of_2(u32 x) {
     return x && !(x & (x - 1));
 }
 
-internal void make_texture(Texture *t, const char *path) {
+internal void make_texture(Texture *t, const char *path, int type) {
     // second texture
     GLuint *tex = &t->id;
     glGenTextures(1, tex);
@@ -198,27 +207,52 @@ internal void make_texture(Texture *t, const char *path) {
     //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    TGA_File image;
-    load_TGA_file(path, &image);
-    GLenum colorType = image.bpp == 24 ? GL_RGB : GL_RGBA;
 
-    glTexImage2D(GL_TEXTURE_2D, 0, colorType, image.width, image.height, 0, colorType, GL_UNSIGNED_BYTE, image.pixels);
-    t->width = image.width;
-    t->height = image.height;
-    ASSERT(t->width == t->height);
-    ASSERT(is_power_of_2(t->width));
-    //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
-    //glGenerateMipmap(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
-    //CHECK();
-    free(image.pixels); // this pixels were malloced inside load_TGA_file
+    if (type == 0) { // TGA
+        TGA_File image;
+        load_TGA_file(path, &image);
+        GLenum colorType = image.bpp == 24 ? GL_RGB : GL_RGBA;
+        glTexImage2D(GL_TEXTURE_2D, 0, colorType, image.width, image.height, 0, colorType, GL_UNSIGNED_BYTE, image.pixels);
+        t->width = image.width;
+        t->height = image.height;
+        ASSERT(t->width == t->height);
+        ASSERT(is_power_of_2(t->width));
+        //glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST_MIPMAP_NEAREST);
+        //glGenerateMipmap(GL_TEXTURE_2D);
+        glBindTexture(GL_TEXTURE_2D, 0); // Unbind texture when done, so we won't accidentily mess up our texture.
+        //CHECK();
+        free(image.pixels); // this pixels were malloced inside load_TGA_file
+
+    } else if (type == 1) { //PNG
+         int w;
+         int h;
+         int comp;
+         unsigned char* image = stbi_load(path, &w, &h, &comp, STBI_rgb_alpha);
+         GLenum colorType = GL_RGBA;
+         glTexImage2D(GL_TEXTURE_2D, 0, colorType, w, h, 0, colorType, GL_UNSIGNED_BYTE, image);
+         t->width = w;
+         t->height = h;
+         ASSERT(t->width == t->height);
+         ASSERT(is_power_of_2(t->width));
+         glBindTexture(GL_TEXTURE_2D, 0);
+         stbi_image_free(image);
+    }
+
 }
 
-
-
-void resource_texture(Texture *t, const char *path) {
+void resource_png(Texture *t, const char *path) {
+    UNUSED(t);UNUSED(path);
     char buffer[256];
-    make_texture(t, resource(path, buffer));
+    make_texture(t, resource(path, buffer), 1);
+    //if (image == NULL) {
+    //    printf("failed loading image: %s\n", path);
+    //}
+    //printf("%d, %d, %d\n", w, h, comp);
+}
+
+void resource_tga(Texture *t, const char *path) {
+    char buffer[256];
+    make_texture(t, resource(path, buffer), 0);
 }
 
 internal const char *read_file(const char *path, char* buffer ) {

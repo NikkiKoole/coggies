@@ -104,9 +104,10 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
-    resource_texture(&renderer->assets.menlo, "fonts/osaka.tga");
-    resource_texture(&renderer->assets.sprite, "textures/texture.tga");
-    resource_texture(&renderer->assets.palette, "textures/palette.tga");
+    resource_png(&renderer->assets.menlo, "fonts/osaka.png");
+    //resource_tga(&renderer->assets.menlo, "fonts/osaka.tga");
+    resource_png(&renderer->assets.sprite, "textures/texture.png");
+    resource_png(&renderer->assets.palette, "textures/palette.png");
 
 #ifdef GL3
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GL330.vert", "shaders/xyz_uv_palette.GL330.frag");

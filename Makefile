@@ -22,7 +22,7 @@ CHK_SOURCES := src/main.c
 
 DEBUG:= -g3 -fsanitize=address -fno-omit-frame-pointer
 
-OPTIMIZE:= -O3
+OPTIMIZE:= #-O3
 STD:= -std=gnu99
 
 CC:= gcc #g++ -x c

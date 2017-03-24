@@ -172,13 +172,13 @@ SDL_Point draw_body_part(SDL_Texture* leg, int x, int y, int rotation, int lengt
     SDL_RenderCopyEx(renderer, leg, &src,  &dest, angle, &pivot , false);
 
 
-    SDL_Rect start;
-    start.x = x;
-    start.y = y;
-    start.w = 1;
-    start.h = 1;
-    SDL_SetRenderDrawColor( renderer, 0, 0, 255, 155 );
-    SDL_RenderFillRect( renderer, &start );
+    /* SDL_Rect start; */
+    /* start.x = x; */
+    /* start.y = y; */
+    /* start.w = 1; */
+    /* start.h = 1; */
+    /* SDL_SetRenderDrawColor( renderer, 0, 0, 255, 155 ); */
+    /* SDL_RenderFillRect( renderer, &start ); */
 
     return ep1;
 }
@@ -202,7 +202,7 @@ int main() {
     bool quit = false;
     SDL_Event e;
 
-    LegDefinition leg = {.bone_lengths={16, 16, 5}, .bone_shape={3, 2, 1}};
+    LegDefinition leg = {.bone_lengths={16, 16, 5}, .bone_shape={1, 1, 0}};
 
 
 

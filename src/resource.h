@@ -38,7 +38,8 @@ typedef struct {
 } TGA_File;
 
 void resource_font(BM_Font *font, const char *path);
-void resource_texture(Texture *t, const char *path);
+void resource_tga(Texture *t, const char *path);
+void resource_png(Texture *t, const char *path);
 void resource_shader(GLuint *shader, const char *vertPath, const char *fragPath);
 void resource_sprite_atlas(const char *path);
 void resource_level(PermanentState *permanent, LevelData *level, const char * path);
