@@ -541,10 +541,57 @@ int main(int argc, char *argv[]) {
         jsmn_init(&parser);
         int shoe = jsmn_parse(&parser, shoe_str, strlen(shoe_str), shoe_tokens, sizeof(shoe_tokens)/sizeof(shoe_tokens[0]));
 
-        //TODO make some specific low level frame reader, fuck all the mumbo jumbo from the more complex variant
-        //analyze_frames(shoe_tokens, 2, shoe_str, &shoe_data, 0);
-        printf("THIS PATH IS NOT WORKING!!!! FIX THIS!!");
+        int i = 0;
+        char buffer[16*1024];
 
+
+        int num_items = shoe_tokens[2].size; 
+        printf("%d\n",num_items);
+
+
+        for (i = 0; i < num_items ; i++) {
+            int index = 3 + (i * 28);
+
+            strncpy(buffer, shoe_str + shoe_tokens[index].start, shoe_tokens[index].end - shoe_tokens[index].start);
+            buffer[shoe_tokens[index].end - shoe_tokens[index].start] = '\0';
+            // way too stoned for this.
+            printf("%d) %s \n",index, buffer);
+            //            printf("frame:{x:%d} \n", get_value(shoe_tokens, shoe_str, index+1));
+        }
+
+
+            /* frame->frame.x = get_value(t, str, i+6); */
+            /* frame->frame.y = get_value(t, str, i+8); */
+            /* frame->frame.w = get_value(t, str, i+10); */
+            /* frame->frame.h = get_value(t, str, i+12); */
+
+            /* frame->spriteSourceSize.x = get_value(t, str, i+20); */
+            /* frame->spriteSourceSize.y = get_value(t, str, i+22); */
+            /* frame->spriteSourceSize.w = get_value(t, str, i+24); */
+            /* frame->spriteSourceSize.h = get_value(t, str, i+26); */
+            /* //printf("spritesource : %d, %d, %d, %d\n", frame->spriteSourceSize.x, frame->spriteSourceSize.y, frame->spriteSourceSize.w, frame->spriteSourceSize.h); */
+            /* frame->sourceSize.w = get_value(t, str, i+30); */
+            /* frame->sourceSize.h = get_value(t, str, i+32); */
+            //printf("spritesource : %d, %d \n", frame->sourceSize.w, frame->sourceSize.h);
+
+        
+        
+        /* for (i =0 ; i < shoe; i++){ */
+
+        /*     //printf("[%d, %d] ", shoe_tokens[i].start, shoe_tokens[i].end); */
+        /*     if (shoe_tokens[i].type == JSMN_OBJECT) printf("%d) Object! ", i ); */
+        /*     if (shoe_tokens[i].type == JSMN_STRING) { */
+        /*         //printf("%d) string!\n", i ); */
+        /*         strncpy(buffer, shoe_str + shoe_tokens[i].start, shoe_tokens[i].end - shoe_tokens[i].start); */
+        /*         buffer[shoe_tokens[i].end - shoe_tokens[i].start] = '\0'; */
+
+        /*         printf("%d) %s ",i, buffer); */
+        /*         // print dtring */
+                
+        /*     } */
+        /*     if (shoe_tokens[i].type == JSMN_PRIMITIVE) printf("%d) Primitive! ", i ); */
+        /*     printf("size: %d\n", shoe_tokens[i].size); */
+        /* } */
     }
 
 
