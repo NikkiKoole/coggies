@@ -515,7 +515,7 @@ void writeCFile(TextureAtlasSingles my_singles){
     fprintf(fptr, "enum %s {\n", "Blocks");
 
     for (i = 0; i < my_singles.frame_count ; i++) {
-        fprintf(fptr,"    %s = %d\n", my_singles.frames[i].name, i);
+        fprintf(fptr,"    %s = %d,\n", my_singles.frames[i].name, i);
     }
     fprintf(fptr,"    TOTAL = %d\n", i);
     fprintf(fptr,"}\n");
