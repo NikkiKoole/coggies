@@ -21,6 +21,21 @@ typedef struct {
 } Frame;
 
 typedef struct {
+    char * name;
+    int frameX, frameY, frameW, frameH;
+    int sssX, sssY, sssW, sssH;
+    int ssW, ssH;
+} SimpleFrame;
+
+
+typedef struct {
+    char *name;
+    SimpleFrame frames[1024];
+    int frame_count;
+} TextureAtlasSingles;
+
+
+typedef struct {
     char *name;
     Frame frames[64];
     int frame_count;
@@ -74,6 +89,7 @@ TextureAtlasLayerValues all_data;
 TextureAtlasLayerValues shoe_data;
 TextureAtlasLayerValues pixel_layer;
 CombinedSets combined;
+TextureAtlasSingles singles;
 
 jsmntok_t all_tokens[1024 * 256];
 jsmntok_t shoe_tokens[1024 * 256];
@@ -337,7 +353,7 @@ void analyze_frames(jsmntok_t *t, int i, const char* str, TextureAtlasLayerValue
                 r->data[parent_index].own_data.frame_count++;
                 frame = &(r->data[parent_index].own_data.frames[frame_has_cell_index(substr)]);
             }
-
+            
             r->data[parent_index].is_solo = best.is_solo;
 
 
@@ -409,53 +425,25 @@ TextureAtlasItem* get_layer_with_name(TextureAtlasGroupOrSolo *thing, const char
 
 }
 
-/*
-typedef struct {
-    // it has at its base frames + pivot and/or anchorpoints.
-    LocationAndDimension frame;
-    LocationAndDimension spriteSourceSize;
-    Dimension sourceSize;
-    Point pivot;
-    Point anchor_1;//todo make this an array maybe
-
-} CombinedFrame;
-
-typedef struct {
-    char *layer_name;
-    char *group_name;
-    char *file_name;
-
-    int frame_count;
-    CombinedFrame frames[64];
-} CombinedItem;
-
-
- */
-
-
 void combine_all_and_pixel(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValues *all_data, CombinedSets *combined){
     int i, j, k;
     int index=0;
 
 
     for (i = 0; i < pixel_layer->total;i++) {
-
         printf("...%s\n",pixel_layer->data[i].name); //group name
         printf("...%s\n",pixel_layer->data[i].children[0].name); // must be groupname pixels
         printf("...%s\n",pixel_layer->data[i].children[0].frames[0].name); // filename
-
     }
 
 
     for (i = 0; i< all_data->total;i++) {
-
         if (all_data->data[i].child_count > 0) {
             // look for pivot and anchor layers.
             // get the correct pixel data fromm the pixel layer
             assert(all_data->data != NULL);
             assert(all_data->data[i].own_data.frames[0].name != NULL);
             assert(all_data->data[i].name != NULL);
-
 
             TextureAtlasItem* pivot = get_layer_with_name(&all_data->data[i], "pivot");
             TextureAtlasItem* anchor_1 = get_layer_with_name(&all_data->data[i], "anchor_1");
@@ -510,14 +498,95 @@ void combine_all_and_pixel(TextureAtlasLayerValues *pixel_layer, TextureAtlasLay
         } else {
             assert(0);
         }
-
-
         //combined->count++;
     }
-
-    // first I want to
-
 }
+
+
+
+void writeCFile(TextureAtlasSingles my_singles){
+
+    //SimpleFrame generated_frames[2];
+    //generated_frames[0] = (SimpleFrame){1,2,3,4,5,6,7,8,9,10};
+    int i;
+
+    FILE *fptr;
+    fptr= fopen("output_program.txt", "w");
+    fprintf(fptr, "enum %s {\n", "Blocks");
+
+    for (i = 0; i < my_singles.frame_count ; i++) {
+        fprintf(fptr,"    %s = %d\n", my_singles.frames[i].name, i);
+    }
+    fprintf(fptr,"    TOTAL = %d\n", i);
+    fprintf(fptr,"}\n");
+    fprintf(fptr,"SimpleFrame generated_frames[TOTAL];\n");
+    for (i = 0; i < my_singles.frame_count ; i++) {
+        fprintf(fptr,"generated_frames[%s] = (SimpleFrame){%d, %d, %d, %d,%d, %d, %d, %d, %d, %d};",
+               my_singles.frames[i].name,
+               my_singles.frames[i].frameX,
+               my_singles.frames[i].frameY,
+               my_singles.frames[i].frameW, 
+               my_singles.frames[i].frameH,
+               my_singles.frames[i].sssX,
+               my_singles.frames[i].sssY,
+               my_singles.frames[i].sssW,
+               my_singles.frames[i].sssH,
+               my_singles.frames[i].ssW,
+               my_singles.frames[i].ssH);
+        fprintf(fptr,"\n");
+    }
+
+    fclose(fptr);
+
+    
+}
+
+char *str_replace(char *orig, char *rep, char *with) {
+    char *result; // the return string
+    char *ins;    // the next insert point
+    char *tmp;    // varies
+    int len_rep;  // length of rep (the string to remove)
+    int len_with; // length of with (the string to replace rep with)
+    int len_front; // distance between rep and end of last rep
+    int count;    // number of replacements
+
+    // sanity checks and initialization
+    if (!orig || !rep)
+        return NULL;
+    len_rep = strlen(rep);
+    if (len_rep == 0)
+        return NULL; // empty rep causes infinite loop during count
+    if (!with)
+        with = "";
+    len_with = strlen(with);
+
+    // count the number of replacements needed
+    ins = orig;
+    for (count = 0; tmp = strstr(ins, rep); ++count) {
+        ins = tmp + len_rep;
+    }
+
+    tmp = result = malloc(strlen(orig) + (len_with - len_rep) * count + 1);
+
+    if (!result)
+        return NULL;
+
+    // first time through the loop, all the variable are set correctly
+    // from here on,
+    //    tmp points to the end of the result string
+    //    ins points to the next occurrence of rep in orig
+    //    orig points to the remainder of orig after "end of rep"
+    while (count--) {
+        ins = strstr(orig, rep);
+        len_front = ins - orig;
+        tmp = strncpy(tmp, orig, len_front) + len_front;
+        tmp = strcpy(tmp, with) + len_with;
+        orig += len_front + len_rep; // move to next "end of rep"
+    }
+    strcpy(tmp, orig);
+    return result;
+}
+
 
 
 int main(int argc, char *argv[]) {
@@ -540,38 +609,37 @@ int main(int argc, char *argv[]) {
         jsmn_parser parser;
         jsmn_init(&parser);
         int shoe = jsmn_parse(&parser, shoe_str, strlen(shoe_str), shoe_tokens, sizeof(shoe_tokens)/sizeof(shoe_tokens[0]));
-
         int i = 0;
         int j = 0;
+
         char buffer[16*1024];
-
-
         int num_items = shoe_tokens[2].size; 
-        printf("%d\n",num_items);
 
-
+        singles.frame_count = num_items;
         for (i = 0; i < num_items ; i++) {
             int index = 3 + (i * 28);
-
             strncpy(buffer, shoe_str + shoe_tokens[index].start, shoe_tokens[index].end - shoe_tokens[index].start);
             buffer[shoe_tokens[index].end - shoe_tokens[index].start] = '\0';
-            printf(" ***    %d) %s \n",index, buffer);
-            printf("x:%d, ", get_value(shoe_tokens, shoe_str, index+5));
-            printf("y:%d, ", get_value(shoe_tokens, shoe_str, index+7));
-            printf("w:%d, ", get_value(shoe_tokens, shoe_str, index+9));
-            printf("h:%d, ", get_value(shoe_tokens, shoe_str, index+11));
-            printf("\n");
-            printf("sssx:%d, ", get_value(shoe_tokens, shoe_str, index+15));
-            printf("sssy:%d, ", get_value(shoe_tokens, shoe_str, index+17));
-            printf("sssw:%d, ", get_value(shoe_tokens, shoe_str, index+19));
-            printf("sssh:%d, ", get_value(shoe_tokens, shoe_str, index+21));
-            printf("\n");
-            printf("ssw:%d, ", get_value(shoe_tokens, shoe_str, index+25));
-            printf("ssh:%d, ", get_value(shoe_tokens, shoe_str, index+27));
-            printf("\n");
 
-                
+            char * bb = str_replace(buffer, ".png", "") ;
+            
+            singles.frames[i].name = strdup(bb);
+            singles.frames[i].frameX = get_value(shoe_tokens, shoe_str, index+5);
+            singles.frames[i].frameY = get_value(shoe_tokens, shoe_str, index+7);
+            singles.frames[i].frameW = get_value(shoe_tokens, shoe_str, index+9);
+            singles.frames[i].frameH = get_value(shoe_tokens, shoe_str, index+11);
+
+            singles.frames[i].sssX = get_value(shoe_tokens, shoe_str, index+15);
+            singles.frames[i].sssY = get_value(shoe_tokens, shoe_str, index+17);
+            singles.frames[i].sssW = get_value(shoe_tokens, shoe_str, index+19);
+            singles.frames[i].sssH = get_value(shoe_tokens, shoe_str, index+21);
+
+            singles.frames[i].ssW = get_value(shoe_tokens, shoe_str, index+25);
+            singles.frames[i].ssH = get_value(shoe_tokens, shoe_str, index+27);
         }
+
+        writeCFile(singles);
+        
     }
 
 
