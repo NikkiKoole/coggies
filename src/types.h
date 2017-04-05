@@ -21,6 +21,7 @@
     }
 
 #define internal static
+#define global_value
 
 typedef int8_t s8;
 typedef int16_t s16;

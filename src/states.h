@@ -4,6 +4,13 @@
 #include "GLKMath.h"
 
 typedef struct {
+    int frameX, frameY, frameW, frameH;
+    int sssX, sssY, sssW, sssH;
+    int ssW, ssH;
+} SimpleFrame;
+
+
+typedef struct {
     MemoryArena arena;
 } ScratchState;
 
@@ -42,6 +49,8 @@ typedef struct {
     r32 duration_per_frame;
     r32 frame_duration_left;
     u8 plays_forward;
+    int first_frame;
+    int last_frame;
 } DynamicBlock; //64
 
 

@@ -62,7 +62,8 @@ typedef struct {
 
 
 typedef struct {
-    Texture sprite;
+    Texture character;
+    Texture blocks;
     Texture palette;
     Texture menlo;
     //LevelData level;

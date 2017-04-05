@@ -224,7 +224,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
-    int texture_size = renderer->assets.sprite.width;
+    int texture_size = renderer->assets.blocks.width;
 
 
     for (int dynamic_block_batch_index = 0; dynamic_block_batch_index < DYNAMIC_BLOCK_BATCH_COUNT; dynamic_block_batch_index++) {
@@ -488,7 +488,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug);
 void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
 
-    float actor_texture_size = renderer->assets.sprite.width;
+    float actor_texture_size = renderer->assets.character.width;
     int number_to_do = renderer->actors_layout.values_per_thing;
 
     ASSERT(number_to_do > 0);
@@ -598,7 +598,7 @@ void render_actors(PermanentState *permanent, RenderState *renderer, DebugState 
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.character.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "sprite_atlas"), 0);
 
     glActiveTexture(GL_TEXTURE1);
@@ -623,7 +623,7 @@ void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.blocks.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
 
     //glActiveTexture(GL_TEXTURE1);
@@ -632,7 +632,7 @@ void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
 
     //printf("\nused wall batches: %d\n",renderer->used_wall_batches);
 
-    int texture_size = renderer->assets.sprite.width;
+    int texture_size = renderer->assets.blocks.width;
     int number_to_do = renderer->walls_layout.values_per_thing;
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_dynamic_block_batches; wall_batch_index++) {
@@ -744,7 +744,7 @@ void render_walls(PermanentState *permanent, RenderState *renderer) {
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.blocks.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
 
 
@@ -780,7 +780,7 @@ void render_transparent_blocks(PermanentState *permanent, RenderState *renderer)
 
     // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
-    glBindTexture(GL_TEXTURE_2D, renderer->assets.sprite.id);
+    glBindTexture(GL_TEXTURE_2D, renderer->assets.blocks.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
 
 

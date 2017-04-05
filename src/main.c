@@ -100,13 +100,15 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/two_floors.txt");
+    resource_level(permanent, &permanent->level, "levels/16.txt"); //two_floors.txt
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
 
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
     //resource_tga(&renderer->assets.menlo, "fonts/osaka.tga");
-    resource_png(&renderer->assets.sprite, "textures/texture.png");
+    resource_png(&renderer->assets.blocks, "textures/sprites.png");
+    resource_png(&renderer->assets.character, "textures/texture.png");
+
     resource_png(&renderer->assets.palette, "textures/palette.png");
 
 #ifdef GL3

@@ -9,7 +9,7 @@ STRICT_RPI2 := $(STRICT) -Wextra  -Wformat=2 -Wno-import \
 		   -Wwrite-strings  -Wold-style-definition -Wmissing-prototypes \
 		   -Wmissing-declarations  -Wnested-externs -Winline \
 		   -Wdisabled-optimization -Wno-unused
-SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls  -Wcast-qual -Wshadow #-pedantic-errors
+SUPERSTRICT := $(STRICT_RPI2) -Wundef -Wbad-function-cast -Wstrict-prototypes -Wredundant-decls  -Wcast-qual -Wshadow
 WARNINGS = $(STRICT_RPI2)
 
 
