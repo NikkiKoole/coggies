@@ -305,7 +305,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->vertices[i + 18] = uvs.tl.x;
                 batch->vertices[i + 19] = uvs.br.y;
                 //batch->vertices[i + 23] = paletteIndex;
-                printf("TRANSPARENT uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
+                //printf("TRANSPARENT uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
             }
 
         //ASSERT(batch->count * 6 < 2048 * 6);
