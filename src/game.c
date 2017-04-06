@@ -209,9 +209,12 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
     result.height = frame.frameH;
     //TODO not yet sure about this offset and the spirteSourceSize...
     // how to use all that spritesource, sss, ss values??
-    result.x_off = xOff + 0;// ?????? this 0 should be some internal offset
-    result.y_off = yOff + 0;// ?????? this 0 should be some internal offset
+    result.x_off = xOff ;// ?????? this 0 should be some internal offset
+    result.y_off = yOff ;// ?????? this 0 should be some internal offset
 
+    result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
+    result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
+    if (result.y_internal_off > 0) printf("result: %d\n", result.y_internal_off);
     return result;
 }
 
@@ -315,97 +318,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         texture_atlas_data[EscalatorDown3W] = texture_atlas_data[EscalatorUp3W] = texture_atlas_data[Stairs3W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 48);
         texture_atlas_data[EscalatorDown4W] = texture_atlas_data[EscalatorUp4W] = texture_atlas_data[Stairs4W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 72);
 
-        texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 0);
-        texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24);
-        texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48);
-        texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72);
+        texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 0  - 8);
+        texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24  - 8);
+        texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48 - 8);
+        texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72 -8);
 
 
-
-        // old
-
-        //texture_atlas_data[EscalatorUp1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0};
-        //texture_atlas_data[EscalatorUp2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24};
-        //texture_atlas_data[EscalatorUp3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48};
-        //texture_atlas_data[EscalatorUp4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72};
-
-
-        /* texture_atlas_data[Floor]          =  (BlockTextureAtlasPosition){0*24 , 94,  24, 14 , 0, 0}; */
-        /* texture_atlas_data[WallBlock]      =  (BlockTextureAtlasPosition){1*24 , 0,   24, 108, 0, 0}; */
-        /* texture_atlas_data[LadderUpDown]   =  (BlockTextureAtlasPosition){2*24 , 0,   24, 108, 0, 0}; */
-        /* texture_atlas_data[LadderUp]       =  (BlockTextureAtlasPosition){1*24 , 108, 24, 108, 0, 0}; */
-        /* texture_atlas_data[WindowBlock]    =  (BlockTextureAtlasPosition){3*24 , 108, 24, 108, 0, 0}; */
-        /* texture_atlas_data[LadderDown]     =  (BlockTextureAtlasPosition){6*24 , 108, 24, 108, 0, 0}; */
-
-        /* //texture_atlas_data[Stairs1N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 0}; */
-        /* //texture_atlas_data[Stairs2N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 24}; */
-        /* //texture_atlas_data[Stairs3N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 48}; */
-        /* //texture_atlas_data[Stairs4N]     =  (BlockTextureAtlasPosition){3*24 , 72,  24, 36, 0, 72}; */
-
-        /* texture_atlas_data[Stairs1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0}; */
-        /* texture_atlas_data[Stairs2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24}; */
-        /* texture_atlas_data[Stairs3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48}; */
-        /* texture_atlas_data[Stairs4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72}; */
-
-        /* texture_atlas_data[Stairs1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0}; */
-        /* texture_atlas_data[Stairs2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24}; */
-        /* texture_atlas_data[Stairs3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48}; */
-        /* texture_atlas_data[Stairs4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72}; */
-
-
-
-        /* texture_atlas_data[Stairs1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0}; */
-        /* texture_atlas_data[Stairs2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24}; */
-        /* texture_atlas_data[Stairs3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48}; */
-        /* texture_atlas_data[Stairs4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72}; */
-
-        /* texture_atlas_data[Stairs1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0}; */
-        /* texture_atlas_data[Stairs2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24}; */
-        /* texture_atlas_data[Stairs3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48}; */
-        /* texture_atlas_data[Stairs4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72}; */
-
-        //
-        /* texture_atlas_data[EscalatorUp1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0}; */
-        /* texture_atlas_data[EscalatorUp2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24}; */
-        /* texture_atlas_data[EscalatorUp3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48}; */
-        /* texture_atlas_data[EscalatorUp4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72}; */
-
-        /* texture_atlas_data[EscalatorUp1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0}; */
-        /* texture_atlas_data[EscalatorUp2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24}; */
-        /* texture_atlas_data[EscalatorUp3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48}; */
-        /* texture_atlas_data[EscalatorUp4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72}; */
-
-        /* texture_atlas_data[EscalatorUp1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0}; */
-        /* texture_atlas_data[EscalatorUp2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24}; */
-        /* texture_atlas_data[EscalatorUp3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48}; */
-        /* texture_atlas_data[EscalatorUp4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72}; */
-
-
-        /* // */
-        /* texture_atlas_data[EscalatorDown1N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 0}; */
-        /* texture_atlas_data[EscalatorDown2N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 24}; */
-        /* texture_atlas_data[EscalatorDown3N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 48}; */
-        /* texture_atlas_data[EscalatorDown4N]     =  (BlockTextureAtlasPosition){0 , 216,  24, 36, 0, 72}; */
-
-        /* texture_atlas_data[EscalatorDown1S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 0}; */
-        /* texture_atlas_data[EscalatorDown2S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 24}; */
-        /* texture_atlas_data[EscalatorDown3S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 48}; */
-        /* texture_atlas_data[EscalatorDown4S]     =  (BlockTextureAtlasPosition){7*24 , 92,  24, 16, 0, 72}; */
-
-        /* texture_atlas_data[EscalatorDown1E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 0}; */
-        /* texture_atlas_data[EscalatorDown2E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 24}; */
-        /* texture_atlas_data[EscalatorDown3E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 48}; */
-        /* texture_atlas_data[EscalatorDown4E]     =  (BlockTextureAtlasPosition){0, 312,  24, 36,  0, 72}; */
-
-        /* texture_atlas_data[EscalatorDown1W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 0}; */
-        /* texture_atlas_data[EscalatorDown2W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 24}; */
-        /* texture_atlas_data[EscalatorDown3W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 48}; */
-        /* texture_atlas_data[EscalatorDown4W]     =  (BlockTextureAtlasPosition){0, 252,  24, 36, 0, 72}; */
-
-
-
-
-        texture_atlas_data[Shaded]         =  (BlockTextureAtlasPosition){19*24, 0,   24, 108, 0, 0};
 
         //int used_wall_block =0;
         int used_static_block_count = 0;
@@ -777,7 +695,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             if (permanent->dynamic_blocks[i].frame_duration_left >= permanent->dynamic_blocks[i].duration_per_frame) {
 
                 int frame_index = permanent->dynamic_blocks[i].current_frame;
-                //                printf("%d\n", frame_index);
+
                 if (permanent->dynamic_blocks[i].plays_forward == 1) {
                     frame_index +=1;
                     if (frame_index > permanent->dynamic_blocks[i].last_frame) frame_index = permanent->dynamic_blocks[i].first_frame;
@@ -785,15 +703,18 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 } else {
                     frame_index -= 1;
                     if (frame_index < permanent->dynamic_blocks[i].first_frame) frame_index = permanent->dynamic_blocks[i].last_frame;
-                    //printf("%d first:%d, last:%d\n", frame_index, permanent->dynamic_blocks[i].first_frame, permanent->dynamic_blocks[i].last_frame);
-
                 }
 
-                // TODO this assumes frames will always be the same size, eventually that might not be the case
                 permanent->dynamic_blocks[i].current_frame = frame_index;
                 permanent->dynamic_blocks[i].frame_duration_left = 0;
-                permanent->dynamic_blocks[i].frame.x_pos =  generated_frames[frame_index].frameX;
-                permanent->dynamic_blocks[i].frame.y_pos =  generated_frames[frame_index].frameY;
+
+                SimpleFrame f = generated_frames[frame_index];
+                permanent->dynamic_blocks[i].frame.x_pos =  f.frameX;
+                permanent->dynamic_blocks[i].frame.y_pos =  f.frameY;
+                permanent->dynamic_blocks[i].frame.width =  f.frameW;
+                permanent->dynamic_blocks[i].frame.height =  f.frameH;
+                permanent->dynamic_blocks[i].frame.y_internal_off = f.ssH - (f.sssY + f.frameH);
+                permanent->dynamic_blocks[i].frame.x_internal_off = f.ssW - (f.sssX + f.frameW);
             }
         }
     }

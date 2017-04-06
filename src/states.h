@@ -25,8 +25,12 @@ typedef struct {
     int y_pos;
     int width;
     int height;
-    int x_off;
-    int y_off;
+
+    int x_internal_off; // coming from cropping of sprites in texture
+    int y_internal_off; // "
+
+    int x_off; // used for offsetting sprite in world (think stairblocks at various heights)
+    int y_off; // "
 } BlockTextureAtlasPosition;
 
 typedef struct {
