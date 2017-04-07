@@ -1,38 +1,26 @@
+* Project I am working towards: Escalator Simulator
+  People ought to keep left on the escalator, so other people can overtake them whilst walking.
+  Some people dont keep left, the ones in a hurry get annoyed.
+  All types of people take the escalator.
+
 
 * Currently doing / Next up
-  - animating body parts
-    There's quite a bit to this, lets list it out.
-    - make a texture atlas and map file from ASE files, can use aseprite cli interface for that.
-    - also in that ASE file i will need to place anchor points and save them out.
-    - the anchor points shouldn't be visible in the texture atlas, I just need their locations
-    - the json needs to be transformed into a binary file format and/or into a H/C file i can link to.
-    - to summarize: I need some data structure which combines: originalSource size, currentSource size, pivot position, anchor point(s) position(s). PER body part.
-    - I need a separate tool that can combine the parts into frames, to check if everything is working as intended.
-    - perhaps this tool will be useful if I choose to use single framed actors instead of multi part sprites (seeing how heavy it is on RPI)
-    - about that: maybe I will need some render to texture experiment to see if i can generate a set of single frames for some random actor
-    - BTW, the parts we are talking about are: legs, torso, left-arm, right-arm, head, hair(?), hat(?), mouth(?)
-    - so at maximum we need to use 8x the amount of buffers, minimum 5x, seeing how on RPI it already struggles to display 1000 actors ATM, this means this number will be even allot lower (150, 200)
-    - for some projects it might very well be OK to just offload all combined sprite data into a huge single texture, when I don't need too many animations and not too many actors maybe.
-    - so I think it would be wise to have a few options of displaying actors eventually: ['with single frames', 'with 5,8 combined parts, 'render combined  into temporary single texture (fbo off screen)']
-    - then there's the whole way of describing an animation in body parts to solve, and making use of the extra options using parts offer, like random stances on torso vs arm or legs etc.
-
-
-  - havent really done anything with this for a good few weeks/months,
-    looking at it the simplest way back in is:
-    start using the json and generated texture atlasses for blocks first
-    then look into the characters
-    I really should have different ways of combining, for example for  the escalator work I could really just have a head and the rest of a body (meaning just 2 draws per character instead of 8)
-    For something else the fully separated one migh be better, so I have to support both.
-    The simpler thing would be to start with just the 2 part draw (heads and body) then we can grow from there when its needed.
-
+  - [-] animating body parts
+    I initially wanted to have (torso, left arm, right arm, legs and head) as parts
+    I dont want to start with that anymore though, just do a body and head (2 parts)
+    It'll be much more lightweight for the RPI and more then enough (for the moment)
+    - [X] make a texture atlas and map file from ASE files, can use aseprite cli interface for that.
+    - [X] also in that ASE file i will need to place anchor points and save them out.
+    - [X] the anchor points shouldn't be visible in the texture atlas, I just need their locations
+    - [X] to summarize: I need some data structure which combines: originalSource size, currentSource size, pivot position, anchor point(s) position(s). PER body part.
+    - [ ] the json needs to be transformed into a binary file format and/or into a H/C file i can link to.
+      this is working for the simpler 'block' texture atlas (generated with ShoeBox), not yet for the ASE Files
 
 
 * known bugs
  - bug: shadow gets in way of stairs below
 
-
 * Todo
-- [ ] clean up the GLKMath code, preferably into 1 header file and get rid of all the unneeded cruft
 - [ ] move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
 - [ ] play around a little with the "keys for doors" concept,
   a few things ahead: the jumppoints shouldnt be diagonally placed but before & after the door directly
@@ -40,7 +28,6 @@
   i can just set its distance east & west OR north & south temporary to 0 and set them back to 1 and 1 after I am done.
 - [ ] Ive done Reynolds steering behaviours, but its still a bit too much bouncing ball like, eventually i want it to be smarter, more human like
     In Game AI PRO 2 chapter 19 there is a Guide to Anticipatory Collision Avoidance (Guy, Karamouzas) which seems promising.
-- [ ] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
 - [ ] fix the key input stuff, now its in main, id rather do it in the gamelib code I think
 - [ ] have some way of seeing how much memory is in use, specifically in the permanent block.
   this would mean allocating / or well PUSH_STRUCT calls will need to be feed a string,
@@ -164,6 +151,10 @@
 
 
 * Done
+- [X] look at stb PNG again, writing that non compressed top left TGA might get old very soon when i need to draw a lot.
+
+- [X] clean up the GLKMath code, preferably into 1 header file and get rid of all the unneeded cruft
+
 - [X] worldmatrix uniforms (instead of calculating all on CPU), to make scaling/rotating the whole game easy. (profile on rpi)
 
 - [X] some steering stuff
@@ -327,6 +318,7 @@
   sadly I cannot really get that AIR thing working on *nux, damn adobe
   keep my eyes open for an alternativools
 - http://www.angelcode.com/products/bmfont/ for generating bitmap fonts
+
 
 * design docs, ideas
   idea:
