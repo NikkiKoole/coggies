@@ -507,7 +507,7 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             const float scale = 1.0f;
             const float guyFrameX = data._frame * 24.0f;
 
-            GLKVector3 location = data._location;
+            Vector3 location = data._location;
             const float guyDepth = location.y;
 
 
@@ -963,14 +963,14 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
                            0.0f, 0.0f, 1.0f, 0.0f,
                            0.0f, 0.0f, 0.0f, 1.0f};
 
-    GLKMatrix4 model = GLKMatrix4MakeWithArray(identity);
-    GLKMatrix4 projection = GLKMatrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
+    Matrix4 model = Matrix4MakeWithArray(identity);
+    Matrix4 projection = Matrix4MakeOrtho(0.0f, 1.0f * (float)renderer->view.width,
                                                 0.0f, 1.0f * (float)renderer->view.height,
                                                 -1.0f  * (float)renderer->view.height, 1.0f  * (float)renderer->view.height);
-    GLKMatrix4 view = GLKMatrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
-    renderer->mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view));
-    renderer->mvp = GLKMatrix4Translate(renderer->mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
-    //renderer->mvp  = GLKMatrix4RotateZ(renderer->mvp, PI/2);
+    Matrix4 view = Matrix4MakeLookAt(0.0f, 0.0f, 100.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f);
+    renderer->mvp = Matrix4Multiply(model, Matrix4Multiply(projection, view));
+    renderer->mvp = Matrix4Translate(renderer->mvp,  permanent->x_view_offset,  permanent->y_view_offset, 0 );
+    //renderer->mvp  = Matrix4RotateZ(renderer->mvp, PI/2);
 
 
     BEGIN_PERFORMANCE_COUNTER(render_func);
@@ -994,7 +994,7 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
     glDisable(GL_DEPTH_TEST);
 
     render_lines(permanent, renderer);
-    renderer->mvp = GLKMatrix4Multiply(model, GLKMatrix4Multiply(projection, view)); // get rid of translation
+    renderer->mvp = Matrix4Multiply(model, Matrix4Multiply(projection, view)); // get rid of translation
     render_text(permanent, renderer);
 
     END_PERFORMANCE_COUNTER(render_func);

@@ -54,7 +54,10 @@ gamelibrary-linux:
 	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DLINUX   -shared -o $(LIBRARY_NAME) level.o game.o random.o renderer.o memory.o pathfind.o -lGL  -lGLEW   $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
 
-
+texture-atlas-blocks:
+	@echo "This will convert some .js output from shoebox into a blocks.h file"
+	@tools/pivot_planner/pivot-planner resources/sprites.js
+	@mv output_program.txt src/blocks.h
 
 test:
 	gcc ${STD} ${DEBUG} spec/spec_runner.c  src/memory.c src/pathfind.c src/level.c  src/random.c  -lm  && ./a.out

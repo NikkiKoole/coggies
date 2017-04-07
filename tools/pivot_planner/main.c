@@ -596,7 +596,6 @@ char *str_replace(char *orig, char *rep, char *with) {
 
 
 int main(int argc, char *argv[]) {
-    printf("%d args\n", argc);
     if (argc < 2) {
         printf("This tool makes useful binary representation out of specific json representations of TextureAtlasses.\n");
         printf("It can either use ASEPrite generated json, that crafted in such a way you can use pivots and anchors.\n");

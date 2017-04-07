@@ -66,16 +66,14 @@ internal void fill_generated_values(SimpleFrame* generated_frames ) {
     generated_frames[BL_escalator_north_up_10] = (SimpleFrame){75, 69, 24, 36,0, 0, 24, 36, 24, 36};
     generated_frames[BL_escalator_north_up_11] = (SimpleFrame){75, 69, 24, 36,0, 0, 24, 36, 24, 36};
     generated_frames[BL_escalator_north_up_12] = (SimpleFrame){25, 104, 24, 36,0, 0, 24, 36, 24, 36};
-
-    generated_frames[BL_escalator_south_up_01] = (SimpleFrame){75, 52,  24, 16,0, 8, 24, 24, 24, 24};
-    generated_frames[BL_escalator_south_up_02] = (SimpleFrame){0,  218, 24, 15,0, 9, 24, 24, 24, 24};
-    generated_frames[BL_escalator_south_up_03] = (SimpleFrame){75, 0,   24, 14,0, 10, 24, 24, 24, 24};
+    generated_frames[BL_escalator_south_up_01] = (SimpleFrame){75, 52, 24, 16,0, 8, 24, 24, 24, 24};
+    generated_frames[BL_escalator_south_up_02] = (SimpleFrame){0, 218, 24, 15,0, 9, 24, 24, 24, 24};
+    generated_frames[BL_escalator_south_up_03] = (SimpleFrame){75, 0, 24, 14,0, 10, 24, 24, 24, 24};
     generated_frames[BL_escalator_south_up_04] = (SimpleFrame){50, 228, 24, 13,0, 11, 24, 24, 24, 24};
     generated_frames[BL_escalator_south_up_05] = (SimpleFrame){50, 215, 24, 12,0, 12, 24, 24, 24, 24};
     generated_frames[BL_escalator_south_up_06] = (SimpleFrame){50, 201, 24, 13,0, 11, 24, 24, 24, 24};
-    generated_frames[BL_escalator_south_up_07] = (SimpleFrame){75, 0,   24, 14,0, 10, 24, 24, 24, 24};
+    generated_frames[BL_escalator_south_up_07] = (SimpleFrame){75, 0, 24, 14,0, 10, 24, 24, 24, 24};
     generated_frames[BL_escalator_south_up_08] = (SimpleFrame){50, 185, 24, 15,0, 9, 24, 24, 24, 24};
-
     generated_frames[BL_escalator_west_up_01] = (SimpleFrame){50, 148, 24, 36,0, 0, 24, 36, 24, 36};
     generated_frames[BL_escalator_west_up_02] = (SimpleFrame){50, 111, 24, 36,0, 0, 24, 36, 24, 36};
     generated_frames[BL_escalator_west_up_03] = (SimpleFrame){50, 74, 24, 36,0, 0, 24, 36, 24, 36};

@@ -8,7 +8,8 @@
 #include "SDL.h"
 #include "SDL_mixer.h"
 
-#include "GLKMath.h"
+
+#include "my_math.h"
 
 #define USES_HALF_FLOAT
 
@@ -109,7 +110,7 @@ typedef struct DrawBuffer {
 
 typedef struct RenderState {
 //float tx, ty, rotation;
-    GLKMatrix4 mvp;
+    Matrix4 mvp;
     ViewPort view;
     SDL_Window *window;
     SDL_GLContext context;

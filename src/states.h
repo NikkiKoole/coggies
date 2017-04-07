@@ -1,7 +1,8 @@
 #ifndef STATES_H
 #define STATES_H
 #include "memory.h"
-#include "GLKMath.h"
+//#include "Math.h"
+#include "my_math.h"
 
 typedef struct {
     int frameX, frameY, frameW, frameH;
@@ -60,7 +61,7 @@ typedef struct {
 
 
 typedef struct FoundPathNode {
-    GLKVector3 node;
+    Vector3 node;
     float unused;
 } FoundPathNode;
 
@@ -98,11 +99,11 @@ typedef struct {
 } ActorAnimData;
 
 typedef struct {
-    GLKVector3 location;
+    Vector3 location;
     s16 dx;
     s16 dy;
-    GLKVector3 velocity;
-    GLKVector3 acceleration;
+    Vector3 velocity;
+    Vector3 acceleration;
     float mass;
     float max_speed;
     float max_force;
@@ -110,7 +111,7 @@ typedef struct {
 
 
 typedef struct {
-    GLKVector3 _location;
+    Vector3 _location;
     //ActorPath path;
     //ActorAnimData anim;
     //ActorSteerData steer;

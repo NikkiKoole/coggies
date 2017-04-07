@@ -8,7 +8,8 @@
 #include "level.h"
 #include "data_structures.h"
 #include "blocks.h"
-#include "GLKMath.h"
+//#include "Math.h"
+#include "my_math.h"
 #include <math.h>
 
 #define SORT_NAME Actor
@@ -24,28 +25,21 @@
 
 #include "sort.h"
 #pragma GCC diagnostic pop
-//#define PI 3.14159265
 
-
-
-
-
-
-
-
-internal GLKVector3 seek_return(ActorSteerData *actor, GLKVector3 target) {
-    GLKVector3 desired = GLKVector3Subtract(target, actor->location);
+internal Vector3 seek_return(ActorSteerData *actor, Vector3 target) {
+    Vector3 desired = Vector3Subtract(target, actor->location);
     if (desired.x != 0 || desired.y != 0 || desired.z != 0) {
-        desired = GLKVector3Normalize(desired);
+        desired = Vector3Normalize(desired);
     }
-    desired = GLKVector3MultiplyScalar(desired, actor->max_speed);
-    GLKVector3 steer = GLKVector3Subtract(desired, actor->velocity);
-    steer = GLKVector3Limit(steer, actor->max_force);
+    desired = Vector3MultiplyScalar(desired, actor->max_speed);
+    Vector3 steer = Vector3Subtract(desired, actor->velocity);
+    steer = Vector3Limit(steer, actor->max_force);
     return steer;
 }
-internal void actor_apply_force(ActorSteerData *a, GLKVector3 force) {
-    force = GLKVector3DivideScalar(force, a->mass);
-    a->acceleration = GLKVector3Add(a->acceleration, force);
+
+internal void actor_apply_force(ActorSteerData *a, Vector3 force) {
+    force = Vector3DivideScalar(force, a->mass);
+    a->acceleration = Vector3Add(a->acceleration, force);
 }
 
 internal int path_length_at_index(PermanentState *permanent, int i) {
@@ -287,7 +281,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             permanent->paths[i].Sentinel->Next = Sentinel;
             permanent->paths[i].Sentinel->Prev = Sentinel;
             permanent->actors[i].index = i;
-            permanent->paths[i].Sentinel->path.node = GLKVector3Make(-999,-999,-999);
+            permanent->paths[i].Sentinel->path.node = Vector3Make(-999,-999,-999);
         }
 
         node16->Free = PUSH_STRUCT(&node16->arena, Node16);
@@ -519,7 +513,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         for (u32 i = 0; i < permanent->actor_count; i++) {
 
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
-                float distance = GLKVector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
+                float distance = Vector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
                 if (distance < 4){
                 //if (permanent->paths[i].counter <=0) {
                     Node16 *First = permanent->paths[i].Sentinel->Next;
@@ -538,14 +532,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(actors_steering);
             {
-                GLKVector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
-                seek_force = GLKVector3MultiplyScalar(seek_force, 1);
+                Vector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
+                seek_force = Vector3MultiplyScalar(seek_force, 1);
                 actor_apply_force(&permanent->steer_data[i], seek_force);
 
-                permanent->steer_data[i].velocity = GLKVector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
-                permanent->steer_data[i].velocity = GLKVector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
-                permanent->steer_data[i].location = GLKVector3Add(permanent->steer_data[i].location,   GLKVector3MultiplyScalar(permanent->steer_data[i].velocity, last_frame_time_seconds));
-                permanent->steer_data[i].acceleration = GLKVector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
+                permanent->steer_data[i].velocity = Vector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
+                permanent->steer_data[i].velocity = Vector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
+                permanent->steer_data[i].location = Vector3Add(permanent->steer_data[i].location,   Vector3MultiplyScalar(permanent->steer_data[i].velocity, last_frame_time_seconds));
+                permanent->steer_data[i].acceleration = Vector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
 
                 // left = frame 0, down = frame 1 right = frame 2,up = frame 3
                 double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
