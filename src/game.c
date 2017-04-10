@@ -57,7 +57,6 @@ internal int get_node16_freelist_length(Node16Arena * arena) {
     Node16 * node = arena->Free;
     while (node->Next != arena->Free) {
         node = node->Next;
-        //if (count % 100 == 0 ) printf("%d\n",count);
         count++;
     }
     return count;
@@ -67,74 +66,63 @@ void game_update_and_render(Memory* memory,  RenderState *renderer, float last_f
 
 internal int sort_static_blocks_back_front (const void * a, const void * b)
 {
-    //1536 = some guestimate, assuming the depth is maximum 128.
-    // and the height of each block is 128
     const StaticBlock *a2 = (const StaticBlock *) a;
     const StaticBlock *b2 = (const StaticBlock *) b;
-
-    // TODO maybe I need a special batch of tranparant things that are drawn back to front, so the rest can be faster
-    // TODO heyhey the back to front order shows the same artifacts i see when trying to get actors drawn on top of all floors
     return (  (a2->y*16384 + a2->z ) - ( b2->y*16384 + b2->z));
-    //return (  (a2->y*16384 -  a2->z) - ( b2->y*16384 - b2->z)); // this sorts walls back to front (needed for transparancy)
-    //return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z)); //// this sorts walls front to back (much faster rendering)
 }
 internal int sort_static_blocks_front_back (const void * a, const void * b)
 {
-    //1536 = some guestimate, assuming the depth is maximum 128.
-    // and the height of each block is 128
     const StaticBlock *a2 = (const StaticBlock *) a;
     const StaticBlock *b2 = (const StaticBlock *) b;
-
-    // TODO maybe I need a special batch of tranparant things that are drawn back to front, so the rest can be faster
-    // TODO heyhey the back to front order shows the same artifacts i see when trying to get actors drawn on top of all floors
-    //return (  (a2->y*16384 + a2->z ) - ( b2->y*16384 + b2->z));
-    //return (  (a2->y*16384 -  a2->z) - ( b2->y*16384 - b2->z)); // this sorts walls back to front (needed for transparancy)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z)); //// this sorts walls front to back (much faster rendering)
 }
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f));
+#define ACTOR_PARTS 1
+    u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->actors[0].count = permanent->actor_count;
+        renderer->actors[0].count = (permanent->actor_count * ACTOR_PARTS);
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches - 1; i++) {
-            renderer->actors[i].count = MAX_IN_BUFFER;
+            renderer->actors[i].count = (MAX_IN_BUFFER);
         }
-        renderer->actors[used_batches - 1].count = permanent->actor_count % MAX_IN_BUFFER;
+        renderer->actors[used_batches - 1].count = (permanent->actor_count * ACTOR_PARTS)  % (MAX_IN_BUFFER);
     } else {
         renderer->used_actor_batches = 0;
     }
+    printf("used batches: %d\n", used_batches);
+#undef ACTOR_PARTS
 }
 
 internal void set_dynamic_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->dynamic_block_count / 2048.0f);
+    u32 used_batches = ceil(permanent->dynamic_block_count / (MAX_IN_BUFFER * 1.0f));
     renderer->used_dynamic_block_batches = used_batches;
 
     if (used_batches == 1) {
         renderer->dynamic_blocks[0].count = permanent->dynamic_block_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
-            renderer->dynamic_blocks[i].count = 2048;
+            renderer->dynamic_blocks[i].count = MAX_IN_BUFFER;
         }
-        renderer->dynamic_blocks[used_batches-1].count = permanent->dynamic_block_count % 2048;
+        renderer->dynamic_blocks[used_batches-1].count = permanent->dynamic_block_count % MAX_IN_BUFFER;
     } else {
         renderer->used_dynamic_block_batches = 0;
     }
 }
 
 internal void set_transparent_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->transparent_block_count / 2048.0f);
+    u32 used_batches = ceil(permanent->transparent_block_count / (MAX_IN_BUFFER * 1.0f));
     renderer->used_transparent_block_batches = used_batches;
 
     if (used_batches == 1) {
         renderer->transparent_blocks[0].count = permanent->transparent_block_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
-            renderer->transparent_blocks[i].count = 2048;
+            renderer->transparent_blocks[i].count = MAX_IN_BUFFER;
         }
-        renderer->transparent_blocks[used_batches-1].count = permanent->transparent_block_count % 2048;
+        renderer->transparent_blocks[used_batches-1].count = permanent->transparent_block_count % MAX_IN_BUFFER;
     } else {
         renderer->used_transparent_block_batches = 0;
     }
@@ -142,16 +130,16 @@ internal void set_transparent_block_batch_sizes(PermanentState *permanent, Rende
 
 
 internal void set_static_block_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->static_block_count / 2048.0f);
+    u32 used_batches = ceil(permanent->static_block_count / (MAX_IN_BUFFER * 1.0f));
     renderer->used_static_block_batches = used_batches;
 
     if (used_batches == 1) {
         renderer->static_blocks[0].count = permanent->static_block_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches-1; i++) {
-            renderer->static_blocks[i].count = 2048;
+            renderer->static_blocks[i].count = MAX_IN_BUFFER;
         }
-        renderer->static_blocks[used_batches-1].count = permanent->static_block_count % 2048;
+        renderer->static_blocks[used_batches-1].count = permanent->static_block_count % MAX_IN_BUFFER;
     } else {
         renderer->used_static_block_batches = 0;
     }
@@ -187,7 +175,7 @@ internal grid_node* get_neighboring_walkable_node(Grid *grid, int x, int y, int 
 }
 
 internal grid_node* get_random_walkable_node(Grid *grid) {
-    grid_node *result;// = GetNodeAt(grid, 0,0,0);
+    grid_node *result;
     do {
         result = get_node_at(grid, rand_int(grid->width), rand_int(grid->height), rand_int(grid->depth));
     } while (!result->walkable);
@@ -196,16 +184,12 @@ internal grid_node* get_random_walkable_node(Grid *grid) {
 
 internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFrame frame, int xOff, int yOff) {
     BlockTextureAtlasPosition result;
-    // the xOff yOff thats being input is to duplciate the same frame in another position (when you have stair parts for example that are drawn higher.)
-    result.x_pos = frame.frameX;
-    result.y_pos = frame.frameY;
-    result.width = frame.frameW;
-    result.height = frame.frameH;
-    //TODO not yet sure about this offset and the spirteSourceSize...
-    // how to use all that spritesource, sss, ss values??
-    result.x_off = xOff ;// ?????? this 0 should be some internal offset
-    result.y_off = yOff ;// ?????? this 0 should be some internal offset
-
+    result.x_pos          = frame.frameX;
+    result.y_pos          = frame.frameY;
+    result.width          = frame.frameW;
+    result.height         = frame.frameH;
+    result.x_off          = xOff;
+    result.y_off          = yOff;
     result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
     result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
     if (result.y_internal_off > 0) printf("result: %d\n", result.y_internal_off);
@@ -215,32 +199,29 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
 global_value SimpleFrame generated_frames[TOTAL];
 
 internal void add_static_block(int x, int y, int z,PermanentState *permanent, int *used_block_count, BlockTextureAtlasPosition texture_atlas_data) {
-    permanent->static_blocks[*used_block_count].x = x * permanent->block_size.x;
-    permanent->static_blocks[*used_block_count].y = (y * permanent->block_size.y) ;
-    permanent->static_blocks[*used_block_count].z = z * permanent->block_size.z_level;
+    permanent->static_blocks[*used_block_count].x     = x * permanent->block_size.x;
+    permanent->static_blocks[*used_block_count].y     = (y * permanent->block_size.y) ;
+    permanent->static_blocks[*used_block_count].z     = z * permanent->block_size.z_level;
     permanent->static_blocks[*used_block_count].frame = texture_atlas_data;
 }
 internal void add_transparent_block(int x, int y, int z,PermanentState *permanent, int *used_block_count, BlockTextureAtlasPosition texture_atlas_data) {
-    permanent->transparent_blocks[*used_block_count].x = x * permanent->block_size.x;
-    permanent->transparent_blocks[*used_block_count].y = (y * permanent->block_size.y) ;
-    permanent->transparent_blocks[*used_block_count].z = z * permanent->block_size.z_level;
+    permanent->transparent_blocks[*used_block_count].x     = x * permanent->block_size.x;
+    permanent->transparent_blocks[*used_block_count].y     = (y * permanent->block_size.y) ;
+    permanent->transparent_blocks[*used_block_count].z     = z * permanent->block_size.z_level;
     permanent->transparent_blocks[*used_block_count].frame = texture_atlas_data;
 }
 internal void add_dynamic_block(int x, int y, int z,PermanentState *permanent, int *used_block_count, BlockTextureAtlasPosition texture_atlas_data, int first, int last, float duration, int direction) {
-    permanent->dynamic_blocks[*used_block_count].x = x * permanent->block_size.x;
-    permanent->dynamic_blocks[*used_block_count].y = (y * permanent->block_size.y) ;
-    permanent->dynamic_blocks[*used_block_count].z = z * permanent->block_size.z_level;
-    permanent->dynamic_blocks[*used_block_count].frame = texture_atlas_data;
-
-    permanent->dynamic_blocks[*used_block_count].start_frame_x = texture_atlas_data.x_pos;
-
-    permanent->dynamic_blocks[*used_block_count].first_frame = first;
-    permanent->dynamic_blocks[*used_block_count].last_frame = last;
-    permanent->dynamic_blocks[*used_block_count].current_frame = first;
-    permanent->dynamic_blocks[*used_block_count].total_frames = (last-first)+1;
-
+    permanent->dynamic_blocks[*used_block_count].x                  = x * permanent->block_size.x;
+    permanent->dynamic_blocks[*used_block_count].y                  = (y * permanent->block_size.y) ;
+    permanent->dynamic_blocks[*used_block_count].z                  = z * permanent->block_size.z_level;
+    permanent->dynamic_blocks[*used_block_count].frame              = texture_atlas_data;
+    permanent->dynamic_blocks[*used_block_count].start_frame_x      = texture_atlas_data.x_pos;
+    permanent->dynamic_blocks[*used_block_count].first_frame        = first;
+    permanent->dynamic_blocks[*used_block_count].last_frame         = last;
+    permanent->dynamic_blocks[*used_block_count].current_frame      = first;
+    permanent->dynamic_blocks[*used_block_count].total_frames       = (last-first)+1;
     permanent->dynamic_blocks[*used_block_count].duration_per_frame = duration;
-    permanent->dynamic_blocks[*used_block_count].plays_forward = direction;
+    permanent->dynamic_blocks[*used_block_count].plays_forward      = direction;
 }
 
 extern void game_update_and_render(Memory* memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
@@ -262,25 +243,24 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
     if (memory->is_initialized == false) {
-        permanent->dynamic_blocks = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
-        permanent->static_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
+        permanent->dynamic_blocks     = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
+        permanent->static_blocks      = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
         permanent->transparent_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
-        permanent->actors = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
-        permanent->paths = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
-        permanent->steer_data = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
+        permanent->actors             = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
+        permanent->paths              = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
+        permanent->steer_data         = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
         for (int i = 0; i < 16384*4; i++) {
-            permanent->steer_data[i].mass = 1.0f;
+            permanent->steer_data[i].mass      = 1.0f;
             permanent->steer_data[i].max_force = 10;
             permanent->steer_data[i].max_speed = 50 + rand_float() * 80;
-
         }
         permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
         for (int i = 0; i < 16384*4; i++) {
             Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
-            permanent->paths[i].Sentinel = Sentinel;
-            permanent->paths[i].Sentinel->Next = Sentinel;
-            permanent->paths[i].Sentinel->Prev = Sentinel;
-            permanent->actors[i].index = i;
+            permanent->paths[i].Sentinel            = Sentinel;
+            permanent->paths[i].Sentinel->Next      = Sentinel;
+            permanent->paths[i].Sentinel->Prev      = Sentinel;
+            permanent->actors[i].index              = i;
             permanent->paths[i].Sentinel->path.node = Vector3Make(-999,-999,-999);
         }
 
@@ -291,18 +271,16 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
         permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
 
-
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         fill_generated_values(generated_frames);
 
+        texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
+        texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
+        texture_atlas_data[WindowBlock]  = convertSimpleFrameToBlockTexturePos(generated_frames[BL_window], 0, 0);
 
-        texture_atlas_data[Floor] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
-        texture_atlas_data[WallBlock] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
-        texture_atlas_data[WindowBlock] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_window], 0, 0);
-
-        texture_atlas_data[LadderUp] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up], 0, 0);
-        texture_atlas_data[LadderUpDown] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down], 0, 0);
-        texture_atlas_data[LadderDown] =  convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down], 0, 0);
+        texture_atlas_data[LadderUp]     = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up], 0, 0);
+        texture_atlas_data[LadderUpDown] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down], 0, 0);
+        texture_atlas_data[LadderDown]   = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down], 0, 0);
 
         texture_atlas_data[EscalatorDown1S] = texture_atlas_data[EscalatorUp1S] = texture_atlas_data[Stairs1S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 0);
         texture_atlas_data[EscalatorDown2S] = texture_atlas_data[EscalatorUp2S] = texture_atlas_data[Stairs2S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 24);
@@ -323,8 +301,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24 );
         texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48 );
         texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72 );
-
-
 
         int used_static_block_count = 0;
         int used_dynamic_block_count = 0;
@@ -414,56 +390,24 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     case BlockTotal:
 
                     default:
-                        //c = b;
-                        //ASSERT("Problem!" && false);
                         break;
                     }
-
-                    /* WorldBlock *one_above = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z+1 ,permanent->dims.x, permanent->dims.y)]; */
-
-                    /* if (one_above->object == Floor && z+1 < permanent->dims.z_level ){ */
-                    /*     //count_shadow++; */
-                    /*     permanent->static_blocks[used_static_block_count].frame = texture_atlas_data[Shaded]; */
-                    /*     permanent->static_blocks[used_static_block_count].x = x * permanent->block_size.x; */
-                    /*     permanent->static_blocks[used_static_block_count].y = (y * permanent->block_size.y)-4; //TODO : what is this madness -4 ! */
-                    /*     permanent->static_blocks[used_static_block_count].z = z * permanent->block_size.z_level; */
-                    /*     used_static_block_count++; */
-                    /* } */
-
-
                 }
             }
         }
 
-        permanent->static_block_count = used_static_block_count;
-        set_static_block_batch_sizes(permanent, renderer);
-
-        permanent->dynamic_block_count = used_dynamic_block_count;
-        set_dynamic_block_batch_sizes(permanent, renderer);
-
+        permanent->static_block_count      = used_static_block_count;
+        permanent->dynamic_block_count     = used_dynamic_block_count;
         permanent->transparent_block_count = used_transparent_block_count;
-        set_transparent_block_batch_sizes(permanent, renderer);
 
+        set_static_block_batch_sizes(permanent, renderer);
+        set_dynamic_block_batch_sizes(permanent, renderer);
+        set_transparent_block_batch_sizes(permanent, renderer);
 
         qsort(permanent->static_blocks, used_static_block_count, sizeof(StaticBlock), sort_static_blocks_front_back);
         qsort(permanent->transparent_blocks, used_transparent_block_count, sizeof(StaticBlock), sort_static_blocks_back_front);
-        //set_wall_batch_sizes(permanent, renderer);
-
-        //printf("wall count: %d used wall block:%d \n", permanent->wall_count, used_wall_block);
 
         renderer->needs_prepare = 1;
-        //prepare_renderer(permanent, renderer);
-
-        for (u32 i = 0; i < 1; i++) {
-            permanent->steer_data[i].location.x = rand_int(permanent->dims.x) * permanent->block_size.x;
-            permanent->steer_data[i].location.y = rand_int(permanent->dims.y) * permanent->block_size.y;
-            permanent->steer_data[i].location.z = rand_int(0) * permanent->block_size.z_level;
-            permanent->anim_data[i].frame = rand_int(4);
-            float speed = 1; //10 + rand_int(10); // px per seconds
-            permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed;
-            permanent->anim_data[i].palette_index = rand_float();
-        }
 
         set_actor_batch_sizes(permanent, renderer);
 
@@ -485,20 +429,19 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 if (permanent->dynamic_blocks[i].plays_forward == 1) {
                     frame_index +=1;
                     if (frame_index > permanent->dynamic_blocks[i].last_frame) frame_index = permanent->dynamic_blocks[i].first_frame;
-
                 } else {
                     frame_index -= 1;
                     if (frame_index < permanent->dynamic_blocks[i].first_frame) frame_index = permanent->dynamic_blocks[i].last_frame;
                 }
 
-                permanent->dynamic_blocks[i].current_frame = frame_index;
-                permanent->dynamic_blocks[i].frame_duration_left = 0;
+                permanent->dynamic_blocks[i].current_frame        = frame_index;
+                permanent->dynamic_blocks[i].frame_duration_left  = 0;
 
                 SimpleFrame f = generated_frames[frame_index];
-                permanent->dynamic_blocks[i].frame.x_pos =  f.frameX;
-                permanent->dynamic_blocks[i].frame.y_pos =  f.frameY;
-                permanent->dynamic_blocks[i].frame.width =  f.frameW;
-                permanent->dynamic_blocks[i].frame.height =  f.frameH;
+                permanent->dynamic_blocks[i].frame.x_pos          = f.frameX;
+                permanent->dynamic_blocks[i].frame.y_pos          = f.frameY;
+                permanent->dynamic_blocks[i].frame.width          = f.frameW;
+                permanent->dynamic_blocks[i].frame.height         = f.frameH;
                 permanent->dynamic_blocks[i].frame.y_internal_off = f.ssH - (f.sssY + f.frameH);
                 permanent->dynamic_blocks[i].frame.x_internal_off = f.ssW - (f.sssX + f.frameW);
             }
@@ -510,12 +453,11 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 #if 1
     {
         permanent->colored_line_count = 0;
-        for (u32 i = 0; i < permanent->actor_count; i++) {
 
+        for (u32 i = 0; i < permanent->actor_count; i++) {
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 float distance = Vector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
                 if (distance < 4){
-                //if (permanent->paths[i].counter <=0) {
                     Node16 *First = permanent->paths[i].Sentinel->Next;
                     permanent->paths[i].Sentinel->Next = First->Next;
                     First->Next = node16->Free->Next;
@@ -523,11 +465,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     First->Prev = node16->Free;
                 }
             }
-
-            // here i should peek at the first node in permanent->paths[i].Sentinel->Next->path.node
-            // thats the position i want to steer towards
-            // here is where i shoudl put that colored debug line drawing, it'll come in handy still
-
 
 
             BEGIN_PERFORMANCE_COUNTER(actors_steering);
@@ -544,7 +481,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 // left = frame 0, down = frame 1 right = frame 2,up = frame 3
                 double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
                 angle = angle + 180;
-                //printf("%f \n",angle);
+
                 if (angle > 315 || angle < 45) {
                     permanent->anim_data[i].frame = 10; //11
                 } else if (angle >= 45 && angle <= 135) {
@@ -690,57 +627,32 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             end_temporary_memory(temp_mem);
 
         }
-        //printf("colored lines: %d\n", permanent->colored_line_count);
         set_colored_line_batch_sizes(permanent, renderer);
-        //printf("Node16 used: %lu \n", node16->arena.used );
     }
 #endif
 
-
-
-
-
-
-
-
-
-
-
-
     BEGIN_PERFORMANCE_COUNTER(actors_data_gathering);
-
-    // TODO for now this suffices, its the easiest and not TOO bad, but i loose 3ms for 64k actors on sorting this way
-    // what happens like this is the data is not sorted at all and then i sort it every frame.
-    // the solution (I think) would be using some index, so i can leave the renderable data sorted as is, and gather from the correct places.
-    // it costs a little in cache misses when gathering, but not as much as the sort is costing more now.
-    // maybe as an alternative I can look into using a separate thread to sort this data on, and flip flop data.
-    // btw not sorting only costs 10ms per frame (@64k) vs 17/18, but i think the sorting is specifically desired on rpi (TODO TEST THIS AGAiN)
-
-
     for (u32 i = 0; i < permanent->actor_count; i++) {
-        //printf("index: %d\n",permanent->actors[i].index);
-
-        //permanent->actors[i]._location = permanent->steer_data[permanent->actors[i].index].location;
-        //permanent->actors[i]._palette_index = permanent->anim_data[permanent->actors[i].index].palette_index;
-        //permanent->actors[i]._frame = permanent->anim_data[permanent->actors[i].index].frame;
-
-        permanent->actors[i]._location = permanent->steer_data[i].location;//
-        permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;//
-        permanent->actors[i]._frame = permanent->anim_data[i].frame;//
-
+        permanent->actors[i]._location = permanent->steer_data[i].location;
+        permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
+        permanent->actors[i]._frame = permanent->anim_data[i].frame;
     }
+
+    // TODO this is just a hack to prove i can draw 2 parts per actor..
+    for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
+        permanent->actors[i]._location = permanent->steer_data[i-permanent->actor_count].location;
+        permanent->actors[i]._palette_index = permanent->anim_data[i-permanent->actor_count].palette_index;
+        permanent->actors[i]._frame = permanent->anim_data[i-permanent->actor_count].frame;
+        permanent->actors[i]._location.x += 5;
+        permanent->actors[i]._location.y += 5;
+    }
+
 
     END_PERFORMANCE_COUNTER(actors_data_gathering);
 
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
-    //    qsort, timsort, quick_sort
-    //64k 7.3    4.8      3.7
-    //qsort(permanent->actors,  permanent->actor_count, sizeof(Actor), actorsortfunc);
-    //TODO later on when I use binning for steering I might be able to improve sorting
     Actor_quick_sort(permanent->actors, permanent->actor_count);
-    //Actor_sqrt_sort(permanent->actors, permanent->actor_count);
-    //Actor_tim_sort(permanent->actors,  permanent->actor_count);
     END_PERFORMANCE_COUNTER(actors_sort);
 
 }

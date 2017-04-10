@@ -483,10 +483,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     }
 }
 
-
-
-void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug);
-void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
+internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
 
     float actor_texture_size = renderer->assets.character.width;
     int number_to_do = renderer->actors_layout.values_per_thing;
@@ -507,13 +504,12 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
             const float scale = 1.0f;
             const float guyFrameX = data._frame * 24.0f;
 
-            Vector3 location = data._location;
+            const Vector3 location = data._location;
             const float guyDepth = location.y;
-
 
             const float x2 = round(location.x);
             const float y2 = round((location.z) - (location.y) / 2.0f);
-            const float paletteIndex = data._palette_index; //rand_float();
+            const float paletteIndex = data._palette_index;
 
             const float guyFrameY = 9.0f * 12.0f;
             const float guyFrameHeight = 108.0f ;
@@ -586,8 +582,8 @@ void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *rend
 
 
 
-void render_actors(PermanentState *permanent,  RenderState *renderer, DebugState *debug);
-void render_actors(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
+
+internal void render_actors(PermanentState *permanent, RenderState *renderer, DebugState *debug) {
 
     // this part needs to be repeated in all render loops (To use specific shader programs)
     glUseProgram(renderer->assets.xyz_uv_palette);
@@ -611,8 +607,8 @@ void render_actors(PermanentState *permanent, RenderState *renderer, DebugState 
 
 
 
-void render_dynamic_blocks(PermanentState *permanent,  RenderState *renderer);
-void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
+
+internal void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
 
     glUseProgram(renderer->assets.xyz_uv);
@@ -732,8 +728,8 @@ void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
 
 
 
-void render_walls(PermanentState *permanent,  RenderState *renderer);
-void render_walls(PermanentState *permanent, RenderState *renderer) {
+
+internal void render_walls(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
 
     glUseProgram(renderer->assets.xyz_uv);
@@ -768,8 +764,8 @@ void render_walls(PermanentState *permanent, RenderState *renderer) {
     }
 }
 
-void render_transparent_blocks(PermanentState *permanent,  RenderState *renderer);
-void render_transparent_blocks(PermanentState *permanent, RenderState *renderer) {
+
+internal void render_transparent_blocks(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
 
     glUseProgram(renderer->assets.xyz_uv);
@@ -805,8 +801,7 @@ void render_transparent_blocks(PermanentState *permanent, RenderState *renderer)
 }
 
 
-void render_text(PermanentState *permanent, RenderState *renderer);
-void render_text(PermanentState *permanent, RenderState *renderer) {
+internal void render_text(PermanentState *permanent, RenderState *renderer) {
     // Draw FONTS
     {
         glUseProgram(renderer->assets.xy_uv);
@@ -889,8 +884,8 @@ void render_text(PermanentState *permanent, RenderState *renderer) {
     }
 }
 
-void render_lines(PermanentState *permanent, RenderState *renderer);
-void render_lines(PermanentState *permanent, RenderState *renderer) {
+
+internal void render_lines(PermanentState *permanent, RenderState *renderer) {
     glUseProgram(renderer->assets.xyz_rgb);
     GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_rgb, "MVP");
     ASSERT(MatrixID >= 0);

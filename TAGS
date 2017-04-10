@@ -1,49 +1,50 @@
 
-src/blocks.h,1502
-enum Blocks 1,0
-    BL_escalator_east_up_01 2,14
-    BL_escalator_east_up_02 3,47
-    BL_escalator_east_up_03 4,80
-    BL_escalator_east_up_04 5,113
-    BL_escalator_east_up_05 6,146
-    BL_escalator_east_up_06 7,179
-    BL_escalator_east_up_07 8,212
-    BL_escalator_east_up_08 9,245
-    BL_escalator_north_up_01 10,278
-    BL_escalator_north_up_02 11,312
-    BL_escalator_north_up_03 12,346
-    BL_escalator_north_up_04 13,381
-    BL_escalator_north_up_05 14,416
-    BL_escalator_north_up_06 15,451
-    BL_escalator_north_up_07 16,486
-    BL_escalator_north_up_08 17,521
-    BL_escalator_north_up_09 18,556
-    BL_escalator_north_up_10 19,591
-    BL_escalator_north_up_11 20,626
-    BL_escalator_north_up_12 21,661
-    BL_escalator_south_up_01 22,696
-    BL_escalator_south_up_02 23,731
-    BL_escalator_south_up_03 24,766
-    BL_escalator_south_up_04 25,801
-    BL_escalator_south_up_05 26,836
-    BL_escalator_south_up_06 27,871
-    BL_escalator_south_up_07 28,906
-    BL_escalator_south_up_08 29,941
-    BL_escalator_west_up_01 30,976
-    BL_escalator_west_up_02 31,1010
-    BL_escalator_west_up_03 32,1044
-    BL_escalator_west_up_04 33,1078
-    BL_escalator_west_up_05 34,1112
-    BL_escalator_west_up_06 35,1146
-    BL_escalator_west_up_07 36,1180
-    BL_escalator_west_up_08 37,1214
-    BL_floor 38,1248
-    BL_ladder_down 39,1267
-    BL_ladder_up 40,1292
-    BL_ladder_up_down 41,1315
-    BL_wall 42,1343
-    BL_window 43,1361
-    BL_TOTAL 44,1381
+src/blocks.h,1553
+enum Blocks 2,116
+    BL_escalator_east_up_01 3,130
+    BL_escalator_east_up_02 4,163
+    BL_escalator_east_up_03 5,196
+    BL_escalator_east_up_04 6,229
+    BL_escalator_east_up_05 7,262
+    BL_escalator_east_up_06 8,295
+    BL_escalator_east_up_07 9,328
+    BL_escalator_east_up_08 10,361
+    BL_escalator_north_up_01 11,394
+    BL_escalator_north_up_02 12,428
+    BL_escalator_north_up_03 13,462
+    BL_escalator_north_up_04 14,497
+    BL_escalator_north_up_05 15,532
+    BL_escalator_north_up_06 16,567
+    BL_escalator_north_up_07 17,602
+    BL_escalator_north_up_08 18,637
+    BL_escalator_north_up_09 19,672
+    BL_escalator_north_up_10 20,707
+    BL_escalator_north_up_11 21,742
+    BL_escalator_north_up_12 22,777
+    BL_escalator_south_up_01 23,812
+    BL_escalator_south_up_02 24,847
+    BL_escalator_south_up_03 25,882
+    BL_escalator_south_up_04 26,917
+    BL_escalator_south_up_05 27,952
+    BL_escalator_south_up_06 28,987
+    BL_escalator_south_up_07 29,1022
+    BL_escalator_south_up_08 30,1057
+    BL_escalator_west_up_01 31,1092
+    BL_escalator_west_up_02 32,1126
+    BL_escalator_west_up_03 33,1160
+    BL_escalator_west_up_04 34,1194
+    BL_escalator_west_up_05 35,1228
+    BL_escalator_west_up_06 36,1262
+    BL_escalator_west_up_07 37,1296
+    BL_escalator_west_up_08 38,1330
+    BL_floor 39,1364
+    BL_ladder_down 40,1383
+    BL_ladder_up 41,1408
+    BL_ladder_up_down 42,1431
+    BL_wall 43,1459
+    BL_window 44,1477
+    TOTAL 45,1497
+internal void fill_generated_values(48,1554
 
 src/data_structures.h,868
 #define DATA_STRUCTURES_H2,26
@@ -75,292 +76,29 @@ src/data_structures.h,868
 #define HEAP_UPDATE_AT(160,7038
 #define HEAP_UPDATE_ITEM(183,8691
 
-src/game.c,787
-#define SORT_NAME 14,232
-#define SORT_TYPE 15,256
-#define SORT_CMP(17,361
-internal GLKVector3 seek_return(77,5109
-internal void actor_apply_force(87,5581
-internal int path_length_at_index(92,5768
-internal int get_node16_freelist_length(102,6035
-internal int sort_static_blocks_back_front 115,6446
-internal int sort_static_blocks_front_back 128,7301
-internal void set_actor_batch_sizes(142,8157
-internal void set_dynamic_block_batch_sizes(158,8770
-internal void set_transparent_block_batch_sizes(174,9418
-internal void set_static_block_batch_sizes(191,10103
-internal void set_colored_line_batch_sizes(206,10741
-internal grid_node* get_neighboring_walkable_node(223,11420
-internal grid_node* get_random_walkable_node(236,11777
-extern void game_update_and_render(245,12058
-
-src/GLKMath.h,23
-#define GLKMATH_H2,18
-
-src/GLKMathTypes.h,3480
-#define __GLK_MATH_TYPES_H9,122
-#undef __STRICT_ANSI__15,190
-struct _GLKMatrix218,243
-    float m[m20,264
-typedef struct _GLKMatrix2 GLKMatrix2;22,283
-union _GLKMatrix224,328
-        float m00,28,365
-        float m00, m01;28,365
-        float m10,29,389
-        float m10, m11;29,389
-    float m2[m231,420
-    float m[m32,440
-typedef union _GLKMatrix2 GLKMatrix2;34,459
-struct _GLKMatrix338,534
-    float m[m40,555
-typedef struct _GLKMatrix3 GLKMatrix3;42,574
-union _GLKMatrix344,619
-        float m00,48,656
-        float m00, m01,48,656
-        float m00, m01, m02;48,656
-        float m10,49,685
-        float m10, m11,49,685
-        float m10, m11, m12;49,685
-        float m20,50,714
-        float m20, m21,50,714
-        float m20, m21, m22;50,714
-    float m[m52,750
-typedef union _GLKMatrix3 GLKMatrix3;54,769
-struct _GLKMatrix462,1029
-    float m[m64,1050
-typedef struct _GLKMatrix4 GLKMatrix4;66,1099
-union _GLKMatrix468,1144
-        float m00,72,1181
-        float m00, m01,72,1181
-        float m00, m01, m02,72,1181
-        float m00, m01, m02, m03;72,1181
-        float m10,73,1215
-        float m10, m11,73,1215
-        float m10, m11, m12,73,1215
-        float m10, m11, m12, m13;73,1215
-        float m20,74,1249
-        float m20, m21,74,1249
-        float m20, m21, m22,74,1249
-        float m20, m21, m22, m23;74,1249
-        float m30,75,1283
-        float m30, m31,75,1283
-        float m30, m31, m32,75,1283
-        float m30, m31, m32, m33;75,1283
-    float m[m77,1324
-typedef union _GLKMatrix4 GLKMatrix4;79,1373
-struct _GLKVector283,1448
-    float v[v85,1469
-typedef struct _GLKVector2 GLKVector2;87,1516
-union _GLKVector289,1561
-    struct { float x,91,1581
-    struct { float x, y;91,1581
-    struct { float s,92,1609
-    struct { float s, t;92,1609
-    float v[v93,1637
-typedef union _GLKVector2 GLKVector2;95,1684
-struct _GLKVector399,1759
-    float v[v101,1780
-typedef struct _GLKVector3 GLKVector3;103,1799
-union _GLKVector3105,1844
-    struct { float x,107,1864
-    struct { float x, y,107,1864
-    struct { float x, y, z;107,1864
-    struct { float r,108,1895
-    struct { float r, g,108,1895
-    struct { float r, g, b;108,1895
-    struct { float s,109,1926
-    struct { float s, t,109,1926
-    struct { float s, t, p;109,1926
-    float v[v110,1957
-typedef union _GLKVector3 GLKVector3;112,1976
-struct _GLKVector4116,2051
-    float v[v118,2072
-typedef struct _GLKVector4 GLKVector4;120,2120
-union _GLKVector4122,2165
-    struct { float x,124,2185
-    struct { float x, y,124,2185
-    struct { float x, y, z,124,2185
-    struct { float x, y, z, w;124,2185
-    struct { float r,125,2219
-    struct { float r, g,125,2219
-    struct { float r, g, b,125,2219
-    struct { float r, g, b, a;125,2219
-    struct { float s,126,2253
-    struct { float s, t,126,2253
-    struct { float s, t, p,126,2253
-    struct { float s, t, p, q;126,2253
-    float v[v127,2287
-typedef union _GLKVector4 GLKVector4;129,2335
-struct _GLKQuaternion138,2559
-    float q[q140,2583
-typedef struct _GLKQuaternion GLKQuaternion;142,2631
-union _GLKQuaternion144,2682
-    struct { GLKVector3 v;146,2705
-    struct { GLKVector3 v; float s;146,2705
-    struct { float x,147,2744
-    struct { float x, y,147,2744
-    struct { float x, y, z,147,2744
-    struct { float x, y, z, w;147,2744
-    float q[q148,2778
-typedef union _GLKQuaternion GLKQuaternion;150,2826
-
-src/GLKMatrix4.h,3039
-#define __GLK_MATRIX_4_H9,118
-static __inline__ GLKMatrix4 GLKMatrix4Make(215,8837
-static __inline__ GLKMatrix4 GLKMatrix4MakeAndTranspose(227,9374
-static __inline__ GLKMatrix4 GLKMatrix4MakeWithArray(239,9959
-static __inline__ GLKMatrix4 GLKMatrix4MakeWithArrayAndTranspose(248,10317
-static __inline__ GLKMatrix4 GLKMatrix4MakeWithRows(262,10797
-static __inline__ GLKMatrix4 GLKMatrix4MakeWithColumns(274,11354
-static __inline__ GLKMatrix4 GLKMatrix4MakeWithQuaternion(295,12221
-static __inline__ GLKMatrix4 GLKMatrix4MakeTranslation(329,13169
-static __inline__ GLKMatrix4 GLKMatrix4MakeScale(338,13366
-static __inline__ GLKMatrix4 GLKMatrix4MakeRotation(347,13555
-static __inline__ GLKMatrix4 GLKMatrix4MakeXRotation(374,14530
-static __inline__ GLKMatrix4 GLKMatrix4MakeYRotation(387,14860
-static __inline__ GLKMatrix4 GLKMatrix4MakeZRotation(400,15190
-static __inline__ GLKMatrix4 GLKMatrix4MakePerspective(413,15520
-static __inline__ GLKMatrix4 GLKMatrix4MakeFrustum(425,15960
-static __inline__ GLKMatrix4 GLKMatrix4MakeOrtho(444,16640
-static __inline__ GLKMatrix4 GLKMatrix4MakeLookAt(463,17282
-static __inline__ GLKMatrix3 GLKMatrix4GetMatrix3(485,18286
-static __inline__ GLKMatrix2 GLKMatrix4GetMatrix2(493,18557
-static __inline__ GLKVector4 GLKMatrix4GetRow(500,18741
-static __inline__ GLKVector4 GLKMatrix4GetColumn(506,18930
-static __inline__ GLKMatrix4 GLKMatrix4SetRow(517,19281
-static __inline__ GLKMatrix4 GLKMatrix4SetColumn(527,19544
-static __inline__ GLKMatrix4 GLKMatrix4Transpose(543,19985
-static __inline__ GLKMatrix4 GLKMatrix4Multiply(557,20484
-static __inline__ GLKMatrix4 GLKMatrix4Add(612,24991
-static __inline__ GLKMatrix4 GLKMatrix4Subtract(652,26413
-static __inline__ GLKMatrix4 GLKMatrix4Translate(692,27840
-static __inline__ GLKMatrix4 GLKMatrix4TranslateWithVector3(704,28492
-static __inline__ GLKMatrix4 GLKMatrix4TranslateWithVector4(716,29335
-static __inline__ GLKMatrix4 GLKMatrix4Scale(728,30178
-static __inline__ GLKMatrix4 GLKMatrix4ScaleWithVector3(749,31006
-static __inline__ GLKMatrix4 GLKMatrix4ScaleWithVector4(770,32049
-static __inline__ GLKMatrix4 GLKMatrix4Rotate(791,33092
-static __inline__ GLKMatrix4 GLKMatrix4RotateWithVector3(797,33309
-static __inline__ GLKMatrix4 GLKMatrix4RotateWithVector4(803,33575
-static __inline__ GLKMatrix4 GLKMatrix4RotateX(809,33841
-static __inline__ GLKMatrix4 GLKMatrix4RotateY(815,34024
-static __inline__ GLKMatrix4 GLKMatrix4RotateZ(821,34207
-static __inline__ GLKVector3 GLKMatrix4MultiplyVector3(827,34390
-static __inline__ GLKVector3 GLKMatrix4MultiplyVector3WithTranslation(833,34686
-static __inline__ GLKVector3 GLKMatrix4MultiplyAndProjectVector3(839,34997
-static __inline__ void GLKMatrix4MultiplyVector3Array(845,35345
-static __inline__ void GLKMatrix4MultiplyVector3ArrayWithTranslation(852,35579
-static __inline__ void GLKMatrix4MultiplyAndProjectVector3Array(859,35843
-static __inline__ GLKVector4 GLKMatrix4MultiplyVector4(866,36097
-static __inline__ void GLKMatrix4MultiplyVector4Array(892,37544
-
-src/GLKQuaternion.h,955
-#define __GLK_QUATERNION_H9,123
-static __inline__ GLKQuaternion GLKQuaternionMake(91,2919
-static __inline__ GLKQuaternion GLKQuaternionMakeWithVector3(97,3062
-static __inline__ GLKQuaternion GLKQuaternionMakeWithArray(103,3248
-static __inline__ GLKQuaternion GLKQuaternionMakeWithAngleAndAxis(109,3413
-static __inline__ GLKQuaternion GLKQuaternionMakeWithAngleAndVector3Axis(117,3689
-static __inline__ GLKQuaternion GLKQuaternionAdd(122,3911
-static __inline__ GLKQuaternion GLKQuaternionSubtract(137,4514
-static __inline__ GLKQuaternion GLKQuaternionMultiply(152,5122
-static __inline__ float GLKQuaternionLength(176,6361
-static __inline__ GLKQuaternion GLKQuaternionConjugate(192,6936
-static __inline__ GLKQuaternion GLKQuaternionInvert(210,7483
-static __inline__ GLKQuaternion GLKQuaternionNormalize(237,8534
-static __inline__ GLKVector3 GLKQuaternionRotateVector3(250,9011
-static __inline__ GLKVector4 GLKQuaternionRotateVector4(258,9453
-
-src/GLKVector2.h,1704
-#define __GLK_VECTOR_2_H9,118
-static __inline__ GLKVector2 GLKVector2Limit(116,4304
-static __inline__ GLKVector2 GLKVector2Make(124,4543
-static __inline__ GLKVector2 GLKVector2MakeWithArray(130,4653
-static __inline__ GLKVector2 GLKVector2Negate(141,4894
-static __inline__ GLKVector2 GLKVector2Add(152,5154
-static __inline__ GLKVector2 GLKVector2Subtract(165,5566
-static __inline__ GLKVector2 GLKVector2Multiply(178,5983
-static __inline__ GLKVector2 GLKVector2Divide(191,6400
-static __inline__ GLKVector2 GLKVector2AddScalar(208,7033
-static __inline__ GLKVector2 GLKVector2SubtractScalar(221,7402
-static __inline__ GLKVector2 GLKVector2MultiplyScalar(234,7776
-static __inline__ GLKVector2 GLKVector2DivideScalar(247,8150
-static __inline__ GLKVector2 GLKVector2Maximum(263,8705
-static __inline__ GLKVector2 GLKVector2Minimum(279,9202
-static __inline__ bool GLKVector2AllEqualToVector2(295,9699
-static __inline__ bool GLKVector2AllEqualToScalar(313,10289
-static __inline__ bool GLKVector2AllGreaterThanVector2(331,10818
-static __inline__ bool GLKVector2AllGreaterThanScalar(349,11410
-static __inline__ bool GLKVector2AllGreaterThanOrEqualToVector2(367,11941
-static __inline__ bool GLKVector2AllGreaterThanOrEqualToScalar(385,12544
-static __inline__ GLKVector2 GLKVector2Normalize(403,13086
-static __inline__ float GLKVector2DotProduct(410,13284
-static __inline__ float GLKVector2Length(422,13679
-static __inline__ float GLKVector2LengthSquared(435,14109
-static __inline__ float GLKVector2Distance(448,14457
-static __inline__ float GLKVector2DistanceSquared(454,14625
-static __inline__ GLKVector2 GLKVector2Lerp(466,14813
-static __inline__ GLKVector2 GLKVector2Project(481,15415
-
-src/GLKVector3.h,1636
-#define __GLK_VECTOR_3_H9,118
-static __inline__ GLKVector3 GLKVector3Limit(94,3738
-static __inline__ GLKVector3 GLKVector3Make(102,3977
-static __inline__ GLKVector3 GLKVector3MakeWithArray(108,4099
-static __inline__ GLKVector3 GLKVector3Negate(114,4244
-static __inline__ GLKVector3 GLKVector3Add(120,4393
-static __inline__ GLKVector3 GLKVector3Subtract(128,4675
-static __inline__ GLKVector3 GLKVector3Multiply(136,4962
-static __inline__ GLKVector3 GLKVector3Divide(144,5249
-static __inline__ GLKVector3 GLKVector3AddScalar(152,5534
-static __inline__ GLKVector3 GLKVector3SubtractScalar(160,5762
-static __inline__ GLKVector3 GLKVector3MultiplyScalar(168,5995
-static __inline__ GLKVector3 GLKVector3DivideScalar(176,6228
-static __inline__ GLKVector3 GLKVector3Maximum(184,6459
-static __inline__ GLKVector3 GLKVector3Minimum(196,6850
-static __inline__ bool GLKVector3AllEqualToVector3(208,7241
-static __inline__ bool GLKVector3AllEqualToScalar(218,7553
-static __inline__ bool GLKVector3AllGreaterThanVector3(228,7804
-static __inline__ bool GLKVector3AllGreaterThanScalar(238,8117
-static __inline__ bool GLKVector3AllGreaterThanOrEqualToVector3(248,8369
-static __inline__ bool GLKVector3AllGreaterThanOrEqualToScalar(258,8694
-static __inline__ GLKVector3 GLKVector3Normalize(268,8958
-static __inline__ float GLKVector3DotProduct(275,9182
-static __inline__ float GLKVector3Length(280,9400
-static __inline__ float GLKVector3Distance(285,9565
-static __inline__ GLKVector3 GLKVector3Lerp(290,9732
-static __inline__ GLKVector3 GLKVector3CrossProduct(298,10101
-static __inline__ GLKVector3 GLKVector3Project(306,10503
-
-src/GLKVector4.h,1658
-#define __GLK_VECTOR_4_H9,118
-static __inline__ GLKVector4 GLKVector4Make(100,3913
-static __inline__ GLKVector4 GLKVector4MakeWithArray(106,4047
-static __inline__ GLKVector4 GLKVector4MakeWithVector3(117,4311
-static __inline__ GLKVector4 GLKVector4Negate(123,4478
-static __inline__ GLKVector4 GLKVector4Add(134,4766
-static __inline__ GLKVector4 GLKVector4Subtract(149,5294
-static __inline__ GLKVector4 GLKVector4Multiply(164,5827
-static __inline__ GLKVector4 GLKVector4Divide(179,6360
-static __inline__ GLKVector4 GLKVector4AddScalar(198,7113
-static __inline__ GLKVector4 GLKVector4SubtractScalar(213,7569
-static __inline__ GLKVector4 GLKVector4MultiplyScalar(228,8030
-static __inline__ GLKVector4 GLKVector4DivideScalar(243,8491
-static __inline__ GLKVector4 GLKVector4Maximum(261,9137
-static __inline__ GLKVector4 GLKVector4Minimum(281,9798
-static __inline__ bool GLKVector4AllEqualToVector4(301,10511
-static __inline__ bool GLKVector4AllEqualToScalar(322,11258
-static __inline__ bool GLKVector4AllGreaterThanVector4(343,11915
-static __inline__ bool GLKVector4AllGreaterThanScalar(364,12662
-static __inline__ bool GLKVector4AllGreaterThanOrEqualToVector4(385,13319
-static __inline__ bool GLKVector4AllGreaterThanOrEqualToScalar(406,14079
-static __inline__ GLKVector4 GLKVector4Normalize(427,14749
-static __inline__ float GLKVector4DotProduct(434,14947
-static __inline__ float GLKVector4Length(450,15522
-static __inline__ float GLKVector4Distance(466,16047
-static __inline__ GLKVector4 GLKVector4Lerp(471,16214
-static __inline__ GLKVector4 GLKVector4CrossProduct(488,16987
-static __inline__ GLKVector4 GLKVector4Project(497,17416
+src/game.c,1054
+#define SORT_NAME 15,252
+#define SORT_TYPE 16,276
+#define SORT_CMP(18,381
+internal Vector3 seek_return(29,777
+internal void actor_apply_force(40,1223
+internal int path_length_at_index(45,1401
+internal int get_node16_freelist_length(55,1668
+internal int sort_static_blocks_back_front 68,2079
+internal int sort_static_blocks_front_back 81,2934
+internal void set_actor_batch_sizes(95,3790
+internal void set_dynamic_block_batch_sizes(111,4403
+internal void set_transparent_block_batch_sizes(127,5051
+internal void set_static_block_batch_sizes(144,5736
+internal void set_colored_line_batch_sizes(159,6374
+internal grid_node* get_neighboring_walkable_node(176,7053
+internal grid_node* get_random_walkable_node(189,7410
+internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(197,7690
+global_value SimpleFrame generated_frames[generated_frames215,8643
+internal void add_static_block(217,8694
+internal void add_transparent_block(223,9173
+internal void add_dynamic_block(229,9677
+extern void game_update_and_render(246,10754
 
 src/level.c,537
 #define BUF_SIZE 4,40
@@ -496,6 +234,43 @@ src/multi_platform.h,279
 #define IOS37,727
 #define GLES38,739
 
+src/my_math.h,1469
+#define MY_MATH_H2,18
+struct _Matrix418,402
+    float m[m20,420
+typedef struct _Matrix4 Matrix4;22,469
+union _Vector324,503
+    struct { float x,26,520
+    struct { float x, y,26,520
+    struct { float x, y, z;26,520
+    struct { float r,27,551
+    struct { float r, g,27,551
+    struct { float r, g, b;27,551
+    struct { float s,28,582
+    struct { float s, t,28,582
+    struct { float s, t, p;28,582
+    float v[v29,613
+typedef union _Vector3 Vector3;31,632
+static __inline__ Vector3 Vector3Make(50,1545
+static __inline__ float Vector3Distance(55,1655
+static __inline__ Vector3 Vector3Negate(60,1807
+static __inline__ float Vector3Length(65,1943
+static __inline__ Vector3 Vector3Limit(69,2101
+static __inline__ Vector3 Vector3Add(76,2321
+static __inline__ Vector3 Vector3Subtract(83,2587
+static __inline__ Vector3 Vector3MultiplyScalar(90,2858
+static __inline__ Vector3 Vector3DivideScalar(97,3078
+static __inline__ Vector3 Vector3Normalize(104,3296
+static __inline__ float Vector3DotProduct(110,3504
+static __inline__ Vector3 Vector3CrossProduct(114,3712
+static __inline__ Matrix4 Matrix4MakeWithArray(147,4980
+static __inline__ Matrix4 Matrix4MakeOrtho(156,5329
+static __inline__ Matrix4 Matrix4MakeLookAt(174,5961
+static __inline__ Matrix4 Matrix4Multiply(195,6901
+static __inline__ Matrix4 Matrix4Translate(249,11389
+static __inline__ Matrix4 Matrix4MakeZRotation(260,12028
+static __inline__ Matrix4 Matrix4RotateZ(273,12349
+
 src/pathfind.c,1849
 internal inline int in_bounds(5,72
 internal int can_move_down(11,269
@@ -622,87 +397,87 @@ internal void make_buffer(144,5790
 internal const char *gl_error_string(gl_error_string179,6978
 void initialize_GL(203,7561
 void prepare_renderer(223,8119
-void update_and_draw_actor_vertices(489,20317
-void render_actors(590,24493
-void render_dynamic_blocks(615,25521
-void render_walls(736,30665
-void render_transparent_blocks(772,31943
-void render_text(809,33230
-void render_lines(893,37031
-void render(954,40035
+void update_and_draw_actor_vertices(489,20349
+void render_actors(590,24522
+void render_dynamic_blocks(615,25550
+void render_walls(736,30724
+void render_transparent_blocks(772,32002
+void render_text(809,33289
+void render_lines(893,37090
+void render(954,40094
 
-src/renderer.h,2467
+src/renderer.h,2465
 #define RENDERER_H2,19
-#define USES_HALF_FLOAT13,191
-#define VERTEX_FLOAT_TYPE 18,316
-#define GL_FLOAT_TYPE 19,350
-    int amount;50,929
-    GLenum type;51,945
-    int type_size;52,962
-    const char* attr_name;53,981
-} ShaderLayoutElement;54,1008
-    ShaderLayoutElement elements[elements57,1049
-    int element_count;58,1141
-    int values_per_vertex;59,1164
-    int values_per_thing;60,1191
-} ShaderLayout;61,1217
-    Texture character;65,1252
-    Texture blocks;66,1275
-    Texture palette;67,1295
-    Texture menlo;68,1316
-    GLuint xyz_uv_palette;71,1359
-    GLuint xyz_rgb;72,1386
-    GLuint xyz_uv;73,1406
-    GLuint xy_uv;74,1425
-    Mix_Music *music1;music176,1444
-    Mix_Chunk *wav1;wav177,1467
-    BM_Font menlo_font;78,1488
-} Assets;79,1512
-    u16 width;83,1541
-    u16 height;84,1556
-} ViewPort;85,1572
-#define MAX_IN_BUFFER 88,1586
-typedef struct DrawBuffer 90,1614
-    u32 max_amount;91,1642
-    u32 used_count;92,1662
-    u32 count;93,1682
-    GLuint VAO;94,1697
-    GLuint VBO;95,1713
-    GLuint EBO;96,1729
-    GLvoid *map_buffer_pointer;map_buffer_pointer97,1745
-    GLushort indices[indices98,1777
-    VERTEX_FLOAT_TYPE vertices[vertices99,1818
-} DrawBuffer;100,1870
-#define STATIC_BLOCK_BATCH_COUNT 102,1885
-#define DYNAMIC_BLOCK_BATCH_COUNT 103,1920
-#define TRANSPARENT_BLOCK_BATCH_COUNT 104,1956
-#define ACTOR_BATCH_COUNT 105,1996
-#define GLYPH_BATCH_COUNT 106,2025
-#define LINE_BATCH_COUNT 107,2053
-typedef struct RenderState 110,2082
-    GLKMatrix4 mvp;112,2137
-    ViewPort view;113,2157
-    SDL_Window *window;window114,2176
-    SDL_GLContext context;115,2200
-    Assets assets;116,2227
-    DrawBuffer static_blocks[static_blocks118,2247
-    int used_static_block_batches;119,2303
-    DrawBuffer dynamic_blocks[dynamic_blocks121,2339
-    int used_dynamic_block_batches;122,2397
-    DrawBuffer transparent_blocks[transparent_blocks124,2434
-    int used_transparent_block_batches;125,2500
-    DrawBuffer actors[actors127,2541
-    int used_actor_batches;128,2583
-    DrawBuffer glyphs[glyphs129,2611
-    int used_glyph_batches;130,2653
-    DrawBuffer colored_lines[colored_lines131,2681
-    int used_colored_lines_batches;132,2729
-    int needs_prepare;133,2765
-    ShaderLayout debug_text_layout;134,2788
-    ShaderLayout actors_layout;135,2824
-    ShaderLayout walls_layout;136,2856
-    ShaderLayout colored_lines_layout;137,2887
-} RenderState;138,2926
+#define USES_HALF_FLOAT14,192
+#define VERTEX_FLOAT_TYPE 19,317
+#define GL_FLOAT_TYPE 20,351
+    int amount;51,930
+    GLenum type;52,946
+    int type_size;53,963
+    const char* attr_name;54,982
+} ShaderLayoutElement;55,1009
+    ShaderLayoutElement elements[elements58,1050
+    int element_count;59,1142
+    int values_per_vertex;60,1165
+    int values_per_thing;61,1192
+} ShaderLayout;62,1218
+    Texture character;66,1253
+    Texture blocks;67,1276
+    Texture palette;68,1296
+    Texture menlo;69,1317
+    GLuint xyz_uv_palette;72,1360
+    GLuint xyz_rgb;73,1387
+    GLuint xyz_uv;74,1407
+    GLuint xy_uv;75,1426
+    Mix_Music *music1;music177,1445
+    Mix_Chunk *wav1;wav178,1468
+    BM_Font menlo_font;79,1489
+} Assets;80,1513
+    u16 width;84,1542
+    u16 height;85,1557
+} ViewPort;86,1573
+#define MAX_IN_BUFFER 89,1587
+typedef struct DrawBuffer 91,1615
+    u32 max_amount;92,1643
+    u32 used_count;93,1663
+    u32 count;94,1683
+    GLuint VAO;95,1698
+    GLuint VBO;96,1714
+    GLuint EBO;97,1730
+    GLvoid *map_buffer_pointer;map_buffer_pointer98,1746
+    GLushort indices[indices99,1778
+    VERTEX_FLOAT_TYPE vertices[vertices100,1819
+} DrawBuffer;101,1871
+#define STATIC_BLOCK_BATCH_COUNT 103,1886
+#define DYNAMIC_BLOCK_BATCH_COUNT 104,1921
+#define TRANSPARENT_BLOCK_BATCH_COUNT 105,1957
+#define ACTOR_BATCH_COUNT 106,1997
+#define GLYPH_BATCH_COUNT 107,2026
+#define LINE_BATCH_COUNT 108,2054
+typedef struct RenderState 111,2083
+    Matrix4 mvp;113,2138
+    ViewPort view;114,2155
+    SDL_Window *window;window115,2174
+    SDL_GLContext context;116,2198
+    Assets assets;117,2225
+    DrawBuffer static_blocks[static_blocks119,2245
+    int used_static_block_batches;120,2301
+    DrawBuffer dynamic_blocks[dynamic_blocks122,2337
+    int used_dynamic_block_batches;123,2395
+    DrawBuffer transparent_blocks[transparent_blocks125,2432
+    int used_transparent_block_batches;126,2498
+    DrawBuffer actors[actors128,2539
+    int used_actor_batches;129,2581
+    DrawBuffer glyphs[glyphs130,2609
+    int used_glyph_batches;131,2651
+    DrawBuffer colored_lines[colored_lines132,2679
+    int used_colored_lines_batches;133,2727
+    int needs_prepare;134,2763
+    ShaderLayout debug_text_layout;135,2786
+    ShaderLayout actors_layout;136,2822
+    ShaderLayout walls_layout;137,2854
+    ShaderLayout colored_lines_layout;138,2885
+} RenderState;139,2924
 
 src/resource.c,758
 #define STB_IMAGE_IMPLEMENTATION14,313
@@ -979,229 +754,233 @@ static int clzll(29,1199
 static __inline int compute_minrun(74,1742
 static __inline size_t rbnd(87,2030
 
-src/states.h,7317
+src/states.h,7441
 #define STATES_H2,17
-    int frameX,7,93
-    int frameX, frameY,7,93
-    int frameX, frameY, frameW,7,93
-    int frameX, frameY, frameW, frameH;7,93
-    int sssX,8,133
-    int sssX, sssY,8,133
-    int sssX, sssY, sssW,8,133
-    int sssX, sssY, sssW, sssH;8,133
-    int ssW,9,165
-    int ssW, ssH;9,165
-} SimpleFrame;10,183
-    MemoryArena arena;14,217
-} ScratchState;15,240
-    MemoryArena arena;19,275
-    PerfDict perf_dict;20,298
-} DebugState;21,322
-    int x_pos;24,354
-    int y_pos;25,369
-    int width;26,384
-    int height;27,399
-    int x_off;28,415
-    int y_off;29,430
-} BlockTextureAtlasPosition;30,445
-    u16 x;33,492
-    u16 y;34,503
-    u16 z;35,514
-    BlockTextureAtlasPosition frame;36,525
-    u8 is_floor;37,562
-} StaticBlock;38,579
-    u16 x;41,617
-    u16 y;42,628
-    u16 z;43,639
-    BlockTextureAtlasPosition frame;44,650
-    u8 is_floor;45,687
-    u8 total_frames;46,704
-    u8 current_frame;47,725
-    u16 start_frame_x;48,747
-    r32 duration_per_frame;49,770
-    r32 frame_duration_left;50,798
-    u8 plays_forward;51,827
-} DynamicBlock;52,849
-typedef struct FoundPathNode 56,873
-    GLKVector3 node;57,904
-    float unused;58,925
-} FoundPathNode;59,943
-    float data[data62,978
-} BarNode;63,997
-typedef struct Node1665,1009
-        FoundPathNode path;69,1049
-        BarNode bar;70,1077
-        u8 reserved[reserved71,1098
-    struct Node16 *Next,Next73,1130
-    struct Node16 *Next, *Prev;Prev73,1130
-} Node16;74,1162
-    MemoryArena arena;77,1190
-    Node16 *Free;Free78,1213
-} Node16Arena;80,1255
-    Node16 * Sentinel;84,1289
-    int counter;85,1312
-} ActorPath;86,1329
-    u16 frame;89,1360
-    r32 palette_index;90,1375
-    r32 frame_duration_left;91,1398
-} ActorAnimData;92,1427
-    GLKVector3 location;95,1462
-    s16 dx;96,1487
-    s16 dy;97,1499
-    GLKVector3 velocity;98,1511
-    GLKVector3 acceleration;99,1536
-    float mass;100,1565
-    float max_speed;101,1581
-    float max_force;102,1602
-} ActorSteerData;103,1623
-    GLKVector3 _location;107,1660
-    u32 _frame;111,1762
-    r32 _palette_index;112,1778
-    u32 index;113,1802
-} Actor;114,1817
-    u16 x;120,1853
-    u16 y;121,1864
-    u16 sx;122,1875
-    u16 sy;123,1887
-    u16 w;124,1899
-    u16 h;125,1910
-} Glyph;126,1921
-    u16 x1,129,1953
-    u16 x1, y1,129,1953
-    u16 x1, y1, z1;129,1953
-    u16 x2,130,1973
-    u16 x2, y2,130,1973
-    u16 x2, y2, z2;130,1973
-    r32 r,131,1993
-    r32 r,g,131,1993
-    r32 r,g,b;131,1993
-} ColoredLine;132,2008
-    u32 x;135,2047
-    u32 y;136,2058
-    u32 z_level;137,2069
-} WorldDims;138,2086
-    Nothing,142,2116
-    WallBlock,143,2129
-    WindowBlock,144,2144
-    Floor,145,2161
-    Floor, Grass,145,2161
-    Floor, Grass, Wood,145,2161
-    Floor, Grass, Wood, Concrete,145,2161
-    Floor, Grass, Wood, Concrete, Tiles,145,2161
-    Floor, Grass, Wood, Concrete, Tiles, Carpet,145,2161
-    LadderUpDown,146,2210
-    LadderUpDown, LadderUp,146,2210
-    LadderUpDown, LadderUp, LadderDown,146,2210
-    StairsMeta,147,2250
-    StairsFollowUpMeta,148,2286
-    Stairs1N,149,2310
-    Stairs1N, Stairs2N,149,2310
-    Stairs1N, Stairs2N, Stairs3N,149,2310
-    Stairs1N, Stairs2N, Stairs3N, Stairs4N,149,2310
-    Stairs1E,150,2354
-    Stairs1E, Stairs2E,150,2354
-    Stairs1E, Stairs2E, Stairs3E,150,2354
-    Stairs1E, Stairs2E, Stairs3E, Stairs4E,150,2354
-    Stairs1S,151,2398
-    Stairs1S, Stairs2S,151,2398
-    Stairs1S, Stairs2S, Stairs3S,151,2398
-    Stairs1S, Stairs2S, Stairs3S, Stairs4S,151,2398
-    Stairs1W,152,2442
-    Stairs1W, Stairs2W,152,2442
-    Stairs1W, Stairs2W, Stairs3W,152,2442
-    Stairs1W, Stairs2W, Stairs3W, Stairs4W,152,2442
-    EscalatorUpMeta,154,2487
-    EscalatorUp1N,155,2508
-    EscalatorUp1N, EscalatorUp2N,155,2508
-    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N,155,2508
-    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N, EscalatorUp4N,155,2508
-    EscalatorUp1E,156,2572
-    EscalatorUp1E, EscalatorUp2E,156,2572
-    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E,156,2572
-    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E, EscalatorUp4E,156,2572
-    EscalatorUp1S,157,2636
-    EscalatorUp1S, EscalatorUp2S,157,2636
-    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S,157,2636
-    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,157,2636
-    EscalatorUp1W,158,2700
-    EscalatorUp1W, EscalatorUp2W,158,2700
-    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W,158,2700
-    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,158,2700
-    EscalatorDownMeta,160,2765
-    EscalatorDown1N,161,2788
-    EscalatorDown1N, EscalatorDown2N,161,2788
-    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N,161,2788
-    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N, EscalatorDown4N,161,2788
-    EscalatorDown1E,162,2860
-    EscalatorDown1E, EscalatorDown2E,162,2860
-    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E,162,2860
-    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E, EscalatorDown4E,162,2860
-    EscalatorDown1S,163,2932
-    EscalatorDown1S, EscalatorDown2S,163,2932
-    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S,163,2932
-    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S, EscalatorDown4S,163,2932
-    EscalatorDown1W,164,3004
-    EscalatorDown1W, EscalatorDown2W,164,3004
-    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W,164,3004
-    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W, EscalatorDown4W,164,3004
-    Shaded,166,3077
-    BlockTotal167,3089
-} Block;168,3104
-    Block object;171,3131
-    Block floor;172,3149
-    Block meta_object;173,3166
-} WorldBlock;174,3189
-    WorldBlock *blocks;blocks177,3221
-    int block_count;178,3245
-    int x,179,3266
-    int x, y,179,3266
-    int x, y, z_level;179,3266
-} LevelData;180,3289
-typedef struct grid_node 183,3304
-    u8 X,184,3331
-    u8 X, Y,184,3331
-    u8 X, Y, Z;184,3331
-    u8 walkable;185,3347
-    Block type;186,3364
-    float g;187,3380
-    float f;188,3393
-    float h;189,3406
-    u8 opened;191,3437
-    u8 closed;192,3452
-    struct grid_node *parent;parent193,3467
-    struct grid_node *Next;Next194,3521
-    b32 is_jumpnode;196,3632
-    s8 distance[distance197,3653
-} grid_node;199,3756
-typedef struct grid 201,3770
-    int width;202,3792
-    int height;203,3807
-    int depth;204,3823
-    grid_node* nodes;205,3838
-} Grid;206,3860
-    MemoryArena arena;210,3887
-    LevelData level;211,3910
-    StaticBlock *static_blocks;static_blocks214,3933
-    u32 static_block_count;215,3975
-    DynamicBlock *dynamic_blocks;dynamic_blocks217,4004
-    u32 dynamic_block_count;218,4048
-    StaticBlock *transparent_blocks;transparent_blocks220,4078
-    u32 transparent_block_count;221,4125
-    Actor *actors;actors223,4159
-    u32 actor_count;224,4190
-    ActorPath *paths;paths226,4212
-    ActorSteerData *steer_data;steer_data228,4301
-    ActorAnimData *anim_data;anim_data229,4333
-    Glyph *glyphs;glyphs233,4366
-    u32 glyph_count;234,4395
-    ColoredLine *colored_lines;colored_lines236,4417
-    u32 colored_line_count;237,4459
-    s32 x_view_offset;240,4496
-    s32 y_view_offset;241,4519
-    WorldDims dims;245,4554
-    WorldDims block_size;246,4574
-    Grid *grid;grid248,4609
-} PermanentState;253,4635
+    int frameX,8,113
+    int frameX, frameY,8,113
+    int frameX, frameY, frameW,8,113
+    int frameX, frameY, frameW, frameH;8,113
+    int sssX,9,153
+    int sssX, sssY,9,153
+    int sssX, sssY, sssW,9,153
+    int sssX, sssY, sssW, sssH;9,153
+    int ssW,10,185
+    int ssW, ssH;10,185
+} SimpleFrame;11,203
+    MemoryArena arena;15,237
+} ScratchState;16,260
+    MemoryArena arena;20,295
+    PerfDict perf_dict;21,318
+} DebugState;22,342
+    int x_pos;25,374
+    int y_pos;26,389
+    int width;27,404
+    int height;28,419
+    int x_internal_off;30,436
+    int y_internal_off;31,506
+    int x_off;33,536
+    int y_off;34,629
+} BlockTextureAtlasPosition;35,649
+    u16 x;38,696
+    u16 y;39,707
+    u16 z;40,718
+    BlockTextureAtlasPosition frame;41,729
+    u8 is_floor;42,766
+} StaticBlock;43,783
+    u16 x;46,821
+    u16 y;47,832
+    u16 z;48,843
+    BlockTextureAtlasPosition frame;49,854
+    u8 is_floor;50,891
+    u8 total_frames;51,908
+    u8 current_frame;52,929
+    u16 start_frame_x;53,951
+    r32 duration_per_frame;54,974
+    r32 frame_duration_left;55,1002
+    u8 plays_forward;56,1031
+    int first_frame;57,1053
+    int last_frame;58,1074
+} DynamicBlock;59,1094
+typedef struct FoundPathNode 63,1118
+    Vector3 node;64,1149
+    float unused;65,1167
+} FoundPathNode;66,1185
+    float data[data69,1220
+} BarNode;70,1239
+typedef struct Node1672,1251
+        FoundPathNode path;76,1291
+        BarNode bar;77,1319
+        u8 reserved[reserved78,1340
+    struct Node16 *Next,Next80,1372
+    struct Node16 *Next, *Prev;Prev80,1372
+} Node16;81,1404
+    MemoryArena arena;84,1432
+    Node16 *Free;Free85,1455
+} Node16Arena;87,1497
+    Node16 * Sentinel;91,1531
+    int counter;92,1554
+} ActorPath;93,1571
+    u16 frame;96,1602
+    r32 palette_index;97,1617
+    r32 frame_duration_left;98,1640
+} ActorAnimData;99,1669
+    Vector3 location;102,1704
+    s16 dx;103,1726
+    s16 dy;104,1738
+    Vector3 velocity;105,1750
+    Vector3 acceleration;106,1772
+    float mass;107,1798
+    float max_speed;108,1814
+    float max_force;109,1835
+} ActorSteerData;110,1856
+    Vector3 _location;114,1893
+    u32 _frame;118,1992
+    r32 _palette_index;119,2008
+    u32 index;120,2032
+} Actor;121,2047
+    u16 x;127,2083
+    u16 y;128,2094
+    u16 sx;129,2105
+    u16 sy;130,2117
+    u16 w;131,2129
+    u16 h;132,2140
+} Glyph;133,2151
+    u16 x1,136,2183
+    u16 x1, y1,136,2183
+    u16 x1, y1, z1;136,2183
+    u16 x2,137,2203
+    u16 x2, y2,137,2203
+    u16 x2, y2, z2;137,2203
+    r32 r,138,2223
+    r32 r,g,138,2223
+    r32 r,g,b;138,2223
+} ColoredLine;139,2238
+    u32 x;142,2277
+    u32 y;143,2288
+    u32 z_level;144,2299
+} WorldDims;145,2316
+    Nothing,149,2346
+    WallBlock,150,2359
+    WindowBlock,151,2374
+    Floor,152,2391
+    Floor, Grass,152,2391
+    Floor, Grass, Wood,152,2391
+    Floor, Grass, Wood, Concrete,152,2391
+    Floor, Grass, Wood, Concrete, Tiles,152,2391
+    Floor, Grass, Wood, Concrete, Tiles, Carpet,152,2391
+    LadderUpDown,153,2440
+    LadderUpDown, LadderUp,153,2440
+    LadderUpDown, LadderUp, LadderDown,153,2440
+    StairsMeta,154,2480
+    StairsFollowUpMeta,155,2516
+    Stairs1N,156,2540
+    Stairs1N, Stairs2N,156,2540
+    Stairs1N, Stairs2N, Stairs3N,156,2540
+    Stairs1N, Stairs2N, Stairs3N, Stairs4N,156,2540
+    Stairs1E,157,2584
+    Stairs1E, Stairs2E,157,2584
+    Stairs1E, Stairs2E, Stairs3E,157,2584
+    Stairs1E, Stairs2E, Stairs3E, Stairs4E,157,2584
+    Stairs1S,158,2628
+    Stairs1S, Stairs2S,158,2628
+    Stairs1S, Stairs2S, Stairs3S,158,2628
+    Stairs1S, Stairs2S, Stairs3S, Stairs4S,158,2628
+    Stairs1W,159,2672
+    Stairs1W, Stairs2W,159,2672
+    Stairs1W, Stairs2W, Stairs3W,159,2672
+    Stairs1W, Stairs2W, Stairs3W, Stairs4W,159,2672
+    EscalatorUpMeta,161,2717
+    EscalatorUp1N,162,2738
+    EscalatorUp1N, EscalatorUp2N,162,2738
+    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N,162,2738
+    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N, EscalatorUp4N,162,2738
+    EscalatorUp1E,163,2802
+    EscalatorUp1E, EscalatorUp2E,163,2802
+    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E,163,2802
+    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E, EscalatorUp4E,163,2802
+    EscalatorUp1S,164,2866
+    EscalatorUp1S, EscalatorUp2S,164,2866
+    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S,164,2866
+    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,164,2866
+    EscalatorUp1W,165,2930
+    EscalatorUp1W, EscalatorUp2W,165,2930
+    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W,165,2930
+    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,165,2930
+    EscalatorDownMeta,167,2995
+    EscalatorDown1N,168,3018
+    EscalatorDown1N, EscalatorDown2N,168,3018
+    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N,168,3018
+    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N, EscalatorDown4N,168,3018
+    EscalatorDown1E,169,3090
+    EscalatorDown1E, EscalatorDown2E,169,3090
+    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E,169,3090
+    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E, EscalatorDown4E,169,3090
+    EscalatorDown1S,170,3162
+    EscalatorDown1S, EscalatorDown2S,170,3162
+    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S,170,3162
+    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S, EscalatorDown4S,170,3162
+    EscalatorDown1W,171,3234
+    EscalatorDown1W, EscalatorDown2W,171,3234
+    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W,171,3234
+    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W, EscalatorDown4W,171,3234
+    Shaded,173,3307
+    BlockTotal174,3319
+} Block;175,3334
+    Block object;178,3361
+    Block floor;179,3379
+    Block meta_object;180,3396
+} WorldBlock;181,3419
+    WorldBlock *blocks;blocks184,3451
+    int block_count;185,3475
+    int x,186,3496
+    int x, y,186,3496
+    int x, y, z_level;186,3496
+} LevelData;187,3519
+typedef struct grid_node 190,3534
+    u8 X,191,3561
+    u8 X, Y,191,3561
+    u8 X, Y, Z;191,3561
+    u8 walkable;192,3577
+    Block type;193,3594
+    float g;194,3610
+    float f;195,3623
+    float h;196,3636
+    u8 opened;198,3667
+    u8 closed;199,3682
+    struct grid_node *parent;parent200,3697
+    struct grid_node *Next;Next201,3751
+    b32 is_jumpnode;203,3862
+    s8 distance[distance204,3883
+} grid_node;206,3986
+typedef struct grid 208,4000
+    int width;209,4022
+    int height;210,4037
+    int depth;211,4053
+    grid_node* nodes;212,4068
+} Grid;213,4090
+    MemoryArena arena;217,4117
+    LevelData level;218,4140
+    StaticBlock *static_blocks;static_blocks221,4163
+    u32 static_block_count;222,4205
+    DynamicBlock *dynamic_blocks;dynamic_blocks224,4234
+    u32 dynamic_block_count;225,4278
+    StaticBlock *transparent_blocks;transparent_blocks227,4308
+    u32 transparent_block_count;228,4355
+    Actor *actors;actors230,4389
+    u32 actor_count;231,4420
+    ActorPath *paths;paths233,4442
+    ActorSteerData *steer_data;steer_data235,4531
+    ActorAnimData *anim_data;anim_data236,4563
+    Glyph *glyphs;glyphs240,4596
+    u32 glyph_count;241,4625
+    ColoredLine *colored_lines;colored_lines243,4647
+    u32 colored_line_count;244,4689
+    s32 x_view_offset;247,4726
+    s32 y_view_offset;248,4749
+    WorldDims dims;252,4784
+    WorldDims block_size;253,4804
+    Grid *grid;grid255,4839
+} PermanentState;260,4865
 
 src/stb_image.h,21963
 #define STBI_INCLUDE_STB_IMAGE_H105,4801
@@ -1725,7 +1504,7 @@ STBIDEF int stbi_info_from_file(6939,236756
 STBIDEF int stbi_info_from_memory(6951,237012
 STBIDEF int stbi_info_from_callbacks(6958,237205
 
-src/types.h,528
+src/types.h,557
 #define TYPES_H2,16
 #define PI 9,151
 #define MAX(10,176
@@ -1736,14 +1515,15 @@ src/types.h,528
 #define ABS(15,405
 #define ASSERT(17,445
 #define internal 23,880
-typedef int8_t s8;25,905
-typedef int16_t s16;26,924
-typedef int32_t s32;27,945
-typedef int64_t s64;28,966
-typedef uint8_t u8;30,988
-typedef uint16_t u16;31,1008
-typedef uint32_t u32;32,1030
-typedef uint64_t u64;33,1052
-typedef float r32;35,1075
-typedef double r64;36,1094
-typedef bool b32;37,1114
+#define global_value24,904
+typedef int8_t s8;26,926
+typedef int16_t s16;27,945
+typedef int32_t s32;28,966
+typedef int64_t s64;29,987
+typedef uint8_t u8;31,1009
+typedef uint16_t u16;32,1029
+typedef uint32_t u32;33,1051
+typedef uint64_t u64;34,1073
+typedef float r32;36,1096
+typedef double r64;37,1115
+typedef bool b32;38,1135

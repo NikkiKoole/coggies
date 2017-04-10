@@ -10,6 +10,15 @@ typedef struct {
     int ssW, ssH;
 } SimpleFrame;
 
+typedef struct {
+    int frameX, frameY, frameW, frameH;
+    int sssX, sssY, sssW, sssH;
+    int ssW, ssH;
+    int pivotX, pivotY;
+    // @TODO support multiple anchors?
+    int anchorX, anchorY;
+} ComplexFrame;
+
 
 typedef struct {
     MemoryArena arena;

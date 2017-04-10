@@ -160,21 +160,42 @@ internal void update_frame(void *param) {
 /*     } */
 /* } */
 
+
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f));
+#define ACTOR_PARTS 2
+
+    u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;
 
     if (used_batches == 1) {
-        renderer->actors[0].count = permanent->actor_count;
+        renderer->actors[0].count = (permanent->actor_count * ACTOR_PARTS);
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches - 1; i++) {
-            renderer->actors[i].count = MAX_IN_BUFFER;
+            renderer->actors[i].count = (MAX_IN_BUFFER);
         }
-        renderer->actors[used_batches - 1].count = permanent->actor_count % MAX_IN_BUFFER;
+        renderer->actors[used_batches - 1].count = (permanent->actor_count * ACTOR_PARTS)  % (MAX_IN_BUFFER);
     } else {
         renderer->used_actor_batches = 0;
     }
+    printf("used batches: %d\n", used_batches);
+#undef ACTOR_PARTS
 }
+
+/* internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
+/*     u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f)); */
+/*     renderer->used_actor_batches = used_batches; */
+
+/*     if (used_batches == 1) { */
+/*         renderer->actors[0].count = permanent->actor_count; */
+/*     } else if (used_batches > 1) { */
+/*         for (u32 i = 0; i < used_batches - 1; i++) { */
+/*             renderer->actors[i].count = MAX_IN_BUFFER; */
+/*         } */
+/*         renderer->actors[used_batches - 1].count = permanent->actor_count % MAX_IN_BUFFER; */
+/*     } else { */
+/*         renderer->used_actor_batches = 0; */
+/*     } */
+/* } */
 
 internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *renderer) {
     u32 used_batches = ceil(permanent->glyph_count / 2048.0f);
