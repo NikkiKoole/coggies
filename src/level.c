@@ -215,7 +215,7 @@ internal void read_level(PermanentState * permanent, LevelData * level, World_Si
     }
 
     LevelCounters counter;
-    counter.line_counter = 3;
+    counter.line_counter   = 3;
     counter.height_counter = -1;;
 
     while(fgets(str, BUF_SIZE, f) != NULL) {
@@ -339,14 +339,11 @@ void make_level_str(PermanentState * permanent, LevelData *level, World_Size dim
     add_stairs(level);
 }
 
-
-
 void make_level(PermanentState * permanent, LevelData *level,  const char * path){
     if (exists(path)) {
         World_Size dimensions = validate_and_get_dimensions(path);
         read_level(permanent, level, dimensions,  path);
         add_stairs(level);
-
     } else {
         printf("file not found!\n");
     }

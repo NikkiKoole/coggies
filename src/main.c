@@ -9,10 +9,7 @@
 
 #include <math.h>
 
-
-
 #define NO_HOT_RELOADING
-
 #ifdef NO_HOT_RELOADING
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 #endif
@@ -103,12 +100,9 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
     resource_level(permanent, &permanent->level, "levels/16.txt"); //two_floors.txt
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
-
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
-    //resource_tga(&renderer->assets.menlo, "fonts/osaka.tga");
-    resource_png(&renderer->assets.blocks, "textures/sprites.png");
+    resource_png(&renderer->assets.blocks, "textures/blocks.png");
     resource_png(&renderer->assets.character, "textures/texture.png");
-
     resource_png(&renderer->assets.palette, "textures/palette.png");
 
 #ifdef GL3
@@ -116,17 +110,15 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GL330.vert", "shaders/xyz_uv.GL330.frag");
     resource_shader(&renderer->assets.xyz_rgb, "shaders/xyz_rgb.GL330.vert", "shaders/xyz_rgb.GL330.frag");
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GL330.vert", "shaders/xy_uv.GL330.frag");
-
 #endif
 #ifdef GLES
     resource_shader(&renderer->assets.xyz_uv_palette, "shaders/xyz_uv_palette.GLES2.vert", "shaders/xyz_uv_palette.GLES2.frag");
     resource_shader(&renderer->assets.xyz_uv, "shaders/xyz_uv.GLES2.vert", "shaders/xyz_uv.GLES2.frag");
     resource_shader(&renderer->assets.xyz_rgb, "shaders/xyz_rgb.GLES2.vert", "shaders/xyz_rgb.GLES2.frag");
     resource_shader(&renderer->assets.xy_uv, "shaders/xy_uv.GLES2.vert", "shaders/xy_uv.GLES2.frag");
-
 #endif
 
-    resource_ogg(&renderer->assets.music1, "ogg/Stiekem.ogg");
+    //resource_ogg(&renderer->assets.music1, "ogg/Stiekem.ogg");
     resource_wav(&renderer->assets.wav1, "wav/scratch.wav");
 }
 
@@ -139,27 +131,7 @@ internal void quit(RenderState *renderer) {
 internal void update_frame(void *param) {
     IOSCallbackParams *p = (IOSCallbackParams *) param;
     render(p->permanent, p->renderer, p->debug);
-    //render((SDL_Window *)param);
 }
-
-
-/* // TODO generalise these three into a reusable function */
-/* internal void set_wall_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
-/*     u32 used_batches = ceil(permanent->static_block_count / 2048.0f); */
-/*     renderer->used_wall_batches = used_batches; */
-
-/*     if (used_batches == 1) { */
-/*         renderer->static_blocks[0].count = permanent->static_block_count; */
-/*     } else if (used_batches > 1) { */
-/*         for (u32 i = 0; i < used_batches - 1; i++) { */
-/*             renderer->static_blocks[i].count = 2048; */
-/*         } */
-/*         renderer->static_blocks[used_batches - 1].count = permanent->static_block_count % 2048; */
-/*     } else { */
-/*         renderer->used_wall_batches = 0; */
-/*     } */
-/* } */
-
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
 #define ACTOR_PARTS 2
@@ -181,21 +153,6 @@ internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *rend
 #undef ACTOR_PARTS
 }
 
-/* internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
-/*     u32 used_batches = ceil(permanent->actor_count / (MAX_IN_BUFFER * 1.0f)); */
-/*     renderer->used_actor_batches = used_batches; */
-
-/*     if (used_batches == 1) { */
-/*         renderer->actors[0].count = permanent->actor_count; */
-/*     } else if (used_batches > 1) { */
-/*         for (u32 i = 0; i < used_batches - 1; i++) { */
-/*             renderer->actors[i].count = MAX_IN_BUFFER; */
-/*         } */
-/*         renderer->actors[used_batches - 1].count = permanent->actor_count % MAX_IN_BUFFER; */
-/*     } else { */
-/*         renderer->used_actor_batches = 0; */
-/*     } */
-/* } */
 
 internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *renderer) {
     u32 used_batches = ceil(permanent->glyph_count / 2048.0f);
@@ -213,21 +170,6 @@ internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *rend
         renderer->used_glyph_batches = 0;
     }
 }
-/* internal void set_colored_line_batch_sizes(PermanentState *permanent, RenderState *renderer) { */
-/*     u32 used_batches = ceil(permanent->colored_line_count / (MAX_IN_BUFFER * 1.0f)); */
-/*     renderer->used_colored_lines_batches = used_batches; */
-
-/*     if (used_batches == 1) { */
-/*         renderer->colored_lines[0].count = permanent->colored_line_count; */
-/*     } else if (used_batches > 1) { */
-/*         for (u32 i = 0; i < used_batches - 1; i++) { */
-/*             renderer->colored_lines[i].count = MAX_IN_BUFFER; */
-/*         } */
-/*         renderer->colored_lines[used_batches - 1].count = permanent->colored_line_count % MAX_IN_BUFFER; */
-/*     } else { */
-/*         renderer->used_colored_lines_batches = 0; */
-/*     } */
-/* } */
 
 
 internal void draw_glyph(PermanentState *permanent, u32 offset, u32 x, u32 y, u32 sx, u32 sy, u32 w, u32 h) {
@@ -295,8 +237,6 @@ internal void print(PermanentState *permanent, RenderState *renderer, const char
 #pragma GCC diagnostic warning "-Wformat-nonliteral"
 
 internal void center_view(PermanentState *permanent, RenderState *renderer) {
-    // TODO the Y offset is not correct, Keep in mind that drawing starts at the world 0,0,0 and goes up (y) and down (z)
-
     int real_world_width = permanent->dims.x * permanent->block_size.x;
     int real_world_depth = permanent->dims.y * permanent->block_size.y / 2;
     int real_world_height = permanent->dims.z_level * permanent->block_size.z_level;
@@ -308,23 +248,13 @@ internal void center_view(PermanentState *permanent, RenderState *renderer) {
     permanent->y_view_offset = real_world_depth + offset_y_blocks;
 }
 
-
-
-
-internal int wallsortfunc(const void *a, const void *b) {
-    //1536 = some guestimate, assuming the depth is maximum 128.
-    // and the height of each block is 128
-    const StaticBlock *a2 = (const StaticBlock *)a;
-    const StaticBlock *b2 = (const StaticBlock *)b;
-    return ((b2->y * 16384 - b2->z) - (a2->y * 16384 - a2->z));
-}
-
 Shared_Library libgame = {
-    .handle = NULL,
-    .name = "./gamelibrary.so",
+    .handle        = NULL,
+    .name          = "./gamelibrary.so",
     .creation_time = 0,
-    .size = 0,
-    .fn_name = "game_update_and_render"};
+    .size          = 0,
+    .fn_name       = "game_update_and_render"
+};
 
 internal void stub(Memory *memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
     UNUSED(memory);
@@ -387,12 +317,8 @@ internal grid_node* get_random_walkable_node(Grid *grid) {
 
 
 int main(int argc, char **argv) {
-    printf("\n");
-
-
     Memory _memory;
     Memory *memory = &_memory;
-    //reserve_memory(memory);
 
     void *base_address = (void *)GIGABYTES(0);
     memory->permanent_size = MEGABYTES(10);
@@ -463,9 +389,6 @@ int main(int argc, char **argv) {
 
     center_view(permanent, renderer);
 
-
-
-
 #define ACTOR_BATCH 10
 
     permanent->actor_count = ACTOR_BATCH;
@@ -521,7 +444,7 @@ int main(int argc, char **argv) {
 
         BEGIN_PERFORMANCE_COUNTER(main_loop);
 
-        // INPUT
+        // INPUT  // MOVE ALL OF THIS INTO GAME!!!!!!!
         SDL_PumpEvents();
         while (SDL_PollEvent(&e) != 0) {
             if (e.type == SDL_QUIT || keys[SDL_SCANCODE_ESCAPE]) {

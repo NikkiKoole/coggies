@@ -5,6 +5,8 @@
 
 
 * Currently doing / Next up
+ - get rid of input code in main, move it to game
+
   - [-] animating body parts
     I initially wanted to have (torso, left arm, right arm, legs and head) as parts
     I dont want to start with that anymore though, just do a body and head (2 parts)

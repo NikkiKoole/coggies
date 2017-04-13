@@ -77,8 +77,10 @@ internal int sort_static_blocks_front_back (const void * a, const void * b)
     return ( ( b2->y*16384 - b2->z) - (a2->y*16384 -  a2->z)); //// this sorts walls front to back (much faster rendering)
 }
 
+
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-#define ACTOR_PARTS 1
+#define ACTOR_PARTS 2
+
     u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;
 
@@ -239,7 +241,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     ASSERT(sizeof(Node16)  == sizeof(Node16*)*2 + 16);
     ASSERT(sizeof(FoundPathNode) == sizeof(BarNode));
-
 
 
     if (memory->is_initialized == false) {
@@ -416,7 +417,28 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         preprocess_grid(permanent->grid);
         set_colored_line_batch_sizes(permanent, renderer);
         memory->is_initialized = true;
-    }
+    } // meory is initialized
+/* #define ACTOR_BATCH 10 */
+/*     if (keys[SDL_SCANCODE_Z]) { */
+/*                 for (u32 j = 0; j < ACTOR_BATCH; j++) { */
+/*                     if (permanent->actor_count < (2048 * 32) - ACTOR_BATCH) { */
+/*                         actor_add(permanent); */
+/*                         u32 i = permanent->actor_count; */
+/*                         grid_node * Start  = get_random_walkable_node(permanent->grid); */
+/*                         permanent->steer_data[i].location.x = Start->X * permanent->block_size.x; */
+/*                         permanent->steer_data[i].location.y = Start->Y * permanent->block_size.y; */
+/*                         permanent->steer_data[i].location.z = Start->Z * permanent->block_size.z_level; */
+/*                         permanent->anim_data[i].frame = rand_int(4); */
+/*                         float speed = 4 + rand_int(10); // px per seconds */
+/*                         permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed; */
+/*                         permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed; */
+/*                         permanent->anim_data[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float(); */
+/*                         set_actor_batch_sizes(permanent, renderer); */
+/*                     } else { */
+/*                         printf("Wont be adding actors reached max already\n"); */
+/*                     } */
+/*                 } */
+/*             } */
 
     // dynamic blocks
     for (u32 i = 0; i < permanent->dynamic_block_count; i++) {
@@ -639,6 +661,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     }
 
     // TODO this is just a hack to prove i can draw 2 parts per actor..
+    // in the 2 part draw this call will only be for the heads
     for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
         permanent->actors[i]._location = permanent->steer_data[i-permanent->actor_count].location;
         permanent->actors[i]._palette_index = permanent->anim_data[i-permanent->actor_count].palette_index;

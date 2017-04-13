@@ -520,7 +520,7 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_size;
             const float UV_BR_Y = guyFrameY / actor_texture_size;
 
-            Rect2 verts = get_verts_mvp(x2, y2, 24.0f, 108.0f, scale, scale, 0.5, 1.0f);
+            Rect2 verts = get_verts_mvp(x2, y2, 24.0f, 108.0f, scale, scale, 0.5f, 1.0f);
 
 
             // bottomright
