@@ -234,7 +234,7 @@ internal void make_texture(Texture *t, const char *path, int type) {
          glTexImage2D(GL_TEXTURE_2D, 0, colorType, w, h, 0, colorType, GL_UNSIGNED_BYTE, image);
          t->width = w;
          t->height = h;
-         ASSERT(t->width == t->height);
+         ASSERT(is_power_of_2(t->height));
          ASSERT(is_power_of_2(t->width));
          glBindTexture(GL_TEXTURE_2D, 0);
          stbi_image_free(image);

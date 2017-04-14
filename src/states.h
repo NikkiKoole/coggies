@@ -124,6 +124,7 @@ typedef struct {
     //ActorPath path;
     //ActorAnimData anim;
     //ActorSteerData steer;
+    ComplexFrame *complex;
     u32 _frame;
     r32 _palette_index;
     u32 index;

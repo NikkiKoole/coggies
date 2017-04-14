@@ -7,8 +7,10 @@
 #include "states.h"
 #include "level.h"
 #include "data_structures.h"
+
 #include "blocks.h"
-//#include "Math.h"
+#include "body.h"
+
 #include "my_math.h"
 #include <math.h>
 
@@ -79,7 +81,7 @@ internal int sort_static_blocks_front_back (const void * a, const void * b)
 
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-#define ACTOR_PARTS 2
+#define ACTOR_PARTS 1
 
     u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;
@@ -199,6 +201,8 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
 }
 
 global_value SimpleFrame generated_frames[TOTAL];
+global_value ComplexFrame generated_body_frames[BP_TOTAL];
+
 
 internal void add_static_block(int x, int y, int z,PermanentState *permanent, int *used_block_count, BlockTextureAtlasPosition texture_atlas_data) {
     permanent->static_blocks[*used_block_count].x     = x * permanent->block_size.x;
@@ -274,6 +278,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
         BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
         fill_generated_values(generated_frames);
+        fill_generated_complex_values(generated_body_frames);
 
         texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
         texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
@@ -658,17 +663,19 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._location = permanent->steer_data[i].location;
         permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
+        permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
     }
 
     // TODO this is just a hack to prove i can draw 2 parts per actor..
     // in the 2 part draw this call will only be for the heads
-    for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
-        permanent->actors[i]._location = permanent->steer_data[i-permanent->actor_count].location;
-        permanent->actors[i]._palette_index = permanent->anim_data[i-permanent->actor_count].palette_index;
-        permanent->actors[i]._frame = permanent->anim_data[i-permanent->actor_count].frame;
-        permanent->actors[i]._location.x += 5;
-        permanent->actors[i]._location.y += 5;
-    }
+    /* for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) { */
+    /*     permanent->actors[i]._location = permanent->steer_data[i-permanent->actor_count].location; */
+    /*     permanent->actors[i]._palette_index = permanent->anim_data[i-permanent->actor_count].palette_index; */
+    /*     permanent->actors[i]._frame = permanent->anim_data[i-permanent->actor_count].frame; */
+    /*     permanent->actors[i]._location.x += 5; */
+    /*     permanent->actors[i]._location.y += 5; */
+    /*     permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001]; */
+    /* } */
 
 
     END_PERFORMANCE_COUNTER(actors_data_gathering);

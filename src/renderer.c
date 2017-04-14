@@ -485,7 +485,8 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
 internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderState *renderer, DebugState *debug){
 
-    float actor_texture_size = renderer->assets.character.width;
+    float actor_texture_width = renderer->assets.character.width;
+    float actor_texture_height = renderer->assets.character.height;
     int number_to_do = renderer->actors_layout.values_per_thing;
 
     ASSERT(number_to_do > 0);
@@ -501,26 +502,43 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             prepare_index += (actor_batch_index * 2048);
             Actor data = permanent->actors[prepare_index];
 
+            /* const float scale = 1.0f; */
+            /* const float guyFrameX = data._frame * 24.0f; */
+
+            /* const Vector3 location = data._location; */
+            /* const float guyDepth = location.y; */
+
+            /* const float x2 = round(location.x); */
+            /* const float y2 = round((location.z) - (location.y) / 2.0f); */
+            /* const float paletteIndex = data._palette_index; */
+
+            /* const float guyFrameY = 9.0f * 12.0f; */
+            /* const float guyFrameHeight = 108.0f ; */
+            /* const float guyFrameWidth = 24.0f; */
+
+            ComplexFrame complex = *data.complex;
+
             const float scale = 1.0f;
-            const float guyFrameX = data._frame * 24.0f;
+            const float guyFrameX = complex.frameX;
 
             const Vector3 location = data._location;
             const float guyDepth = location.y;
 
             const float x2 = round(location.x);
-            const float y2 = round((location.z) - (location.y) / 2.0f);
+            const float y2 = round((location.z) - (location.y) / 2.0f) + 8;
             const float paletteIndex = data._palette_index;
 
-            const float guyFrameY = 9.0f * 12.0f;
-            const float guyFrameHeight = 108.0f ;
-            const float guyFrameWidth = 24.0f;
+            const float guyFrameY = complex.frameY;
+            //printf("%f ?=? %d, %d, %d, %d \n", 108.f, complex.frameX, complex.frameY, complex.frameW, complex.frameH);
+            const float guyFrameHeight = complex.frameH;
+            const float guyFrameWidth = complex.frameW;
 
-            const float UV_TL_X = guyFrameX / actor_texture_size;
-            const float UV_TL_Y = (guyFrameY + guyFrameHeight) / actor_texture_size;
-            const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_size;
-            const float UV_BR_Y = guyFrameY / actor_texture_size;
+            const float UV_TL_X = guyFrameX / actor_texture_width;
+            const float UV_TL_Y = (guyFrameY + guyFrameHeight) / actor_texture_height;
+            const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_width;
+            const float UV_BR_Y = guyFrameY / actor_texture_height;
 
-            Rect2 verts = get_verts_mvp(x2, y2, 24.0f, 108.0f, scale, scale, 0.5f, 1.0f);
+            Rect2 verts = get_verts_mvp(x2, y2, guyFrameWidth, guyFrameHeight, scale, scale, 0.5f, 1.0f);
 
 
             // bottomright

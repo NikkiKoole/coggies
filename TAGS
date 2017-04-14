@@ -2,49 +2,62 @@
 src/blocks.h,1553
 enum Blocks 2,116
     BL_escalator_east_up_01 3,130
-    BL_escalator_east_up_02 4,163
-    BL_escalator_east_up_03 5,196
-    BL_escalator_east_up_04 6,229
-    BL_escalator_east_up_05 7,262
-    BL_escalator_east_up_06 8,295
-    BL_escalator_east_up_07 9,328
-    BL_escalator_east_up_08 10,361
-    BL_escalator_north_up_01 11,394
-    BL_escalator_north_up_02 12,428
-    BL_escalator_north_up_03 13,462
-    BL_escalator_north_up_04 14,497
-    BL_escalator_north_up_05 15,532
-    BL_escalator_north_up_06 16,567
-    BL_escalator_north_up_07 17,602
-    BL_escalator_north_up_08 18,637
-    BL_escalator_north_up_09 19,672
-    BL_escalator_north_up_10 20,707
-    BL_escalator_north_up_11 21,742
-    BL_escalator_north_up_12 22,777
-    BL_escalator_south_up_01 23,812
-    BL_escalator_south_up_02 24,847
-    BL_escalator_south_up_03 25,882
-    BL_escalator_south_up_04 26,917
-    BL_escalator_south_up_05 27,952
-    BL_escalator_south_up_06 28,987
-    BL_escalator_south_up_07 29,1022
-    BL_escalator_south_up_08 30,1057
-    BL_escalator_west_up_01 31,1092
-    BL_escalator_west_up_02 32,1126
-    BL_escalator_west_up_03 33,1160
-    BL_escalator_west_up_04 34,1194
-    BL_escalator_west_up_05 35,1228
-    BL_escalator_west_up_06 36,1262
-    BL_escalator_west_up_07 37,1296
-    BL_escalator_west_up_08 38,1330
-    BL_floor 39,1364
-    BL_ladder_down 40,1383
-    BL_ladder_up 41,1408
-    BL_ladder_up_down 42,1431
-    BL_wall 43,1459
-    BL_window 44,1477
-    TOTAL 45,1497
-internal void fill_generated_values(48,1554
+    BL_escalator_east_up_02 4,164
+    BL_escalator_east_up_03 5,198
+    BL_escalator_east_up_04 6,232
+    BL_escalator_east_up_05 7,266
+    BL_escalator_east_up_06 8,300
+    BL_escalator_east_up_07 9,334
+    BL_escalator_east_up_08 10,368
+    BL_escalator_north_up_01 11,402
+    BL_escalator_north_up_02 12,436
+    BL_escalator_north_up_03 13,470
+    BL_escalator_north_up_04 14,505
+    BL_escalator_north_up_05 15,540
+    BL_escalator_north_up_06 16,575
+    BL_escalator_north_up_07 17,610
+    BL_escalator_north_up_08 18,645
+    BL_escalator_north_up_09 19,680
+    BL_escalator_north_up_10 20,715
+    BL_escalator_north_up_11 21,750
+    BL_escalator_north_up_12 22,785
+    BL_escalator_south_up_01 23,820
+    BL_escalator_south_up_02 24,855
+    BL_escalator_south_up_03 25,890
+    BL_escalator_south_up_04 26,925
+    BL_escalator_south_up_05 27,960
+    BL_escalator_south_up_06 28,995
+    BL_escalator_south_up_07 29,1030
+    BL_escalator_south_up_08 30,1065
+    BL_escalator_west_up_01 31,1100
+    BL_escalator_west_up_02 32,1135
+    BL_escalator_west_up_03 33,1170
+    BL_escalator_west_up_04 34,1205
+    BL_escalator_west_up_05 35,1240
+    BL_escalator_west_up_06 36,1275
+    BL_escalator_west_up_07 37,1310
+    BL_escalator_west_up_08 38,1345
+    BL_floor 39,1380
+    BL_ladder_down 40,1415
+    BL_ladder_up 41,1450
+    BL_ladder_up_down 42,1485
+    BL_wall 43,1520
+    BL_window 44,1555
+    TOTAL 45,1590
+internal void fill_generated_values(48,1666
+
+src/body.h,372
+enum BodyParts 2,116
+    BP_total_north_body_000 3,133
+    BP_total_north_body_001 4,166
+    BP_total_east_body_000 5,199
+    BP_total_east_body_001 6,231
+    BP_total_south_body_000 7,263
+    BP_total_south_body_001 8,296
+    BP_total_west_body_000 9,329
+    BP_total_west_body_001 10,361
+    BP_TOTAL 11,393
+internal void fill_generated_complex_values(13,413
 
 src/data_structures.h,868
 #define DATA_STRUCTURES_H2,26
@@ -76,29 +89,32 @@ src/data_structures.h,868
 #define HEAP_UPDATE_AT(160,7038
 #define HEAP_UPDATE_ITEM(183,8691
 
-src/game.c,1054
-#define SORT_NAME 15,252
-#define SORT_TYPE 16,276
-#define SORT_CMP(18,381
-internal Vector3 seek_return(29,777
-internal void actor_apply_force(40,1223
-internal int path_length_at_index(45,1401
-internal int get_node16_freelist_length(55,1668
-internal int sort_static_blocks_back_front 68,2079
-internal int sort_static_blocks_front_back 81,2934
-internal void set_actor_batch_sizes(95,3790
-internal void set_dynamic_block_batch_sizes(111,4403
-internal void set_transparent_block_batch_sizes(127,5051
-internal void set_static_block_batch_sizes(144,5736
-internal void set_colored_line_batch_sizes(159,6374
-internal grid_node* get_neighboring_walkable_node(176,7053
-internal grid_node* get_random_walkable_node(189,7410
-internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(197,7690
-global_value SimpleFrame generated_frames[generated_frames215,8643
-internal void add_static_block(217,8694
-internal void add_transparent_block(223,9173
-internal void add_dynamic_block(229,9677
-extern void game_update_and_render(246,10754
+src/game.c,1190
+#define SORT_NAME 17,252
+#define SORT_TYPE 18,276
+#define SORT_CMP(20,381
+internal Vector3 seek_return(31,777
+internal void actor_apply_force(42,1223
+internal int path_length_at_index(47,1401
+internal int get_node16_freelist_length(57,1668
+internal int sort_static_blocks_back_front 69,2024
+internal int sort_static_blocks_front_back 75,2274
+internal void set_actor_batch_sizes(83,2585
+#define ACTOR_PARTS 84,2673
+#undef ACTOR_PARTS100,3321
+internal void set_dynamic_block_batch_sizes(103,3343
+internal void set_transparent_block_batch_sizes(119,4024
+internal void set_static_block_batch_sizes(136,4742
+internal void set_colored_line_batch_sizes(151,5413
+internal grid_node* get_neighboring_walkable_node(168,6092
+internal grid_node* get_random_walkable_node(181,6449
+internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(189,6701
+global_value SimpleFrame generated_frames[generated_frames203,7329
+global_value ComplexFrame generated_body_frames[generated_body_frames204,7379
+internal void add_static_block(207,7440
+internal void add_transparent_block(213,7931
+internal void add_dynamic_block(219,8447
+extern void game_update_and_render(233,9621
 
 src/level.c,537
 #define BUF_SIZE 4,40
@@ -111,12 +127,12 @@ internal World_Size validate_and_get_dimensions(22,414
 internal void read_level_line(68,1656
 void read_level_str(147,4527
 internal void read_level(186,5878
-internal b32 has_block_at(230,7172
-internal void set_block_at(236,7378
-internal void set_meta_block_at(242,7577
-internal void add_stairs(248,7786
-void make_level_str(337,12730
-void make_level(344,12916
+internal b32 has_block_at(230,7174
+internal void set_block_at(236,7380
+internal void set_meta_block_at(242,7579
+internal void add_stairs(248,7788
+void make_level_str(337,12732
+void make_level(342,12916
 
 src/level.h,133
 #define LEVEL_H2,16
@@ -126,37 +142,38 @@ src/level.h,133
     int z_level;12,214
 } World_Size;13,231
 
-src/main.c,1043
-#define NO_HOT_RELOADING14,166
-    PermanentState * permanent;23,484
-    RenderState * renderer;24,516
-    DebugState * debug;25,544
-} IOSCallbackParams;26,568
-#define SDL_ASSERT(29,591
-#define SDL_MIX_ASSERT(34,1105
-internal void initialize_SDL(41,1621
-internal int event_filter(85,3265
-internal void load_resources(102,3670
-internal void quit(133,5333
-internal void update_frame(139,5466
-internal void set_actor_batch_sizes(163,6417
-internal void set_glyph_batch_sizes(179,7030
-internal void draw_glyph(212,8438
-u32 debug_text_x 223,8728
-u32 debug_text_y 224,8750
-internal u32 draw_text(226,8773
-internal void print(264,9773
-internal void center_view(276,10204
-internal int wallsortfunc(293,10930
-Shared_Library libgame 301,11267
-internal void stub(308,11428
-PerfDict clone;318,11682
-int ticker 319,11698
-internal void reset_debug_performance_components(321,11715
-internal void maybe_load_libgame(328,11898
-internal grid_node* get_random_walkable_node(357,13255
-int main(368,13538
-#define ACTOR_BATCH 448,16558
+src/main.c,1056
+#define NO_HOT_RELOADING12,164
+    PermanentState * permanent;20,481
+    RenderState * renderer;21,513
+    DebugState * debug;22,541
+} IOSCallbackParams;23,565
+#define SDL_ASSERT(26,588
+#define SDL_MIX_ASSERT(31,1102
+internal void initialize_SDL(38,1618
+internal int event_filter(82,3262
+internal void load_resources(99,3667
+internal void quit(125,5260
+internal void update_frame(131,5393
+internal void set_actor_batch_sizes(136,5543
+#define ACTOR_PARTS 137,5631
+#undef ACTOR_PARTS153,6279
+internal void set_glyph_batch_sizes(157,6302
+internal void draw_glyph(175,6949
+u32 debug_text_x 186,7239
+u32 debug_text_y 187,7261
+internal u32 draw_text(189,7284
+internal void print(227,8284
+internal void center_view(239,8715
+Shared_Library libgame 251,9315
+internal void stub(259,9508
+PerfDict clone;269,9762
+int ticker 270,9778
+internal void reset_debug_performance_components(272,9795
+internal void maybe_load_libgame(279,9978
+internal grid_node* get_random_walkable_node(308,11335
+int main(319,11618
+#define ACTOR_BATCH 392,14585
 
 src/memory.c,420
 internal u64 hash(11,67
@@ -173,53 +190,53 @@ void end_temporary_memory(120,3647
 void *push_size_(push_size_126,3799
 void initialize_arena(144,4478
 
-src/memory.h,1339
+src/memory.h,1402
 #define MEMORY_H2,17
-#define KILOBYTES(9,123
-#define MEGABYTES(10,165
-#define GIGABYTES(11,218
-#define TERABYTES(12,271
-#define PERF_DICT_SIZE 14,325
-    const char* key;16,371
-    int times_counted;17,392
-    u64 total_time;18,415
-    u64 min;19,435
-    u64 max;20,448
-} PerfDictEntry;21,461
+#define KILOBYTES(8,122
+#define MEGABYTES(9,164
+#define GIGABYTES(10,217
+#define TERABYTES(11,270
+    const char* key;15,343
+    int times_counted;16,364
+    u64 total_time;17,387
+    u64 min;18,407
+    u64 max;19,420
+} PerfDictEntry;20,433
+#define PERF_DICT_SIZE 22,451
     PerfDictEntry data[data24,496
 } PerfDict;25,536
-#define BEGIN_PERFORMANCE_COUNTER(29,551
-#define END_PERFORMANCE_COUNTER(30,638
-typedef struct Shared_Library33,792
-    void *handle;handle35,824
-    const char *name;name36,842
-    intmax_t creation_time;37,864
-    u32 id;38,892
-    u32 size;39,904
-    const char *fn_name;fn_name40,918
-    struct stat stats;41,943
-} Shared_Library;42,966
-typedef size_t memory_index;45,986
-    b32 is_initialized;48,1033
-    u32 permanent_size;49,1057
-    void *permanent;permanent50,1081
-    u32 scratch_size;51,1102
-    void *scratch;scratch52,1124
-    u32 node16_size;53,1143
-    void * node16;54,1164
-    u32 debug_size;55,1183
-    void *debug;debug56,1203
-} Memory;57,1220
-    memory_index size;60,1248
-    u8 *base;base61,1271
-    memory_index used;62,1285
-} MemoryArena;63,1308
-    MemoryArena *arena;arena66,1341
-    memory_index used;67,1365
-} TempMemory;68,1388
-#define PUSH_STRUCT(79,1618
-#define PUSH_ARRAY(80,1692
-#define PUSH_SIZE(81,1782
+#define BEGIN_PERFORMANCE_COUNTER(27,549
+#define END_PERFORMANCE_COUNTER(28,636
+typedef struct Shared_Library 30,789
+    void        *handle;handle31,821
+    const char  *name;name32,846
+    intmax_t     creation_time;33,869
+    u32          id;34,901
+    u32          size;35,922
+    const char  *fn_name;fn_name36,945
+    struct stat  stats;37,971
+} Shared_Library;38,995
+typedef size_t memory_index;40,1014
+    b32   is_initialized;43,1061
+    u32   permanent_size;44,1087
+    void *permanent;permanent45,1113
+    u32   scratch_size;46,1134
+    void *scratch;scratch47,1158
+    u32   node16_size;48,1177
+    void *node16;node1649,1200
+    u32   debug_size;50,1218
+    void *debug;debug51,1240
+} Memory;52,1257
+    memory_index  size;55,1285
+    u8           *base;base56,1309
+    memory_index  used;57,1333
+} MemoryArena;58,1357
+    MemoryArena  *arena;arena61,1390
+    memory_index  used;62,1415
+} TempMemory;63,1439
+#define PUSH_STRUCT(70,1665
+#define PUSH_ARRAY(71,1739
+#define PUSH_SIZE(72,1829
 
 src/multi_platform.h,279
 #define MULTI_PLATFORM_H2,25
@@ -379,7 +396,7 @@ src/random.h,175
 #define rand_arr(13,325
 #define rand_str(14,386
 
-src/renderer.c,788
+src/renderer.c,851
     float x;14,189
     float y;15,202
 } V2;16,215
@@ -397,14 +414,14 @@ internal void make_buffer(144,5790
 internal const char *gl_error_string(gl_error_string179,6978
 void initialize_GL(203,7561
 void prepare_renderer(223,8119
-void update_and_draw_actor_vertices(489,20349
-void render_actors(590,24522
-void render_dynamic_blocks(615,25550
-void render_walls(736,30724
-void render_transparent_blocks(772,32002
-void render_text(809,33289
-void render_lines(893,37090
-void render(954,40094
+internal void update_and_draw_actor_vertices(486,20241
+internal void render_actors(602,25173
+internal void render_dynamic_blocks(627,26132
+internal void render_walls(748,31246
+internal void render_transparent_blocks(784,32451
+internal void render_text(820,33679
+internal void render_lines(904,37421
+void render(965,40434
 
 src/renderer.h,2465
 #define RENDERER_H2,19
@@ -489,19 +506,19 @@ void resource_font(127,4328
 internal b32 load_TGA_file(134,4491
 internal b32 is_power_of_2(198,6080
 internal void make_texture(202,6151
-void resource_png(245,8024
-void resource_tga(255,8306
-internal const char *read_file(read_file260,8429
-internal GLuint load_shader(286,9007
-#define CHECK(310,9692
-internal GLuint make_shader_program(321,10250
-void resource_shader(350,11189
-internal void make_sprite_atlas(357,11413
-void resource_sprite_atlas(411,13610
-#define BUF_SIZE 416,13729
-void resource_level(420,13754
-void resource_ogg(426,13924
-void resource_wav(431,14085
+void resource_png(245,8027
+void resource_tga(255,8309
+internal const char *read_file(read_file260,8432
+internal GLuint load_shader(286,9010
+#define CHECK(310,9695
+internal GLuint make_shader_program(321,10253
+void resource_shader(350,11192
+internal void make_sprite_atlas(357,11416
+void resource_sprite_atlas(411,13613
+#define BUF_SIZE 416,13732
+void resource_level(420,13757
+void resource_ogg(426,13927
+void resource_wav(431,14088
 
 src/resource.h,515
 #define RESOURCE_H2,19
@@ -754,7 +771,7 @@ static int clzll(29,1199
 static __inline int compute_minrun(74,1742
 static __inline size_t rbnd(87,2030
 
-src/states.h,7441
+src/states.h,7931
 #define STATES_H2,17
     int frameX,8,113
     int frameX, frameY,8,113
@@ -767,220 +784,236 @@ src/states.h,7441
     int ssW,10,185
     int ssW, ssH;10,185
 } SimpleFrame;11,203
-    MemoryArena arena;15,237
-} ScratchState;16,260
-    MemoryArena arena;20,295
-    PerfDict perf_dict;21,318
-} DebugState;22,342
-    int x_pos;25,374
-    int y_pos;26,389
-    int width;27,404
-    int height;28,419
-    int x_internal_off;30,436
-    int y_internal_off;31,506
-    int x_off;33,536
-    int y_off;34,629
-} BlockTextureAtlasPosition;35,649
-    u16 x;38,696
-    u16 y;39,707
-    u16 z;40,718
-    BlockTextureAtlasPosition frame;41,729
-    u8 is_floor;42,766
-} StaticBlock;43,783
-    u16 x;46,821
-    u16 y;47,832
-    u16 z;48,843
-    BlockTextureAtlasPosition frame;49,854
-    u8 is_floor;50,891
-    u8 total_frames;51,908
-    u8 current_frame;52,929
-    u16 start_frame_x;53,951
-    r32 duration_per_frame;54,974
-    r32 frame_duration_left;55,1002
-    u8 plays_forward;56,1031
-    int first_frame;57,1053
-    int last_frame;58,1074
-} DynamicBlock;59,1094
-typedef struct FoundPathNode 63,1118
-    Vector3 node;64,1149
-    float unused;65,1167
-} FoundPathNode;66,1185
-    float data[data69,1220
-} BarNode;70,1239
-typedef struct Node1672,1251
-        FoundPathNode path;76,1291
-        BarNode bar;77,1319
-        u8 reserved[reserved78,1340
-    struct Node16 *Next,Next80,1372
-    struct Node16 *Next, *Prev;Prev80,1372
-} Node16;81,1404
-    MemoryArena arena;84,1432
-    Node16 *Free;Free85,1455
-} Node16Arena;87,1497
-    Node16 * Sentinel;91,1531
-    int counter;92,1554
-} ActorPath;93,1571
-    u16 frame;96,1602
-    r32 palette_index;97,1617
-    r32 frame_duration_left;98,1640
-} ActorAnimData;99,1669
-    Vector3 location;102,1704
-    s16 dx;103,1726
-    s16 dy;104,1738
-    Vector3 velocity;105,1750
-    Vector3 acceleration;106,1772
-    float mass;107,1798
-    float max_speed;108,1814
-    float max_force;109,1835
-} ActorSteerData;110,1856
-    Vector3 _location;114,1893
-    u32 _frame;118,1992
-    r32 _palette_index;119,2008
-    u32 index;120,2032
-} Actor;121,2047
-    u16 x;127,2083
-    u16 y;128,2094
-    u16 sx;129,2105
-    u16 sy;130,2117
-    u16 w;131,2129
-    u16 h;132,2140
-} Glyph;133,2151
-    u16 x1,136,2183
-    u16 x1, y1,136,2183
-    u16 x1, y1, z1;136,2183
-    u16 x2,137,2203
-    u16 x2, y2,137,2203
-    u16 x2, y2, z2;137,2203
-    r32 r,138,2223
-    r32 r,g,138,2223
-    r32 r,g,b;138,2223
-} ColoredLine;139,2238
-    u32 x;142,2277
-    u32 y;143,2288
-    u32 z_level;144,2299
-} WorldDims;145,2316
-    Nothing,149,2346
-    WallBlock,150,2359
-    WindowBlock,151,2374
-    Floor,152,2391
-    Floor, Grass,152,2391
-    Floor, Grass, Wood,152,2391
-    Floor, Grass, Wood, Concrete,152,2391
-    Floor, Grass, Wood, Concrete, Tiles,152,2391
-    Floor, Grass, Wood, Concrete, Tiles, Carpet,152,2391
-    LadderUpDown,153,2440
-    LadderUpDown, LadderUp,153,2440
-    LadderUpDown, LadderUp, LadderDown,153,2440
-    StairsMeta,154,2480
-    StairsFollowUpMeta,155,2516
-    Stairs1N,156,2540
-    Stairs1N, Stairs2N,156,2540
-    Stairs1N, Stairs2N, Stairs3N,156,2540
-    Stairs1N, Stairs2N, Stairs3N, Stairs4N,156,2540
-    Stairs1E,157,2584
-    Stairs1E, Stairs2E,157,2584
-    Stairs1E, Stairs2E, Stairs3E,157,2584
-    Stairs1E, Stairs2E, Stairs3E, Stairs4E,157,2584
-    Stairs1S,158,2628
-    Stairs1S, Stairs2S,158,2628
-    Stairs1S, Stairs2S, Stairs3S,158,2628
-    Stairs1S, Stairs2S, Stairs3S, Stairs4S,158,2628
-    Stairs1W,159,2672
-    Stairs1W, Stairs2W,159,2672
-    Stairs1W, Stairs2W, Stairs3W,159,2672
-    Stairs1W, Stairs2W, Stairs3W, Stairs4W,159,2672
-    EscalatorUpMeta,161,2717
-    EscalatorUp1N,162,2738
-    EscalatorUp1N, EscalatorUp2N,162,2738
-    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N,162,2738
-    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N, EscalatorUp4N,162,2738
-    EscalatorUp1E,163,2802
-    EscalatorUp1E, EscalatorUp2E,163,2802
-    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E,163,2802
-    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E, EscalatorUp4E,163,2802
-    EscalatorUp1S,164,2866
-    EscalatorUp1S, EscalatorUp2S,164,2866
-    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S,164,2866
-    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,164,2866
-    EscalatorUp1W,165,2930
-    EscalatorUp1W, EscalatorUp2W,165,2930
-    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W,165,2930
-    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,165,2930
-    EscalatorDownMeta,167,2995
-    EscalatorDown1N,168,3018
-    EscalatorDown1N, EscalatorDown2N,168,3018
-    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N,168,3018
-    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N, EscalatorDown4N,168,3018
-    EscalatorDown1E,169,3090
-    EscalatorDown1E, EscalatorDown2E,169,3090
-    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E,169,3090
-    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E, EscalatorDown4E,169,3090
-    EscalatorDown1S,170,3162
-    EscalatorDown1S, EscalatorDown2S,170,3162
-    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S,170,3162
-    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S, EscalatorDown4S,170,3162
-    EscalatorDown1W,171,3234
-    EscalatorDown1W, EscalatorDown2W,171,3234
-    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W,171,3234
-    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W, EscalatorDown4W,171,3234
-    Shaded,173,3307
-    BlockTotal174,3319
-} Block;175,3334
-    Block object;178,3361
-    Block floor;179,3379
-    Block meta_object;180,3396
-} WorldBlock;181,3419
-    WorldBlock *blocks;blocks184,3451
-    int block_count;185,3475
-    int x,186,3496
-    int x, y,186,3496
-    int x, y, z_level;186,3496
-} LevelData;187,3519
-typedef struct grid_node 190,3534
-    u8 X,191,3561
-    u8 X, Y,191,3561
-    u8 X, Y, Z;191,3561
-    u8 walkable;192,3577
-    Block type;193,3594
-    float g;194,3610
-    float f;195,3623
-    float h;196,3636
-    u8 opened;198,3667
-    u8 closed;199,3682
-    struct grid_node *parent;parent200,3697
-    struct grid_node *Next;Next201,3751
-    b32 is_jumpnode;203,3862
-    s8 distance[distance204,3883
-} grid_node;206,3986
-typedef struct grid 208,4000
-    int width;209,4022
-    int height;210,4037
-    int depth;211,4053
-    grid_node* nodes;212,4068
-} Grid;213,4090
-    MemoryArena arena;217,4117
-    LevelData level;218,4140
-    StaticBlock *static_blocks;static_blocks221,4163
-    u32 static_block_count;222,4205
-    DynamicBlock *dynamic_blocks;dynamic_blocks224,4234
-    u32 dynamic_block_count;225,4278
-    StaticBlock *transparent_blocks;transparent_blocks227,4308
-    u32 transparent_block_count;228,4355
-    Actor *actors;actors230,4389
-    u32 actor_count;231,4420
-    ActorPath *paths;paths233,4442
-    ActorSteerData *steer_data;steer_data235,4531
-    ActorAnimData *anim_data;anim_data236,4563
-    Glyph *glyphs;glyphs240,4596
-    u32 glyph_count;241,4625
-    ColoredLine *colored_lines;colored_lines243,4647
-    u32 colored_line_count;244,4689
-    s32 x_view_offset;247,4726
-    s32 y_view_offset;248,4749
-    WorldDims dims;252,4784
-    WorldDims block_size;253,4804
-    Grid *grid;grid255,4839
-} PermanentState;260,4865
+    int frameX,14,236
+    int frameX, frameY,14,236
+    int frameX, frameY, frameW,14,236
+    int frameX, frameY, frameW, frameH;14,236
+    int sssX,15,276
+    int sssX, sssY,15,276
+    int sssX, sssY, sssW,15,276
+    int sssX, sssY, sssW, sssH;15,276
+    int ssW,16,308
+    int ssW, ssH;16,308
+    int pivotX,17,326
+    int pivotX, pivotY;17,326
+    int anchorX,19,389
+    int anchorX, anchorY;19,389
+} ComplexFrame;20,415
+    MemoryArena arena;24,450
+} ScratchState;25,473
+    MemoryArena arena;29,508
+    PerfDict perf_dict;30,531
+} DebugState;31,555
+    int x_pos;34,587
+    int y_pos;35,602
+    int width;36,617
+    int height;37,632
+    int x_internal_off;39,649
+    int y_internal_off;40,719
+    int x_off;42,749
+    int y_off;43,842
+} BlockTextureAtlasPosition;44,862
+    u16 x;47,909
+    u16 y;48,920
+    u16 z;49,931
+    BlockTextureAtlasPosition frame;50,942
+    u8 is_floor;51,979
+} StaticBlock;52,996
+    u16 x;55,1034
+    u16 y;56,1045
+    u16 z;57,1056
+    BlockTextureAtlasPosition frame;58,1067
+    u8 is_floor;59,1104
+    u8 total_frames;60,1121
+    u8 current_frame;61,1142
+    u16 start_frame_x;62,1164
+    r32 duration_per_frame;63,1187
+    r32 frame_duration_left;64,1215
+    u8 plays_forward;65,1244
+    int first_frame;66,1266
+    int last_frame;67,1287
+} DynamicBlock;68,1307
+typedef struct FoundPathNode 72,1331
+    Vector3 node;73,1362
+    float unused;74,1380
+} FoundPathNode;75,1398
+    float data[data78,1433
+} BarNode;79,1452
+typedef struct Node1681,1464
+        FoundPathNode path;85,1504
+        BarNode bar;86,1532
+        u8 reserved[reserved87,1553
+    struct Node16 *Next,Next89,1585
+    struct Node16 *Next, *Prev;Prev89,1585
+} Node16;90,1617
+    MemoryArena arena;93,1645
+    Node16 *Free;Free94,1668
+} Node16Arena;96,1710
+    Node16 * Sentinel;100,1744
+    int counter;101,1767
+} ActorPath;102,1784
+    u16 frame;105,1815
+    r32 palette_index;106,1830
+    r32 frame_duration_left;107,1853
+} ActorAnimData;108,1882
+    Vector3 location;111,1917
+    s16 dx;112,1939
+    s16 dy;113,1951
+    Vector3 velocity;114,1963
+    Vector3 acceleration;115,1985
+    float mass;116,2011
+    float max_speed;117,2027
+    float max_force;118,2048
+} ActorSteerData;119,2069
+    Vector3 _location;123,2106
+    ComplexFrame complex;127,2205
+    u32 _frame;128,2231
+    r32 _palette_index;129,2247
+    u32 index;130,2271
+} Actor;131,2286
+    u16 x;137,2322
+    u16 y;138,2333
+    u16 sx;139,2344
+    u16 sy;140,2356
+    u16 w;141,2368
+    u16 h;142,2379
+} Glyph;143,2390
+    u16 x1,146,2422
+    u16 x1, y1,146,2422
+    u16 x1, y1, z1;146,2422
+    u16 x2,147,2442
+    u16 x2, y2,147,2442
+    u16 x2, y2, z2;147,2442
+    r32 r,148,2462
+    r32 r,g,148,2462
+    r32 r,g,b;148,2462
+} ColoredLine;149,2477
+    u32 x;152,2516
+    u32 y;153,2527
+    u32 z_level;154,2538
+} WorldDims;155,2555
+    Nothing,159,2585
+    WallBlock,160,2598
+    WindowBlock,161,2613
+    Floor,162,2630
+    Floor, Grass,162,2630
+    Floor, Grass, Wood,162,2630
+    Floor, Grass, Wood, Concrete,162,2630
+    Floor, Grass, Wood, Concrete, Tiles,162,2630
+    Floor, Grass, Wood, Concrete, Tiles, Carpet,162,2630
+    LadderUpDown,163,2679
+    LadderUpDown, LadderUp,163,2679
+    LadderUpDown, LadderUp, LadderDown,163,2679
+    StairsMeta,164,2719
+    StairsFollowUpMeta,165,2755
+    Stairs1N,166,2779
+    Stairs1N, Stairs2N,166,2779
+    Stairs1N, Stairs2N, Stairs3N,166,2779
+    Stairs1N, Stairs2N, Stairs3N, Stairs4N,166,2779
+    Stairs1E,167,2823
+    Stairs1E, Stairs2E,167,2823
+    Stairs1E, Stairs2E, Stairs3E,167,2823
+    Stairs1E, Stairs2E, Stairs3E, Stairs4E,167,2823
+    Stairs1S,168,2867
+    Stairs1S, Stairs2S,168,2867
+    Stairs1S, Stairs2S, Stairs3S,168,2867
+    Stairs1S, Stairs2S, Stairs3S, Stairs4S,168,2867
+    Stairs1W,169,2911
+    Stairs1W, Stairs2W,169,2911
+    Stairs1W, Stairs2W, Stairs3W,169,2911
+    Stairs1W, Stairs2W, Stairs3W, Stairs4W,169,2911
+    EscalatorUpMeta,171,2956
+    EscalatorUp1N,172,2977
+    EscalatorUp1N, EscalatorUp2N,172,2977
+    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N,172,2977
+    EscalatorUp1N, EscalatorUp2N, EscalatorUp3N, EscalatorUp4N,172,2977
+    EscalatorUp1E,173,3041
+    EscalatorUp1E, EscalatorUp2E,173,3041
+    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E,173,3041
+    EscalatorUp1E, EscalatorUp2E, EscalatorUp3E, EscalatorUp4E,173,3041
+    EscalatorUp1S,174,3105
+    EscalatorUp1S, EscalatorUp2S,174,3105
+    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S,174,3105
+    EscalatorUp1S, EscalatorUp2S, EscalatorUp3S, EscalatorUp4S,174,3105
+    EscalatorUp1W,175,3169
+    EscalatorUp1W, EscalatorUp2W,175,3169
+    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W,175,3169
+    EscalatorUp1W, EscalatorUp2W, EscalatorUp3W, EscalatorUp4W,175,3169
+    EscalatorDownMeta,177,3234
+    EscalatorDown1N,178,3257
+    EscalatorDown1N, EscalatorDown2N,178,3257
+    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N,178,3257
+    EscalatorDown1N, EscalatorDown2N, EscalatorDown3N, EscalatorDown4N,178,3257
+    EscalatorDown1E,179,3329
+    EscalatorDown1E, EscalatorDown2E,179,3329
+    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E,179,3329
+    EscalatorDown1E, EscalatorDown2E, EscalatorDown3E, EscalatorDown4E,179,3329
+    EscalatorDown1S,180,3401
+    EscalatorDown1S, EscalatorDown2S,180,3401
+    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S,180,3401
+    EscalatorDown1S, EscalatorDown2S, EscalatorDown3S, EscalatorDown4S,180,3401
+    EscalatorDown1W,181,3473
+    EscalatorDown1W, EscalatorDown2W,181,3473
+    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W,181,3473
+    EscalatorDown1W, EscalatorDown2W, EscalatorDown3W, EscalatorDown4W,181,3473
+    Shaded,183,3546
+    BlockTotal184,3558
+} Block;185,3573
+    Block object;188,3600
+    Block floor;189,3618
+    Block meta_object;190,3635
+} WorldBlock;191,3658
+    WorldBlock *blocks;blocks194,3690
+    int block_count;195,3714
+    int x,196,3735
+    int x, y,196,3735
+    int x, y, z_level;196,3735
+} LevelData;197,3758
+typedef struct grid_node 200,3773
+    u8 X,201,3800
+    u8 X, Y,201,3800
+    u8 X, Y, Z;201,3800
+    u8 walkable;202,3816
+    Block type;203,3833
+    float g;204,3849
+    float f;205,3862
+    float h;206,3875
+    u8 opened;208,3906
+    u8 closed;209,3921
+    struct grid_node *parent;parent210,3936
+    struct grid_node *Next;Next211,3990
+    b32 is_jumpnode;213,4101
+    s8 distance[distance214,4122
+} grid_node;216,4225
+typedef struct grid 218,4239
+    int width;219,4261
+    int height;220,4276
+    int depth;221,4292
+    grid_node* nodes;222,4307
+} Grid;223,4329
+    MemoryArena arena;227,4356
+    LevelData level;228,4379
+    StaticBlock *static_blocks;static_blocks231,4402
+    u32 static_block_count;232,4444
+    DynamicBlock *dynamic_blocks;dynamic_blocks234,4473
+    u32 dynamic_block_count;235,4517
+    StaticBlock *transparent_blocks;transparent_blocks237,4547
+    u32 transparent_block_count;238,4594
+    Actor *actors;actors240,4628
+    u32 actor_count;241,4659
+    ActorPath *paths;paths243,4681
+    ActorSteerData *steer_data;steer_data245,4770
+    ActorAnimData *anim_data;anim_data246,4802
+    Glyph *glyphs;glyphs250,4835
+    u32 glyph_count;251,4864
+    ColoredLine *colored_lines;colored_lines253,4886
+    u32 colored_line_count;254,4928
+    s32 x_view_offset;257,4965
+    s32 y_view_offset;258,4988
+    WorldDims dims;262,5023
+    WorldDims block_size;263,5043
+    Grid *grid;grid265,5078
+} PermanentState;270,5104
 
 src/stb_image.h,21963
 #define STBI_INCLUDE_STB_IMAGE_H105,4801

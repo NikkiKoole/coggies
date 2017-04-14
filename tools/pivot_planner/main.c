@@ -561,7 +561,7 @@ void combine_all_and_pixel(TextureAtlasLayerValues *pixel_layer, TextureAtlasLay
         }
     }
 
-    fprintf(fptr, "}\n");
+    fprintf(fptr, "};\n");
     fclose(fptr);
     printf("written %d frames.\n", counter);
 }
