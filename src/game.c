@@ -423,27 +423,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         set_colored_line_batch_sizes(permanent, renderer);
         memory->is_initialized = true;
     } // meory is initialized
-/* #define ACTOR_BATCH 10 */
-/*     if (keys[SDL_SCANCODE_Z]) { */
-/*                 for (u32 j = 0; j < ACTOR_BATCH; j++) { */
-/*                     if (permanent->actor_count < (2048 * 32) - ACTOR_BATCH) { */
-/*                         actor_add(permanent); */
-/*                         u32 i = permanent->actor_count; */
-/*                         grid_node * Start  = get_random_walkable_node(permanent->grid); */
-/*                         permanent->steer_data[i].location.x = Start->X * permanent->block_size.x; */
-/*                         permanent->steer_data[i].location.y = Start->Y * permanent->block_size.y; */
-/*                         permanent->steer_data[i].location.z = Start->Z * permanent->block_size.z_level; */
-/*                         permanent->anim_data[i].frame = rand_int(4); */
-/*                         float speed = 4 + rand_int(10); // px per seconds */
-/*                         permanent->steer_data[i].dx = rand_bool() ? -1 * speed : 1 * speed; */
-/*                         permanent->steer_data[i].dy = rand_bool() ? -1 * speed : 1 * speed; */
-/*                         permanent->anim_data[i].palette_index = (1.0f / 16.0f) * rand_int(16); // rand_float(); */
-/*                         set_actor_batch_sizes(permanent, renderer); */
-/*                     } else { */
-/*                         printf("Wont be adding actors reached max already\n"); */
-/*                     } */
-/*                 } */
-/*             } */
 
     // dynamic blocks
     for (u32 i = 0; i < permanent->dynamic_block_count; i++) {
@@ -566,6 +545,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
             //TODO something is off with this, the end of a path seems almost never to be walkable
+            // TODO more issues with this, actor posp through walls whne its found a path.
             grid_node * Start = get_node_at(permanent->grid,
                                           permanent->steer_data[i].location.x/permanent->block_size.x,
                                           permanent->steer_data[i].location.y/permanent->block_size.y,
@@ -663,7 +643,11 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._location = permanent->steer_data[i].location;
         permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
-        permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
+        if ( permanent->anim_data[i].frame % 2 == 0) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
+        } else {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
+        }
     }
 
     // TODO this is just a hack to prove i can draw 2 parts per actor..
