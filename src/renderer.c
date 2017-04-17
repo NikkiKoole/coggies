@@ -524,12 +524,40 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const Vector3 location = data._location;
             const float guyDepth = location.y;
 
+
+            // somehow west is broken and east is correct.
+            // east = frame 0 x offset 5 frame nr2 xoffset 0
+
+            // west = frame 0 and 1 both 5 xoffset
+
+
+
+
+
+            float y_internal_off = (float)complex.ssH - ((float)complex.sssY + (float)complex.frameH);
+            float x_internal_off = (float)complex.ssW - ((float)complex.sssX + (float)complex.frameW); //??
+
+            if (data._frame == 4) {
+                printf("4 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off);
+            }
+            if (data._frame == 5) {
+                printf("5 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off);
+            }
+            if (data._frame == 8) {
+                printf("8 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off);
+            }
+            if (data._frame == 9) {
+                printf("9 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off);
+            }
+
             const float x2 = round(location.x);
-            const float y2 = round((location.z) - (location.y) / 2.0f) + 8;
+            const float y2 = round((location.z + y_internal_off) - (location.y) / 2.0f);
             const float paletteIndex = data._palette_index;
 
+            const float pivotX = (float)complex.pivotX / (float)complex.frameW;
+            const float pivotY = (float)complex.pivotY / (float)complex.frameH;
+
             const float guyFrameY = complex.frameY;
-            //printf("%f ?=? %d, %d, %d, %d \n", 108.f, complex.frameX, complex.frameY, complex.frameW, complex.frameH);
             const float guyFrameHeight = complex.frameH;
             const float guyFrameWidth = complex.frameW;
 
@@ -538,7 +566,8 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_width;
             const float UV_BR_Y = guyFrameY / actor_texture_height;
 
-            Rect2 verts = get_verts_mvp(x2, y2, guyFrameWidth, guyFrameHeight, scale, scale, 0.5f, 1.0f);
+            //printf("%d) internal offsets: %f, %f. pivots: %f, %f\n", data._frame, x_internal_off, y_internal_off, pivotX, pivotY);
+            Rect2 verts = get_verts_mvp(x2, y2, guyFrameWidth, guyFrameHeight, scale, scale, pivotX, pivotY);
 
 
             // bottomright

@@ -389,7 +389,7 @@ int main(int argc, char **argv) {
 
     center_view(permanent, renderer);
 
-#define ACTOR_BATCH 10
+#define ACTOR_BATCH 1
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);

@@ -643,11 +643,30 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._location = permanent->steer_data[i].location;
         permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
-        if ( permanent->anim_data[i].frame % 2 == 0) {
+
+        if ( permanent->anim_data[i].frame == 4) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_000];
+        } else if (permanent->anim_data[i].frame == 5) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_001];
+        } else if (permanent->anim_data[i].frame == 6) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
+        } else if (permanent->anim_data[i].frame == 7) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001];
+        } else if (permanent->anim_data[i].frame == 8) {
             permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
-        } else {
+        } else if (permanent->anim_data[i].frame == 9) {
             permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
+        } else if (permanent->anim_data[i].frame == 10) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_000];
+        } else if (permanent->anim_data[i].frame == 11) {
+            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_001];
         }
+
+        /* if ( permanent->anim_data[i].frame % 2 == 0) { */
+        /*     permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000]; */
+        /* } else { */
+        /*     permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001]; */
+        /* } */
     }
 
     // TODO this is just a hack to prove i can draw 2 parts per actor..

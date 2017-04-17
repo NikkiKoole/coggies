@@ -15,8 +15,9 @@ internal void fill_generated_complex_values(ComplexFrame* generated_frames ) {
     generated_frames[BP_total_north_body_001] = (ComplexFrame){90, 0, 21, 77,7, 23, 19, 75, 32, 100, 16, 97, 16, 38};
     generated_frames[BP_total_east_body_000] = (ComplexFrame){132, 0, 19, 78,8, 22, 17, 76, 32, 100, 16, 97, 16, 37};
     generated_frames[BP_total_east_body_001] = (ComplexFrame){0, 0, 24, 77,8, 23, 22, 75, 32, 100, 16, 97, 16, 38};
-    generated_frames[BP_total_south_body_000] = (ComplexFrame){69, 0, 21, 78,7, 22, 19, 76, 32, 100, 16, 97, 16, 37};
-    generated_frames[BP_total_south_body_001] = (ComplexFrame){111, 0, 21, 77,7, 23, 19, 75, 32, 100, 16, 97, 16, 38};
     generated_frames[BP_total_west_body_000] = (ComplexFrame){151, 0, 19, 78,8, 22, 17, 76, 32, 100, 16, 97, 16, 37};
     generated_frames[BP_total_west_body_001] = (ComplexFrame){24, 0, 24, 77,3, 23, 22, 75, 32, 100, 16, 97, 16, 38};
+    generated_frames[BP_total_south_body_000] = (ComplexFrame){69, 0, 21, 78,7, 22, 19, 76, 32, 100, 16, 97, 16, 37};
+    generated_frames[BP_total_south_body_001] = (ComplexFrame){111, 0, 21, 77,7, 23, 19, 75, 32, 100, 16, 97, 16, 38};
+
 }
