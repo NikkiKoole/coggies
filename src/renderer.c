@@ -20,7 +20,7 @@ typedef struct {
     V2 br;
 } Rect2;
 
-
+float last_frame = 999;
 
 #define CHECK()                                                         \
     {                                                                   \
@@ -524,49 +524,46 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const Vector3 location = data._location;
             const float guyDepth = location.y;
 
-
-            // somehow west is broken and east is correct.
-            // east = frame 0 x offset 5 frame nr2 xoffset 0
-
-            // west = frame 0 and 1 both 5 xoffset
+            float y_internal_off = complex.sssY;// (float)complex.ssH - ((float)complex.sssY + (float)complex.sssH);
+            float x_internal_off = complex.sssX;//(float)complex.ssW - ((float)complex.sssX + (float)complex.sssW);
 
 
-            // TODO this calc is broken...
-
-
-            float y_internal_off = (float)complex.ssH - ((float)complex.sssY + (float)complex.frameH);
-            float x_internal_off = (float)complex.ssW - ((float)complex.sssX + (float)complex.frameW); //??
-
-            if (data._frame == 4) {
-                //printf("4 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off); //5
-            }
-            if (data._frame == 5) {
-                //printf("5 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off); // 5
-            }
-            if (data._frame == 8) {
-                //printf("8 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off); // 5
-                //x_internal_off = 0;
-            }
-            if (data._frame == 9) {
-                //printf("9 x_internal_off  complex.ssW [%f] - (complex.sssX [%f] + complex.frameW [%f] );  = [%f]\n", (float)complex.ssW, (float)complex.sssX, (float)complex.frameW, x_internal_off); // 0
-                //x_internal_off = 5;
-            }
-            //x_internal_off *= -1.f;
             /*
-              5 x_internal_off  complex.ssW [32.000000] - (complex.sssX [3.000000] + complex.frameW [24.000000] );  = [5.000000]
-              9 x_internal_off  complex.ssW [32.000000] - (complex.sssX [8.000000] + complex.frameW [24.000000] );  = [0.000000]
+              result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
+              result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
+
              */
 
-            const float x2 = round(location.x ) - x_internal_off;
-            const float y2 = round((location.z + y_internal_off) - (location.y) / 2.0f);
+            //x_internal_off = 0;//
+
+
+            /* if (last_frame != data._frame) { */
+            /*     last_frame = data._frame; */
+            /*     printf("%d) %f \n", data._frame - 4, x_internal_off); */
+            /* } */
+
+            /* if (last_frame == 4) { */
+            /*     x_internal_off = 0; */
+
+            /* } */
+            /* if (last_frame == 5) { */
+            /*     x_internal_off = 2; */
+
+            /* } */
+
+
+
+
+            const float x2 = round(location.x ) + x_internal_off;
+
+            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f);
             const float paletteIndex = data._palette_index;
 
-            const float pivotX = (float)complex.pivotX / (float)complex.sssW;
-            const float pivotY = (float)complex.pivotY / (float)complex.sssH;
-
+            const float pivotX = (float)complex.pivotX / (float)complex.frameW;
+            const float pivotY = (float)complex.pivotY / (float)complex.frameH;
             const float guyFrameY = complex.frameY;
-            const float guyFrameHeight = complex.sssH;
-            const float guyFrameWidth = complex.sssW;
+            const float guyFrameHeight = complex.frameH;
+            const float guyFrameWidth = complex.frameW;
 
             const float UV_TL_X = guyFrameX / actor_texture_width;
             const float UV_TL_Y = (guyFrameY + guyFrameHeight) / actor_texture_height;
@@ -1034,12 +1031,12 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
 
 
     render_actors(permanent, renderer, debug);
-    //render_walls(permanent, renderer);
-    //render_dynamic_blocks(permanent, renderer);
+    render_walls(permanent, renderer);
+    render_dynamic_blocks(permanent, renderer);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    //render_transparent_blocks(permanent, renderer);
+    render_transparent_blocks(permanent, renderer);
     glDisable(GL_DEPTH_TEST);
 
     render_lines(permanent, renderer);

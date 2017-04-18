@@ -9,8 +9,8 @@
 #include "data_structures.h"
 
 #include "blocks.h"
-//#include "body.h"
-#include "test.h"
+#include "body.h"
+//#include "test.h"
 
 #include "my_math.h"
 #include <math.h>
@@ -484,7 +484,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 seek_force = Vector3MultiplyScalar(seek_force, 1);
                 actor_apply_force(&permanent->steer_data[i], seek_force);
 
-                #if 0
+
                 permanent->steer_data[i].velocity = Vector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
                 permanent->steer_data[i].velocity = Vector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
                 permanent->steer_data[i].location = Vector3Add(permanent->steer_data[i].location,   Vector3MultiplyScalar(permanent->steer_data[i].velocity, last_frame_time_seconds));
@@ -510,17 +510,17 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 if (permanent->anim_data[i].frame_duration_left > 0.2f) {
                     permanent->anim_data[i].frame_duration_left = 0;
                 }
-                #endif
 
-                permanent->anim_data[i].frame_duration_left += last_frame_time_seconds;
-                if (permanent->anim_data[i].frame_duration_left > 1.0f) {
-                    permanent->anim_data[i].frame += 1;
 
-                    if ( permanent->anim_data[i].frame >= 13) {
-                        permanent->anim_data[i].frame = 4;
-                    }
-                    permanent->anim_data[i].frame_duration_left = 0;
-                }
+                /* permanent->anim_data[i].frame_duration_left += last_frame_time_seconds; */
+                /* if (permanent->anim_data[i].frame_duration_left > 1.0f) { */
+                /*     permanent->anim_data[i].frame += 1; */
+
+                /*     if ( permanent->anim_data[i].frame >= 13) { */
+                /*         permanent->anim_data[i].frame = 4; */
+                /*     } */
+                /*     permanent->anim_data[i].frame_duration_left = 0; */
+                /* } */
 
                 END_PERFORMANCE_COUNTER(actors_steering);
             }
@@ -661,37 +661,37 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
 
         if ( permanent->anim_data[i].frame == 4) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_000];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_000];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_000];
         } else if (permanent->anim_data[i].frame == 5) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_001];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_001];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_001];
         } else if (permanent->anim_data[i].frame == 6) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_002];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_002];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
         } else if (permanent->anim_data[i].frame == 7) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_003];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_003];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001];
         } else if (permanent->anim_data[i].frame == 8) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_004];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_004];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
         } else if (permanent->anim_data[i].frame == 9) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_005];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_005];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
         } else if (permanent->anim_data[i].frame == 10) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_006];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_006];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_000];
         } else if (permanent->anim_data[i].frame == 11) {
-            permanent->actors[i].complex = &generated_body_frames[BP_test_test_007];
+            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_007];
 
-            //permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_001];
         }
 
         /* if ( permanent->anim_data[i].frame % 2 == 0) { */
