@@ -528,7 +528,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
 
-#if 0
+#if 1
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
@@ -661,36 +661,20 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
 
         if ( permanent->anim_data[i].frame == 4) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_000];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_000];
         } else if (permanent->anim_data[i].frame == 5) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_001];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_001];
         } else if (permanent->anim_data[i].frame == 6) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_002];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
         } else if (permanent->anim_data[i].frame == 7) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_003];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001];
         } else if (permanent->anim_data[i].frame == 8) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_004];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
         } else if (permanent->anim_data[i].frame == 9) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_005];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
         } else if (permanent->anim_data[i].frame == 10) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_006];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_000];
         } else if (permanent->anim_data[i].frame == 11) {
-            //permanent->actors[i].complex = &generated_body_frames[BP_test_test_007];
-
             permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_001];
         }
 

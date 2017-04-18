@@ -502,20 +502,6 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             prepare_index += (actor_batch_index * 2048);
             Actor data = permanent->actors[prepare_index];
 
-            /* const float scale = 1.0f; */
-            /* const float guyFrameX = data._frame * 24.0f; */
-
-            /* const Vector3 location = data._location; */
-            /* const float guyDepth = location.y; */
-
-            /* const float x2 = round(location.x); */
-            /* const float y2 = round((location.z) - (location.y) / 2.0f); */
-            /* const float paletteIndex = data._palette_index; */
-
-            /* const float guyFrameY = 9.0f * 12.0f; */
-            /* const float guyFrameHeight = 108.0f ; */
-            /* const float guyFrameWidth = 24.0f; */
-
             ComplexFrame complex = *data.complex;
 
             const float scale = 1.0f;
@@ -524,39 +510,12 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const Vector3 location = data._location;
             const float guyDepth = location.y;
 
-            float y_internal_off = complex.sssY;// (float)complex.ssH - ((float)complex.sssY + (float)complex.sssH);
-            float x_internal_off = complex.sssX;//(float)complex.ssW - ((float)complex.sssX + (float)complex.sssW);
-
-
-            /*
-              result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
-              result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
-
-             */
-
-            //x_internal_off = 0;//
-
-
-            /* if (last_frame != data._frame) { */
-            /*     last_frame = data._frame; */
-            /*     printf("%d) %f \n", data._frame - 4, x_internal_off); */
-            /* } */
-
-            /* if (last_frame == 4) { */
-            /*     x_internal_off = 0; */
-
-            /* } */
-            /* if (last_frame == 5) { */
-            /*     x_internal_off = 2; */
-
-            /* } */
-
-
-
+            float y_internal_off = complex.sssY;
+            float x_internal_off = complex.sssX;
 
             const float x2 = round(location.x ) + x_internal_off;
 
-            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f);
+            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) +8.f;
             const float paletteIndex = data._palette_index;
 
             const float pivotX = (float)complex.pivotX / (float)complex.frameW;
