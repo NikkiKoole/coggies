@@ -102,7 +102,7 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
     resource_png(&renderer->assets.blocks, "textures/blocks.png");
-    resource_png(&renderer->assets.character, "textures/full.png");
+    resource_png(&renderer->assets.character, "textures/test.png");
     resource_png(&renderer->assets.palette, "textures/palette.png");
 
 #ifdef GL3

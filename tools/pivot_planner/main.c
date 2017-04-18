@@ -485,7 +485,7 @@ void combine_all_and_pixel(TextureAtlasLayerValues *pixel_layer, TextureAtlasLay
         }
     }
     fprintf(fptr, "    %s_TOTAL = %d\n", prefix, counter);
-    fprintf(fptr, "}\n");
+    fprintf(fptr, "};\n");
     fprintf(fptr, "internal void fill_generated_complex_values(ComplexFrame* generated_frames ) {\n");
 
     for (i = 0; i< all_data->total;i++) {
