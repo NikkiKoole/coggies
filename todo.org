@@ -5,9 +5,10 @@
 
 
 * Currently doing / Next up
- - get rid of input code in main, move it to game
+  - the pathfinding transforms pathnodes to posiitons that lay on the corner of blocks, it would be much
+    better if they would map to the middle.
 
-  - [-] animating body parts
+  - [X] animating body parts
     I initially wanted to have (torso, left arm, right arm, legs and head) as parts
     I dont want to start with that anymore though, just do a body and head (2 parts)
     It'll be much more lightweight for the RPI and more then enough (for the moment)
@@ -15,9 +16,9 @@
     - [X] also in that ASE file i will need to place anchor points and save them out.
     - [X] the anchor points shouldn't be visible in the texture atlas, I just need their locations
     - [X] to summarize: I need some data structure which combines: originalSource size, currentSource size, pivot position, anchor point(s) position(s). PER body part.
-    - [ ] the json needs to be transformed into a binary file format and/or into a H/C file i can link to.
+    - [X] the json needs to be transformed into a binary file format and/or into a H/C file i can link to.
       this is working for the simpler 'block' texture atlas (generated with ShoeBox), not yet for the ASE Files
-
+    - do the multiple parts for a body, just a head and a body for now
 
 * known bugs
  - bug: shadow gets in way of stairs below

@@ -513,9 +513,9 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             float y_internal_off = complex.sssY;
             float x_internal_off = complex.sssX;
 
-            const float x2 = round(location.x ) + x_internal_off;
+            const float x2 = round(location.x ) + x_internal_off - 12.f;
 
-            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) +8.f;
+            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f;
             const float paletteIndex = data._palette_index;
 
             const float pivotX = (float)complex.pivotX / (float)complex.frameW;
@@ -925,14 +925,14 @@ internal void render_lines(PermanentState *permanent, RenderState *renderer) {
             //const float x2 = (tempX2 / screenWidth) * 2.0f - 1.0f;
             //const float y2 = ((tempY2+6) / screenHeight) * 2.0f - 1.0f;
 
-            batch->vertices[i + 0] = tempX1;//x1;
-            batch->vertices[i + 1] = tempY1+7;//y1;
+            batch->vertices[i + 0] = tempX1 - 12;//x1;
+            batch->vertices[i + 1] = tempY1 + 12;//y1;
             batch->vertices[i + 2] = 0.0f;
             batch->vertices[i + 3] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;
             batch->vertices[i + 4] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;
             batch->vertices[i + 5] = data.b;
-            batch->vertices[i + 6] = tempX2;//x2;
-            batch->vertices[i + 7] = tempY2+7;//y2;
+            batch->vertices[i + 6] = tempX2 - 12;//x2;
+            batch->vertices[i + 7] = tempY2 + 12;//y2;
             batch->vertices[i + 8] = 0.0f;
             batch->vertices[i + 9] = ABS(data.x1 - data.x2) > 0 ||  ABS(data.y1 - data.y2) > 0  ? 1.0f : 0.0f;;//ABS(x1 - x2) > 0 ? 1.0f : 0.0f;
             batch->vertices[i + 10] = ABS(data.z1 - data.z2) > 0 ? 1.0f :0.0f;

@@ -102,7 +102,7 @@ internal void load_resources(PermanentState *permanent, RenderState *renderer) {
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
     resource_png(&renderer->assets.blocks, "textures/blocks.png");
-    resource_png(&renderer->assets.character, "textures/full.png");
+    resource_png(&renderer->assets.character, "textures/body.png");
     resource_png(&renderer->assets.palette, "textures/palette.png");
 
 #ifdef GL3
@@ -134,7 +134,7 @@ internal void update_frame(void *param) {
 }
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-#define ACTOR_PARTS 1
+#define ACTOR_PARTS 2
 
     u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;

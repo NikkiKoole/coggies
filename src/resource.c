@@ -200,6 +200,12 @@ internal b32 is_power_of_2(u32 x) {
 }
 
 internal void make_texture(Texture *t, const char *path, int type) {
+
+    if (!exists(path)) {
+        ASSERT(0 && "file couldnt be found\n");
+    }
+
+
     // second texture
     GLuint *tex = &t->id;
     glGenTextures(1, tex);

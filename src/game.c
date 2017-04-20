@@ -9,7 +9,7 @@
 #include "data_structures.h"
 
 #include "blocks.h"
-#include "body.h"
+#include "body2.h"
 //#include "test.h"
 
 #include "my_math.h"
@@ -82,7 +82,7 @@ internal int sort_static_blocks_front_back (const void * a, const void * b)
 
 
 internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-#define ACTOR_PARTS 1
+#define ACTOR_PARTS 2
 
     u32 used_batches = ceil((permanent->actor_count * ACTOR_PARTS) / ((MAX_IN_BUFFER) * 1.0f));
     renderer->used_actor_batches = used_batches;
@@ -468,7 +468,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         for (u32 i = 0; i < permanent->actor_count; i++) {
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 float distance = Vector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
-                if (distance < 4){
+                if (distance < 5.f){
                     Node16 *First = permanent->paths[i].Sentinel->Next;
                     permanent->paths[i].Sentinel->Next = First->Next;
                     First->Next = node16->Free->Next;
@@ -511,17 +511,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                     permanent->anim_data[i].frame_duration_left = 0;
                 }
 
-
-                /* permanent->anim_data[i].frame_duration_left += last_frame_time_seconds; */
-                /* if (permanent->anim_data[i].frame_duration_left > 1.0f) { */
-                /*     permanent->anim_data[i].frame += 1; */
-
-                /*     if ( permanent->anim_data[i].frame >= 13) { */
-                /*         permanent->anim_data[i].frame = 4; */
-                /*     } */
-                /*     permanent->anim_data[i].frame_duration_left = 0; */
-                /* } */
-
                 END_PERFORMANCE_COUNTER(actors_steering);
             }
 
@@ -551,7 +540,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 #endif
             ASSERT( permanent->colored_line_count < LINE_BATCH_COUNT * MAX_IN_BUFFER)
 
-            // if already have a path, i dont need a new one,
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 continue;
             }
@@ -560,17 +548,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
             BEGIN_PERFORMANCE_COUNTER(mass_pathfinding);
             TempMemory temp_mem = begin_temporary_memory(&scratch->arena);
-            //TODO something is off with this, the end of a path seems almost never to be walkable
-            // TODO more issues with this, actor posp through walls whne its found a path.
             grid_node * Start = get_node_at(permanent->grid,
                                           permanent->steer_data[i].location.x/permanent->block_size.x,
                                           permanent->steer_data[i].location.y/permanent->block_size.y,
-                                          (permanent->steer_data[i].location.z+10) /permanent->block_size.z_level);
+                                          (permanent->steer_data[i].location.z - 20)/permanent->block_size.z_level);
             if (Start->walkable) {
             } else {
                 Start = get_neighboring_walkable_node(permanent->grid, Start->X, Start->Y, Start->Z);
                 if (!Start->walkable) {
-                    //printf("why wasnt my current node walkable? %d,%d,%d \n", Start->X, Start->Y, Start->Z);
                     Start = get_random_walkable_node(permanent->grid);
                 }
             }
@@ -578,7 +563,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             grid_node * End =  get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
-
 
             path_list * PathRaw = find_path(Start, End, permanent->grid, &scratch->arena);
             path_list *Path = NULL;
@@ -602,10 +586,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                         ActorPath * p = &(permanent->paths[i]);
 
-                        // TODO maybe i can fix the stairs oriented east/west and how the path is differnt going up then down just here..
-                        N->path.node.x = done->X* permanent->block_size.x;
-                        N->path.node.y = done->Y* permanent->block_size.y;
-                        N->path.node.z = done->Z* permanent->block_size.z_level;
+                        N->path.node.x =(permanent->block_size.x/2)+ done->X * permanent->block_size.x ;
+                        N->path.node.y =(permanent->block_size.y/2) + done->Y * permanent->block_size.y;
+                        N->path.node.z = done->Z * permanent->block_size.z_level;
 			// if this is part of a stair move going up east/west
 #if 1 // pathing movemenst going up on east/west stairs
                         if (done->Prev != Path->Sentinel) {
@@ -661,21 +644,21 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
 
         if ( permanent->anim_data[i].frame == 4) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_west_body_000];
         } else if (permanent->anim_data[i].frame == 5) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_west_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_west_body_001];
         } else if (permanent->anim_data[i].frame == 6) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_south_body_000];
         } else if (permanent->anim_data[i].frame == 7) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_south_body_001];
         } else if (permanent->anim_data[i].frame == 8) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_east_body_000];
         } else if (permanent->anim_data[i].frame == 9) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_east_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_east_body_001];
         } else if (permanent->anim_data[i].frame == 10) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_000];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_north_body_000];
         } else if (permanent->anim_data[i].frame == 11) {
-            permanent->actors[i].complex = &generated_body_frames[BP_total_north_body_001];
+            permanent->actors[i].complex = &generated_body_frames[BP_walking_north_body_001];
         }
 
         /* if ( permanent->anim_data[i].frame % 2 == 0) { */
@@ -687,14 +670,34 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     // TODO this is just a hack to prove i can draw 2 parts per actor..
     // in the 2 part draw this call will only be for the heads
-    /* for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) { */
-    /*     permanent->actors[i]._location = permanent->steer_data[i-permanent->actor_count].location; */
-    /*     permanent->actors[i]._palette_index = permanent->anim_data[i-permanent->actor_count].palette_index; */
-    /*     permanent->actors[i]._frame = permanent->anim_data[i-permanent->actor_count].frame; */
-    /*     permanent->actors[i]._location.x += 5; */
-    /*     permanent->actors[i]._location.y += 5; */
-    /*     permanent->actors[i].complex = &generated_body_frames[BP_total_south_body_001]; */
-    /* } */
+    for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
+        u32 j = i - permanent->actor_count;
+        permanent->actors[i]._location = permanent->steer_data[j].location;
+        permanent->actors[i]._palette_index = permanent->anim_data[j].palette_index;
+        permanent->actors[i]._frame = permanent->anim_data[j].frame;
+        //permanent->actors[i]._location.x += 5;
+        //permanent->actors[i]._location.y += 5;
+
+        if ( permanent->anim_data[j].frame == 4) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_west_head_000];
+        } else if (permanent->anim_data[j].frame == 5) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_west_head_000];
+        } else if (permanent->anim_data[j].frame == 6) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_south_head_000];
+        } else if (permanent->anim_data[j].frame == 7) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_south_head_000];
+        } else if (permanent->anim_data[j].frame == 8) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_east_head_000];
+        } else if (permanent->anim_data[j].frame == 9) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_east_head_000];
+        } else if (permanent->anim_data[j].frame == 10) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_north_head_000];
+        } else if (permanent->anim_data[j].frame == 11) {
+            permanent->actors[i].complex = &generated_body_frames[BP_facing_north_head_000];
+        }
+
+
+    }
 
 
     END_PERFORMANCE_COUNTER(actors_data_gathering);
