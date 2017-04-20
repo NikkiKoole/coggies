@@ -97,7 +97,7 @@ internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *rend
     } else {
         renderer->used_actor_batches = 0;
     }
-    printf("used batches: %d\n", used_batches);
+    //    printf("used batches: %d\n", used_batches);
 #undef ACTOR_PARTS
 }
 
@@ -517,7 +517,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
 
-#if 1
+#if 0
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
@@ -643,6 +643,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
 
+        permanent->actors[i].x_off = 0;
+        permanent->actors[i].y_off = 0;
+
         if ( permanent->anim_data[i].frame == 4) {
             permanent->actors[i].complex = &generated_body_frames[BP_walking_west_body_000];
         } else if (permanent->anim_data[i].frame == 5) {
@@ -668,15 +671,21 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         /* } */
     }
 
-    // TODO this is just a hack to prove i can draw 2 parts per actor..
-    // in the 2 part draw this call will only be for the heads
+
     for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
         u32 j = i - permanent->actor_count;
         permanent->actors[i]._location = permanent->steer_data[j].location;
-        permanent->actors[i]._palette_index = permanent->anim_data[j].palette_index;
+        permanent->actors[i]._palette_index = (1.0f / 16.0f) * (j % 16);//permanent->anim_data[j].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[j].frame;
-        //permanent->actors[i]._location.x += 5;
-        //permanent->actors[i]._location.y += 5;
+
+        int deltaX = permanent->actors[j].complex->anchorX - permanent->actors[j].complex->pivotX;
+        int deltaY = permanent->actors[j].complex->anchorY - permanent->actors[j].complex->pivotY;
+
+        //TODO this positions the head at the right place, thing is, its z is off and it under some windows/objects that the body isnt, i think i just need to add extra proeprties and add it in render
+
+
+        permanent->actors[i].x_off = deltaX;
+        permanent->actors[i].y_off = -1 * deltaY;
 
         if ( permanent->anim_data[j].frame == 4) {
             permanent->actors[i].complex = &generated_body_frames[BP_facing_west_head_000];
@@ -704,7 +713,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
     BEGIN_PERFORMANCE_COUNTER(actors_sort);
-    Actor_quick_sort(permanent->actors, permanent->actor_count);
+    Actor_quick_sort(permanent->actors, permanent->actor_count*2);
     END_PERFORMANCE_COUNTER(actors_sort);
 
 }

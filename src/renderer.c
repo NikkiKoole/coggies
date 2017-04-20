@@ -513,9 +513,10 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             float y_internal_off = complex.sssY;
             float x_internal_off = complex.sssX;
 
-            const float x2 = round(location.x ) + x_internal_off - 12.f;
+            const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
+            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
 
-            const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f;
+
             const float paletteIndex = data._palette_index;
 
             const float pivotX = (float)complex.pivotX / (float)complex.frameW;

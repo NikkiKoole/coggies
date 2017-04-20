@@ -149,7 +149,7 @@ internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *rend
     } else {
         renderer->used_actor_batches = 0;
     }
-    printf("used batches: %d\n", used_batches);
+    //    printf("used batches: %d\n", used_batches);
 #undef ACTOR_PARTS
 }
 

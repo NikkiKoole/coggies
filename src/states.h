@@ -128,6 +128,7 @@ typedef struct {
     u32 _frame;
     r32 _palette_index;
     u32 index;
+    r32 x_off, y_off;
 } Actor; //176
 
 
