@@ -427,7 +427,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         preprocess_grid(permanent->grid);
         set_colored_line_batch_sizes(permanent, renderer);
         memory->is_initialized = true;
-    } // meory is initialized
+    } // memory is initialized
 
     // dynamic blocks
     for (u32 i = 0; i < permanent->dynamic_block_count; i++) {
@@ -517,7 +517,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
 
-#if 0
+#if 1
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
@@ -556,6 +556,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             } else {
                 Start = get_neighboring_walkable_node(permanent->grid, Start->X, Start->Y, Start->Z);
                 if (!Start->walkable) {
+                    //printf("why was start not walkable?\n");
                     Start = get_random_walkable_node(permanent->grid);
                 }
             }
@@ -586,6 +587,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                         ActorPath * p = &(permanent->paths[i]);
 
+                        // TODO iam not sure about this, is this the right way to center all positions in the path nodes?
+                        // should it be done somewhere else instead?
                         N->path.node.x =(permanent->block_size.x/2)+ done->X * permanent->block_size.x ;
                         N->path.node.y =(permanent->block_size.y/2) + done->Y * permanent->block_size.y;
                         N->path.node.z = done->Z * permanent->block_size.z_level;
@@ -680,9 +683,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
         int deltaX = permanent->actors[j].complex->anchorX - permanent->actors[j].complex->pivotX;
         int deltaY = permanent->actors[j].complex->anchorY - permanent->actors[j].complex->pivotY;
-
-        //TODO this positions the head at the right place, thing is, its z is off and it under some windows/objects that the body isnt, i think i just need to add extra proeprties and add it in render
-
 
         permanent->actors[i].x_off = deltaX;
         permanent->actors[i].y_off = -1 * deltaY;
