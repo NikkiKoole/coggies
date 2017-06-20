@@ -206,21 +206,30 @@ int main() {
 
 
 
-    // man walking downstairs  plate 15, legs
-    #define FRAME_COUNT 10
-    int animation[FRAME_COUNT][3] = {
-        {4,13,3},
-        {4,12,2},
-        {5,11,2},
-        {6,10,1},
-        {7,8,0},
-        {7,9,0},
-        {6,10,0},
-        {6,11,0},
-        {5,12,1},
-        {5,12,2},
-    };
+    /* //    man walking downstairs  plate 15, legs */
+    /* #define FRAME_COUNT 10 */
+    /* int animation[FRAME_COUNT][3] = { */
+    /*     {4,13,3}, */
+    /*     {4,12,2}, */
+    /*     {5,11,2}, */
+    /*     {6,10,1}, */
+    /*     {7,8,0}, */
+    /*     {7,9,0}, */
+    /*     {6,10,0}, */
+    /*     {6,11,0}, */
+    /*     {5,12,1}, */
+    /*     {5,12,2}, */
+    /* }; */
 
+    //    man walking downstairs  plate 15, legs ,NUMMER 2
+     #define FRAME_COUNT 3
+    int animation[FRAME_COUNT][3] = {
+        {4,10,0},
+        {4,11,0},
+        {4,12,0},
+
+
+    };
 
 
 
