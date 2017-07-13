@@ -10,8 +10,6 @@
 
 #include "blocks.h"
 #include "body2.h"
-//#include "test.h"
-
 #include "my_math.h"
 #include <math.h>
 
@@ -28,6 +26,14 @@
 
 #include "sort.h"
 #pragma GCC diagnostic pop
+
+typedef enum {
+    Front, Left, Right
+} FacingSide;
+
+FacingSide facing_side = Left;
+
+
 
 internal Vector3 seek_return(ActorSteerData *actor, Vector3 target) {
     Vector3 desired = Vector3Subtract(target, actor->location);
@@ -231,6 +237,291 @@ internal void add_dynamic_block(int x, int y, int z,PermanentState *permanent, i
     permanent->dynamic_blocks[*used_block_count].plays_forward      = direction;
 }
 
+
+
+internal Block getRotatedBlock(Block input, FacingSide side) {
+    // you get a front facing block and a side you want to see.
+    UNUSED(input);
+    if (input != Nothing) {
+        if (side == Left) {
+            switch(input) {
+            case Stairs1N: case Stairs2N: case Stairs3N: case Stairs4N:
+            case EscalatorUp1N: case EscalatorUp2N: case EscalatorUp3N: case EscalatorUp4N:
+            case EscalatorDown1N: case EscalatorDown2N: case EscalatorDown3N: case EscalatorDown4N:
+                return input + 12; // north -> west
+            case Stairs1E: case Stairs2E: case Stairs3E: case Stairs4E:
+            case EscalatorUp1E: case EscalatorUp2E: case EscalatorUp3E: case EscalatorUp4E:
+            case EscalatorDown1E: case EscalatorDown2E: case EscalatorDown3E: case EscalatorDown4E:
+                return input - 4; // east -> north
+            case Stairs1S: case Stairs2S: case Stairs3S: case Stairs4S:
+            case EscalatorUp1S: case EscalatorUp2S: case EscalatorUp3S: case EscalatorUp4S:
+            case EscalatorDown1S: case EscalatorDown2S: case EscalatorDown3S: case EscalatorDown4S:
+                return input - 4; // south -> east
+            case Stairs1W: case Stairs2W: case Stairs3W: case Stairs4W:
+            case EscalatorUp1W: case EscalatorUp2W: case EscalatorUp3W: case EscalatorUp4W:
+            case EscalatorDown1W: case EscalatorDown2W: case EscalatorDown3W: case EscalatorDown4W:
+                return input - 4; // west -> south
+
+            case Nothing: case Shaded: case BlockTotal:
+            case WindowBlock: case WallBlock: case LadderUpDown: case LadderUp: case LadderDown:
+            case Floor: case Grass: case Wood: case Concrete: case Tiles: case Carpet:
+            case StairsMeta: case StairsFollowUpMeta: case EscalatorUpMeta: case EscalatorDownMeta:
+                return input;
+            }
+        } else if (side == Right) {
+
+            switch(input) {
+            case Stairs1N: case Stairs2N: case Stairs3N: case Stairs4N:
+            case EscalatorUp1N: case EscalatorUp2N: case EscalatorUp3N: case EscalatorUp4N:
+            case EscalatorDown1N: case EscalatorDown2N: case EscalatorDown3N: case EscalatorDown4N:
+                return input + 4; // north -> east
+            case Stairs1E: case Stairs2E: case Stairs3E: case Stairs4E:
+            case EscalatorUp1E: case EscalatorUp2E: case EscalatorUp3E: case EscalatorUp4E:
+            case EscalatorDown1E: case EscalatorDown2E: case EscalatorDown3E: case EscalatorDown4E:
+                return input + 4; // east -> south
+            case Stairs1S: case Stairs2S: case Stairs3S: case Stairs4S:
+            case EscalatorUp1S: case EscalatorUp2S: case EscalatorUp3S: case EscalatorUp4S:
+            case EscalatorDown1S: case EscalatorDown2S: case EscalatorDown3S: case EscalatorDown4S:
+                return input + 4; // south -> west
+            case Stairs1W: case Stairs2W: case Stairs3W: case Stairs4W:
+            case EscalatorUp1W: case EscalatorUp2W: case EscalatorUp3W: case EscalatorUp4W:
+            case EscalatorDown1W: case EscalatorDown2W: case EscalatorDown3W: case EscalatorDown4W:
+                return input - 12; // west -> north
+
+            case Nothing: case Shaded: case BlockTotal:
+            case WindowBlock: case WallBlock: case LadderUpDown: case LadderUp: case LadderDown:
+            case Floor: case Grass: case Wood: case Concrete: case Tiles: case Carpet:
+            case StairsMeta: case StairsFollowUpMeta: case EscalatorUpMeta: case EscalatorDownMeta:
+                return input;
+            }
+        } else {
+            return input;
+        }
+    }
+    return Nothing;
+}
+
+internal u32 getRotatedXInt(u32 x, u32 y, FacingSide side, WorldDims dims ) {
+    if (side == Front) {
+        return x;
+    } else if (side == Left) {
+        return y;
+    } else if (side == Right) {
+        return dims.y - y;
+    }
+    return x;
+}
+internal u32 getRotatedYInt(u32 x, u32 y, FacingSide side, WorldDims dims ) {
+    if (side == Front) {
+        return y;
+    } else if (side == Left) {
+        return dims.x - x;
+    } else if (side == Right) {
+        return x;
+    }
+    return y;
+}
+
+internal Vector3 getRotatedVec3(Vector3 pos, FacingSide side, WorldDims dims, WorldDims sizes) {
+    UNUSED(dims); UNUSED(sizes);
+    if (side == Front) {
+    } else if (side == Left){
+        return Vector3Make(pos.y, (dims.x * sizes.x) - pos.x, pos.z);
+    } else if (side == Right){
+        return Vector3Make(( (dims.y * sizes.y) - pos.y), pos.x, pos.z);
+    }
+    return Vector3Make(pos.x, pos.y, pos.z);
+}
+
+
+internal void initialize_memory( PermanentState *permanent, Node16Arena *node16, RenderState *renderer, Memory* memory) {
+    permanent->dynamic_blocks     = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
+    permanent->static_blocks      = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
+    permanent->transparent_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
+    permanent->actors             = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
+    permanent->paths              = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
+    permanent->steer_data         = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
+    for (int i = 0; i < 16384*4; i++) {
+        permanent->steer_data[i].mass      = 1.0f;
+        permanent->steer_data[i].max_force = 10;
+        permanent->steer_data[i].max_speed = 50 + rand_float() * 80;
+    }
+    permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
+
+    for (int i = 0; i < 16384*4; i++) {
+        permanent->anim_data[i].frame = 4;
+    }
+    for (int i = 0; i < 16384*4; i++) {
+        Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
+        permanent->paths[i].Sentinel            = Sentinel;
+        permanent->paths[i].Sentinel->Next      = Sentinel;
+        permanent->paths[i].Sentinel->Prev      = Sentinel;
+        permanent->actors[i].index              = i;
+        permanent->paths[i].Sentinel->path.node = Vector3Make(-999,-999,-999);
+    }
+
+    node16->Free = PUSH_STRUCT(&node16->arena, Node16);
+    node16->Free->Next = node16->Free;
+    node16->Free->Prev = node16->Free;
+
+    permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
+    permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
+
+    BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
+    fill_generated_values(generated_frames);
+    fill_generated_complex_values(generated_body_frames);
+
+    texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
+    texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
+    texture_atlas_data[WindowBlock]  = convertSimpleFrameToBlockTexturePos(generated_frames[BL_window], 0, 0);
+
+    texture_atlas_data[LadderUp]     = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up], 0, 0);
+    texture_atlas_data[LadderUpDown] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down], 0, 0);
+    texture_atlas_data[LadderDown]   = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down], 0, 0);
+
+    texture_atlas_data[EscalatorDown1S] = texture_atlas_data[EscalatorUp1S] = texture_atlas_data[Stairs1S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 0);
+    texture_atlas_data[EscalatorDown2S] = texture_atlas_data[EscalatorUp2S] = texture_atlas_data[Stairs2S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 24);
+    texture_atlas_data[EscalatorDown3S] = texture_atlas_data[EscalatorUp3S] = texture_atlas_data[Stairs3S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 48);
+    texture_atlas_data[EscalatorDown4S] = texture_atlas_data[EscalatorUp4S] = texture_atlas_data[Stairs4S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 72);
+
+    texture_atlas_data[EscalatorDown1N] = texture_atlas_data[EscalatorUp1N] = texture_atlas_data[Stairs1N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 0);
+    texture_atlas_data[EscalatorDown2N] = texture_atlas_data[EscalatorUp2N] = texture_atlas_data[Stairs2N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 24);
+    texture_atlas_data[EscalatorDown3N] = texture_atlas_data[EscalatorUp3N] = texture_atlas_data[Stairs3N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 48);
+    texture_atlas_data[EscalatorDown4N] = texture_atlas_data[EscalatorUp4N] = texture_atlas_data[Stairs4N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 72);
+
+    texture_atlas_data[EscalatorDown1W] = texture_atlas_data[EscalatorUp1W] = texture_atlas_data[Stairs1W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 0);
+    texture_atlas_data[EscalatorDown2W] = texture_atlas_data[EscalatorUp2W] = texture_atlas_data[Stairs2W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 24);
+    texture_atlas_data[EscalatorDown3W] = texture_atlas_data[EscalatorUp3W] = texture_atlas_data[Stairs3W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 48);
+    texture_atlas_data[EscalatorDown4W] = texture_atlas_data[EscalatorUp4W] = texture_atlas_data[Stairs4W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 72);
+
+    texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 0  );
+    texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24 );
+    texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48 );
+    texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72 );
+
+    int used_static_block_count = 0;
+    int used_dynamic_block_count = 0;
+    int used_transparent_block_count = 0;
+
+    for (u32 z = 0; z < permanent->dims.z_level ; z++){
+        for (u32 y = 0; y< permanent->dims.y; y++){
+            for (u32 x = 0; x< permanent->dims.x; x++){
+                WorldBlock *b = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z,permanent->dims.x, permanent->dims.y)];
+
+
+                u32 x_ = getRotatedXInt(x, y, facing_side, permanent->dims);
+                u32 y_ = getRotatedYInt(x, y, facing_side, permanent->dims);
+                Block block = getRotatedBlock(b->object, facing_side);
+
+
+                permanent->static_blocks[used_static_block_count].is_floor = 0;
+                switch (block){
+                case WindowBlock:
+                    add_transparent_block(x_, y_, z, permanent, &used_transparent_block_count, texture_atlas_data[block]);
+                    used_transparent_block_count++;
+                    break;
+
+                case WallBlock:
+                case LadderUpDown:
+                case LadderUp:
+                case LadderDown:
+                    add_static_block(x_, y_, z, permanent, &used_static_block_count, texture_atlas_data[block]);
+                    used_static_block_count++;
+                    break;
+
+                case Floor:
+                case Stairs1N: case Stairs2N: case Stairs3N: case Stairs4N:
+                case Stairs1E: case Stairs2E: case Stairs3E: case Stairs4E:
+                case Stairs1S: case Stairs2S: case Stairs3S: case Stairs4S:
+                case Stairs1W: case Stairs2W: case Stairs3W: case Stairs4W:
+                    add_static_block(x_, y_, z, permanent, &used_static_block_count, texture_atlas_data[block]);
+                    permanent->static_blocks[used_static_block_count].is_floor = 1;
+                    used_static_block_count++;
+                    break;
+
+                case EscalatorUp1N: case EscalatorUp2N: case EscalatorUp3N: case EscalatorUp4N:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 1);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorDown1N: case EscalatorDown2N: case EscalatorDown3N: case EscalatorDown4N:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 0);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorUp1E: case EscalatorUp2E: case EscalatorUp3E: case EscalatorUp4E:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_east_up_01, BL_escalator_east_up_08, 0.5f/8, 1);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorDown1E: case EscalatorDown2E: case EscalatorDown3E: case EscalatorDown4E:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block],  BL_escalator_east_up_01,  BL_escalator_east_up_08, 0.5f/8, 0);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorUp1W: case EscalatorUp2W: case EscalatorUp3W: case EscalatorUp4W:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 1);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorDown1W: case EscalatorDown2W: case EscalatorDown3W: case EscalatorDown4W:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 0);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorUp1S: case EscalatorUp2S: case EscalatorUp3S: case EscalatorUp4S:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 1);
+                    used_dynamic_block_count++;
+                    break;
+                case EscalatorDown1S: case EscalatorDown2S: case EscalatorDown3S: case EscalatorDown4S:
+                    permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 0);
+                    used_dynamic_block_count++;
+                    break;
+                case Grass:
+                case Wood:
+                case Concrete:
+                case Nothing:
+                case Tiles:
+                case Carpet:
+                case EscalatorUpMeta:
+                case EscalatorDownMeta:
+                case StairsMeta:
+                case StairsFollowUpMeta:
+                case Shaded:
+                case BlockTotal:
+
+                default:
+                    break;
+                }
+            }
+        }
+    }
+
+    permanent->static_block_count      = used_static_block_count;
+    permanent->dynamic_block_count     = used_dynamic_block_count;
+    permanent->transparent_block_count = used_transparent_block_count;
+
+    set_static_block_batch_sizes(permanent, renderer);
+    set_dynamic_block_batch_sizes(permanent, renderer);
+    set_transparent_block_batch_sizes(permanent, renderer);
+
+    qsort(permanent->static_blocks, used_static_block_count, sizeof(StaticBlock), sort_static_blocks_front_back);
+    qsort(permanent->transparent_blocks, used_transparent_block_count, sizeof(StaticBlock), sort_static_blocks_back_front);
+
+    renderer->needs_prepare = 1;
+
+    set_actor_batch_sizes(permanent, renderer);
+
+    permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
+    init_grid(permanent->grid, &permanent->arena, &permanent->level);
+    preprocess_grid(permanent->grid);
+    set_colored_line_batch_sizes(permanent, renderer);
+    memory->is_initialized = true;
+
+}
+
 extern void game_update_and_render(Memory* memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
     UNUSED(keys);
     UNUSED(e);
@@ -249,185 +540,9 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
 
     if (memory->is_initialized == false) {
-        permanent->dynamic_blocks     = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
-        permanent->static_blocks      = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
-        permanent->transparent_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
-        permanent->actors             = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
-        permanent->paths              = (ActorPath*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorPath);
-        permanent->steer_data         = (ActorSteerData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorSteerData);
-        for (int i = 0; i < 16384*4; i++) {
-            permanent->steer_data[i].mass      = 1.0f;
-            permanent->steer_data[i].max_force = 10;
-            permanent->steer_data[i].max_speed = 50 + rand_float() * 80;
-        }
-        permanent->anim_data = (ActorAnimData*) PUSH_ARRAY(&permanent->arena, (16384*4), ActorAnimData);
+        initialize_memory(permanent, node16, renderer, memory);
+    }
 
-        for (int i = 0; i < 16384*4; i++) {
-            permanent->anim_data[i].frame = 4;
-        }
-        for (int i = 0; i < 16384*4; i++) {
-            Node16 *Sentinel = (Node16 *) PUSH_STRUCT(&node16->arena, Node16);
-            permanent->paths[i].Sentinel            = Sentinel;
-            permanent->paths[i].Sentinel->Next      = Sentinel;
-            permanent->paths[i].Sentinel->Prev      = Sentinel;
-            permanent->actors[i].index              = i;
-            permanent->paths[i].Sentinel->path.node = Vector3Make(-999,-999,-999);
-        }
-
-        node16->Free = PUSH_STRUCT(&node16->arena, Node16);
-        node16->Free->Next = node16->Free;
-        node16->Free->Prev = node16->Free;
-
-        permanent->glyphs = (Glyph*) PUSH_ARRAY(&permanent->arena, (16384), Glyph);
-        permanent->colored_lines = (ColoredLine*) PUSH_ARRAY(&permanent->arena, (16384), ColoredLine);
-
-        BlockTextureAtlasPosition texture_atlas_data[BlockTotal];
-        fill_generated_values(generated_frames);
-        fill_generated_complex_values(generated_body_frames);
-
-        texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
-        texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
-        texture_atlas_data[WindowBlock]  = convertSimpleFrameToBlockTexturePos(generated_frames[BL_window], 0, 0);
-
-        texture_atlas_data[LadderUp]     = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up], 0, 0);
-        texture_atlas_data[LadderUpDown] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down], 0, 0);
-        texture_atlas_data[LadderDown]   = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down], 0, 0);
-
-        texture_atlas_data[EscalatorDown1S] = texture_atlas_data[EscalatorUp1S] = texture_atlas_data[Stairs1S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 0);
-        texture_atlas_data[EscalatorDown2S] = texture_atlas_data[EscalatorUp2S] = texture_atlas_data[Stairs2S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 24);
-        texture_atlas_data[EscalatorDown3S] = texture_atlas_data[EscalatorUp3S] = texture_atlas_data[Stairs3S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 48);
-        texture_atlas_data[EscalatorDown4S] = texture_atlas_data[EscalatorUp4S] = texture_atlas_data[Stairs4S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 72);
-
-        texture_atlas_data[EscalatorDown1N] = texture_atlas_data[EscalatorUp1N] = texture_atlas_data[Stairs1N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 0);
-        texture_atlas_data[EscalatorDown2N] = texture_atlas_data[EscalatorUp2N] = texture_atlas_data[Stairs2N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 24);
-        texture_atlas_data[EscalatorDown3N] = texture_atlas_data[EscalatorUp3N] = texture_atlas_data[Stairs3N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 48);
-        texture_atlas_data[EscalatorDown4N] = texture_atlas_data[EscalatorUp4N] = texture_atlas_data[Stairs4N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 72);
-
-        texture_atlas_data[EscalatorDown1W] = texture_atlas_data[EscalatorUp1W] = texture_atlas_data[Stairs1W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 0);
-        texture_atlas_data[EscalatorDown2W] = texture_atlas_data[EscalatorUp2W] = texture_atlas_data[Stairs2W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 24);
-        texture_atlas_data[EscalatorDown3W] = texture_atlas_data[EscalatorUp3W] = texture_atlas_data[Stairs3W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 48);
-        texture_atlas_data[EscalatorDown4W] = texture_atlas_data[EscalatorUp4W] = texture_atlas_data[Stairs4W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 72);
-
-        texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 0  );
-        texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24 );
-        texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48 );
-        texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72 );
-
-        int used_static_block_count = 0;
-        int used_dynamic_block_count = 0;
-        int used_transparent_block_count = 0;
-
-        for (u32 z = 0; z < permanent->dims.z_level ; z++){
-            for (u32 y = 0; y< permanent->dims.y; y++){
-                for (u32 x = 0; x< permanent->dims.x; x++){
-                    WorldBlock *b = &permanent->level.blocks[FLATTEN_3D_INDEX(x,y,z,permanent->dims.x, permanent->dims.y)];
-
-                    permanent->static_blocks[used_static_block_count].is_floor = 0;
-                    switch (b->object){
-                    case WindowBlock:
-                        add_transparent_block(x, y, z, permanent, &used_transparent_block_count, texture_atlas_data[b->object]);
-                        used_transparent_block_count++;
-                        break;
-
-                    case WallBlock:
-                    case LadderUpDown:
-                    case LadderUp:
-                    case LadderDown:
-                        add_static_block(x, y, z, permanent, &used_static_block_count, texture_atlas_data[b->object]);
-                        used_static_block_count++;
-                        break;
-
-                    case Floor:
-                    case Stairs1N: case Stairs2N: case Stairs3N: case Stairs4N:
-                    case Stairs1E: case Stairs2E: case Stairs3E: case Stairs4E:
-                    case Stairs1S: case Stairs2S: case Stairs3S: case Stairs4S:
-                    case Stairs1W: case Stairs2W: case Stairs3W: case Stairs4W:
-                        add_static_block(x, y, z, permanent, &used_static_block_count, texture_atlas_data[b->object]);
-                        permanent->static_blocks[used_static_block_count].is_floor = 1;
-                        used_static_block_count++;
-                        break;
-
-                    case EscalatorUp1N: case EscalatorUp2N: case EscalatorUp3N: case EscalatorUp4N:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 1);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorDown1N: case EscalatorDown2N: case EscalatorDown3N: case EscalatorDown4N:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 0);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorUp1E: case EscalatorUp2E: case EscalatorUp3E: case EscalatorUp4E:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_east_up_01, BL_escalator_east_up_08, 0.5f/8, 1);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorDown1E: case EscalatorDown2E: case EscalatorDown3E: case EscalatorDown4E:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object],  BL_escalator_east_up_01,  BL_escalator_east_up_08, 0.5f/8, 0);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorUp1W: case EscalatorUp2W: case EscalatorUp3W: case EscalatorUp4W:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 1);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorDown1W: case EscalatorDown2W: case EscalatorDown3W: case EscalatorDown4W:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 0);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorUp1S: case EscalatorUp2S: case EscalatorUp3S: case EscalatorUp4S:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 1);
-                        used_dynamic_block_count++;
-                        break;
-                    case EscalatorDown1S: case EscalatorDown2S: case EscalatorDown3S: case EscalatorDown4S:
-                        permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                        add_dynamic_block(x, y, z, permanent, &used_dynamic_block_count, texture_atlas_data[b->object], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 0);
-                        used_dynamic_block_count++;
-                        break;
-                    case Grass:
-                    case Wood:
-                    case Concrete:
-                    case Nothing:
-                    case Tiles:
-                    case Carpet:
-                    case EscalatorUpMeta:
-                    case EscalatorDownMeta:
-                    case StairsMeta:
-                    case StairsFollowUpMeta:
-                    case Shaded:
-                    case BlockTotal:
-
-                    default:
-                        break;
-                    }
-                }
-            }
-        }
-
-        permanent->static_block_count      = used_static_block_count;
-        permanent->dynamic_block_count     = used_dynamic_block_count;
-        permanent->transparent_block_count = used_transparent_block_count;
-
-        set_static_block_batch_sizes(permanent, renderer);
-        set_dynamic_block_batch_sizes(permanent, renderer);
-        set_transparent_block_batch_sizes(permanent, renderer);
-
-        qsort(permanent->static_blocks, used_static_block_count, sizeof(StaticBlock), sort_static_blocks_front_back);
-        qsort(permanent->transparent_blocks, used_transparent_block_count, sizeof(StaticBlock), sort_static_blocks_back_front);
-
-        renderer->needs_prepare = 1;
-
-        set_actor_batch_sizes(permanent, renderer);
-
-        permanent->grid = PUSH_STRUCT(&permanent->arena, Grid);
-        init_grid(permanent->grid, &permanent->arena, &permanent->level);
-        preprocess_grid(permanent->grid);
-        set_colored_line_batch_sizes(permanent, renderer);
-        memory->is_initialized = true;
-    } // memory is initialized
 
     // dynamic blocks
     for (u32 i = 0; i < permanent->dynamic_block_count; i++) {
@@ -515,8 +630,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             }
 
 
-
-
 #if 1
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 Node16 * d= permanent->paths[i].Sentinel->Next;
@@ -551,7 +664,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             grid_node * Start = get_node_at(permanent->grid,
                                           permanent->steer_data[i].location.x/permanent->block_size.x,
                                           permanent->steer_data[i].location.y/permanent->block_size.y,
-                                          (permanent->steer_data[i].location.z - 20)/permanent->block_size.z_level);
+                                          (permanent->steer_data[i].location.z + 10)/permanent->block_size.z_level);
             if (Start->walkable) {
             } else {
                 Start = get_neighboring_walkable_node(permanent->grid, Start->X, Start->Y, Start->Z);
@@ -642,7 +755,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     BEGIN_PERFORMANCE_COUNTER(actors_data_gathering);
     for (u32 i = 0; i < permanent->actor_count; i++) {
-        permanent->actors[i]._location = permanent->steer_data[i].location;
+        permanent->actors[i]._location =  getRotatedVec3( permanent->steer_data[i].location, facing_side, permanent->dims, permanent->block_size);
+
         permanent->actors[i]._palette_index = permanent->anim_data[i].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[i].frame;
 
@@ -677,7 +791,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
     for (u32 i = permanent->actor_count; i < permanent->actor_count*2; i++) {
         u32 j = i - permanent->actor_count;
-        permanent->actors[i]._location = permanent->steer_data[j].location;
+        permanent->actors[i]._location = getRotatedVec3( permanent->steer_data[j].location, facing_side, permanent->dims, permanent->block_size);
         permanent->actors[i]._palette_index = (1.0f / 16.0f) * (j % 16);//permanent->anim_data[j].palette_index;
         permanent->actors[i]._frame = permanent->anim_data[j].frame;
 
