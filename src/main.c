@@ -97,7 +97,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/16.txt"); //two_floors.txt
+    resource_level(permanent, &permanent->level, "levels/stairs.txt"); //two_floors.txt
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
@@ -389,7 +389,7 @@ int main(int argc, char **argv) {
 
     center_view(permanent, renderer);
 
-#define ACTOR_BATCH 1
+#define ACTOR_BATCH 4
 
     permanent->actor_count = ACTOR_BATCH;
     ASSERT(permanent->actor_count <= 16384);

@@ -321,14 +321,35 @@ internal u32 getRotatedYInt(u32 x, u32 y, FacingSide side, WorldDims dims ) {
     }
     return y;
 }
-
+internal float getRotatedXFloat(float x, float y, FacingSide side, WorldDims dims ) {
+    if (side == Front) {
+        return x;
+    } else if (side == Left) {
+        return y;
+    } else if (side == Right) {
+        // WHAT THE FIUCK is this +1
+        // and why isnt is neede3d in the other rotations ;)?
+        return (dims.y+1)*24 - y;
+    }
+    return x;
+}
+internal float getRotatedYFloat(float x, float y, FacingSide side, WorldDims dims ) {
+    if (side == Front) {
+        return y;
+    } else if (side == Left) {
+        return dims.x*24 - x;
+    } else if (side == Right) {
+        return x;
+    }
+    return y;
+}
 internal Vector3 getRotatedVec3(Vector3 pos, FacingSide side, WorldDims dims, WorldDims sizes) {
     UNUSED(dims); UNUSED(sizes);
     if (side == Front) {
     } else if (side == Left){
         return Vector3Make(pos.y, (dims.x * sizes.x) - pos.x, pos.z);
     } else if (side == Right){
-        return Vector3Make(( (dims.y * sizes.y) - pos.y), pos.x, pos.z);
+        return Vector3Make(( (dims.y * sizes.y) - pos.y) + sizes.y, pos.x, pos.z);
     }
     return Vector3Make(pos.x, pos.y, pos.z);
 }
@@ -581,6 +602,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
         permanent->colored_line_count = 0;
 
         for (u32 i = 0; i < permanent->actor_count; i++) {
+
             if (permanent->paths[i].Sentinel->Next != permanent->paths[i].Sentinel) {
                 float distance = Vector3Distance(permanent->steer_data[i].location, permanent->paths[i].Sentinel->Next->path.node);
                 if (distance < 5.f){
@@ -604,6 +626,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 permanent->steer_data[i].velocity = Vector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
                 permanent->steer_data[i].location = Vector3Add(permanent->steer_data[i].location,   Vector3MultiplyScalar(permanent->steer_data[i].velocity, last_frame_time_seconds));
                 permanent->steer_data[i].acceleration = Vector3MultiplyScalar(permanent->steer_data[i].acceleration, 0);
+
                 // left = frame 0, down = frame 1 right = frame 2,up = frame 3
                 double angle = (180.0 / PI) * atan2(permanent->steer_data[i].velocity.x, permanent->steer_data[i].velocity.y);
                 angle = angle + 180;
@@ -617,6 +640,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 } else if (angle > 225 && angle <= 315) {
                     permanent->anim_data[i].frame = 8; //9
                 }
+
+
 
                 permanent->anim_data[i].frame_duration_left += last_frame_time_seconds;
                 if (permanent->anim_data[i].frame_duration_left > 0.1f) {
@@ -635,13 +660,14 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
                 while (d->Next != permanent->paths[i].Sentinel){
-
-                    permanent->colored_lines[c].x1 = d->path.node.x;
-                    permanent->colored_lines[c].y1 = d->path.node.y;
+                    permanent->colored_lines[c].x1 = getRotatedXFloat(d->path.node.x, d->path.node.y, facing_side, permanent->dims);
+                    permanent->colored_lines[c].y1 = getRotatedYFloat(d->path.node.x, d->path.node.y, facing_side, permanent->dims);
                     permanent->colored_lines[c].z1 = d->path.node.z;
-                    permanent->colored_lines[c].x2 = d->Next->path.node.x;
-                    permanent->colored_lines[c].y2 = d->Next->path.node.y;
+
+                    permanent->colored_lines[c].x2 = getRotatedXFloat(d->Next->path.node.x, d->Next->path.node.y, facing_side, permanent->dims);
+                    permanent->colored_lines[c].y2 = getRotatedYFloat(d->Next->path.node.x, d->Next->path.node.y, facing_side, permanent->dims);
                     permanent->colored_lines[c].z2 = d->Next->path.node.z;
+
                     permanent->colored_lines[c].r = 0.0f;
                     permanent->colored_lines[c].g = 0.0f;
                     permanent->colored_lines[c].b = 0.0f;
@@ -669,11 +695,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             } else {
                 Start = get_neighboring_walkable_node(permanent->grid, Start->X, Start->Y, Start->Z);
                 if (!Start->walkable) {
-                    //printf("why was start not walkable?\n");
                     Start = get_random_walkable_node(permanent->grid);
                 }
             }
-            //grid_node * Start = get_random_walkable_node(permanent->grid);
+
             grid_node * End =  get_random_walkable_node(permanent->grid);
             ASSERT(Start->walkable);
             ASSERT(End->walkable);
@@ -702,29 +727,63 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                         // TODO iam not sure about this, is this the right way to center all positions in the path nodes?
                         // should it be done somewhere else instead?
-                        N->path.node.x =(permanent->block_size.x/2)+ done->X * permanent->block_size.x ;
+
+                        N->path.node.x =(permanent->block_size.x/2) + done->X * permanent->block_size.x;
                         N->path.node.y =(permanent->block_size.y/2) + done->Y * permanent->block_size.y;
                         N->path.node.z = done->Z * permanent->block_size.z_level;
 			// if this is part of a stair move going up east/west
+
+
+
+                        // TODO:
+                        // This needs to work for all sides, I feel its easier to get the line drawing routines working correctly for all sides first though
 #if 1 // pathing movemenst going up on east/west stairs
-                        if (done->Prev != Path->Sentinel) {
-                            if (done->Z > done->Prev->Z) {
-                                if (done->X < done->Prev->X){
-                                    N->path.node.x += permanent->block_size.x;
-                                } else if (done->X > done->Prev->X){
-                                    N->path.node.x -= permanent->block_size.x;
+                        if (facing_side == Front) {
+
+                            if (done->Prev != Path->Sentinel) {
+                                // going up
+                                if (done->Z > done->Prev->Z) {
+                                    if (done->X < done->Prev->X){
+                                        N->path.node.x += permanent->block_size.x;
+                                    } else if (done->X > done->Prev->X){
+                                        N->path.node.x -= permanent->block_size.x;
+                                    }
+                                }
+                            }
+                            if (done->Next != Path->Sentinel) {
+                                // going down
+                                if (done->Z < done->Next->Z) {
+                                    if (done->X < done->Next->X){
+                                        N->path.node.x -= permanent->block_size.x;
+                                    } else if (done->X > done->Next->X){
+                                        N->path.node.x += permanent->block_size.x;
+                                    }
                                 }
                             }
                         }
-                        if (done->Next != Path->Sentinel) {
-                            if (done->Z < done->Next->Z) {
-                                if (done->X < done->Next->X){
-                                    N->path.node.x -= permanent->block_size.x;
-                                } else if (done->X > done->Next->X){
-                                    N->path.node.x += permanent->block_size.x;
-                                }
-                            }
-                        }
+
+                        /*  if (facing_side == Left) { */
+                        /*      if (done->Prev != Path->Sentinel) { */
+                        /*      // going up */
+                        /*         if (done->Z > done->Prev->Z) { */
+                        /*             if (done->Y < done->Prev->Y){ */
+                        /*                 N->path.node.y += permanent->block_size.y; */
+                        /*             } else if (done->Y > done->Prev->Y){ */
+                        /*                 N->path.node.y -= permanent->block_size.y; */
+                        /*             } */
+                        /*         } */
+                        /*      } */
+                        /*      if (done->Next != Path->Sentinel) { */
+                        /*         // going down */
+                        /*         if (done->Z < done->Next->Z) { */
+                        /*             if (done->Y < done->Next->Y){ */
+                        /*                 N->path.node.y -= permanent->block_size.y; */
+                        /*             } else if (done->Y > done->Next->Y){ */
+                        /*                 N->path.node.y += permanent->block_size.y; */
+                        /*             } */
+                        /*         } */
+                        /*     } */
+                        /* } */
 #endif
                         DLIST_ADDFIRST(p, N);
                         done = done->Prev;

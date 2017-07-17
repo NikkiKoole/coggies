@@ -3,11 +3,16 @@
   Some people dont keep left, the ones in a hurry get annoyed.
   All types of people take the escalator.
 
+
 * Currently doing / Next up
-  - make a few walking animations, walking, standing still, ascending, descending, in 4 cardinal directions.
+- get 'camera' orientation working, there seem to be some weird offsets of characters
+- make a few walking animations, walking, standing still, ascending, descending, in 4 cardinal directions.
+- make pathfinding code opt-in, eaiser for debugging too btw.
+
+
 
 * known bugs
- - bug: shadow gets in way of stairs below
+- bug: shadow gets in way of stairs below
 
 
 * Todo
