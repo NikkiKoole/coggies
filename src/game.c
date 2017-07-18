@@ -31,7 +31,7 @@ typedef enum {
     Front, Left, Right
 } FacingSide;
 
-FacingSide facing_side = Left;
+FacingSide facing_side = Front;
 
 
 
@@ -727,17 +727,19 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                         // TODO iam not sure about this, is this the right way to center all positions in the path nodes?
                         // should it be done somewhere else instead?
-
-                        N->path.node.x =(permanent->block_size.x/2) + done->X * permanent->block_size.x;
-                        N->path.node.y =(permanent->block_size.y/2) + done->Y * permanent->block_size.y;
+                        // TODO and why o why does it need something extra when facing Front and not under other circumstances.
+                        float xMult = facing_side == Front ? 1 :  facing_side == Left ?  -0.5 : 0.5;
+                        float yMult = facing_side == Front ? 0.5 : 1;
+                        N->path.node.x =(permanent->block_size.x/2) * xMult + done->X * permanent->block_size.x;
+                        N->path.node.y =(permanent->block_size.y/2) * yMult + done->Y * permanent->block_size.y;
                         N->path.node.z = done->Z * permanent->block_size.z_level;
 			// if this is part of a stair move going up east/west
 
 
 
-                        // TODO:
-                        // This needs to work for all sides, I feel its easier to get the line drawing routines working correctly for all sides first though
+                        // TODO: this routine patches some issues which, IMO would better be solved at the root, dunno how wnad where though./
 #if 1 // pathing movemenst going up on east/west stairs
+
                         if (facing_side == Front) {
 
                             if (done->Prev != Path->Sentinel) {
@@ -762,28 +764,54 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                             }
                         }
 
-                        /*  if (facing_side == Left) { */
-                        /*      if (done->Prev != Path->Sentinel) { */
-                        /*      // going up */
-                        /*         if (done->Z > done->Prev->Z) { */
-                        /*             if (done->Y < done->Prev->Y){ */
-                        /*                 N->path.node.y += permanent->block_size.y; */
-                        /*             } else if (done->Y > done->Prev->Y){ */
-                        /*                 N->path.node.y -= permanent->block_size.y; */
-                        /*             } */
-                        /*         } */
-                        /*      } */
-                        /*      if (done->Next != Path->Sentinel) { */
-                        /*         // going down */
-                        /*         if (done->Z < done->Next->Z) { */
-                        /*             if (done->Y < done->Next->Y){ */
-                        /*                 N->path.node.y -= permanent->block_size.y; */
-                        /*             } else if (done->Y > done->Next->Y){ */
-                        /*                 N->path.node.y += permanent->block_size.y; */
-                        /*             } */
-                        /*         } */
-                        /*     } */
-                        /* } */
+                         if (facing_side == Left) {
+                             if (done->Prev != Path->Sentinel) {
+                             // going up
+                                if (done->Z > done->Prev->Z) {
+                                    if (done->Y < done->Prev->Y){
+                                         N->path.node.y += permanent->block_size.y;
+                                    } else if (done->Y > done->Prev->Y){
+                                        N->path.node.y -= permanent->block_size.y;
+                                    }
+                                }
+                             }
+                             if (done->Next != Path->Sentinel) {
+                                // going down
+                                if (done->Z < done->Next->Z) {
+                                    if (done->Y < done->Next->Y){
+                                        N->path.node.y -= permanent->block_size.y;
+                                    } else if (done->Y > done->Next->Y){
+                                        N->path.node.y += permanent->block_size.y;
+                                    }
+                                }
+                            }
+                        }
+
+
+
+
+                         if (facing_side == Right) {
+                             if (done->Prev != Path->Sentinel) {
+                             // going up
+                                if (done->Z > done->Prev->Z) {
+                                    if (done->Y < done->Prev->Y){
+                                        N->path.node.y += permanent->block_size.y;
+                                    } else if (done->Y > done->Prev->Y){
+                                        N->path.node.y -= permanent->block_size.y;
+                                    }
+                                }
+                             }
+                             if (done->Next != Path->Sentinel) {
+                                // going down
+                                if (done->Z < done->Next->Z) {
+                                    if (done->Y < done->Next->Y){
+                                        N->path.node.y -= permanent->block_size.y;
+                                    } else if (done->Y > done->Next->Y){
+                                        N->path.node.y += permanent->block_size.y;
+                                    }
+                                }
+                            }
+                        }
 #endif
                         DLIST_ADDFIRST(p, N);
                         done = done->Prev;
