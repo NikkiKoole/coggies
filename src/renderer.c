@@ -349,7 +349,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
-                    wallDepth = data.y - 20;
+                    wallDepth = data.y  - 20;
                     //pivotY = (108.0f) /(108.0f - 12.0f);
                     //tempY -= 12;
                 }
