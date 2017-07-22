@@ -1,0 +1,129 @@
+{ "frames": [
+   {
+    "filename": "facing_east (pixels).ase",
+    "frame": { "x": 111, "y": 0, "w": 11, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 2, "w": 9, "h": 15 },
+    "sourceSize": { "w": 13, "h": 19 },
+    "duration": 100
+   },
+   {
+    "filename": "facing_north (pixels).ase",
+    "frame": { "x": 111, "y": 17, "w": 11, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 2, "w": 9, "h": 15 },
+    "sourceSize": { "w": 13, "h": 19 },
+    "duration": 100
+   },
+   {
+    "filename": "facing_south (pixels).ase",
+    "frame": { "x": 111, "y": 34, "w": 11, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 2, "w": 9, "h": 15 },
+    "sourceSize": { "w": 13, "h": 19 },
+    "duration": 100
+   },
+   {
+    "filename": "facing_west (pixels).ase",
+    "frame": { "x": 111, "y": 51, "w": 11, "h": 17 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 2, "y": 2, "w": 9, "h": 15 },
+    "sourceSize": { "w": 13, "h": 19 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_east (pixels) 0.ase",
+    "frame": { "x": 21, "y": 62, "w": 19, "h": 63 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 8, "y": 37, "w": 17, "h": 61 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_east (pixels) 1.ase",
+    "frame": { "x": 0, "y": 0, "w": 24, "h": 62 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 8, "y": 38, "w": 22, "h": 60 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_north (pixels) 0.ase",
+    "frame": { "x": 48, "y": 0, "w": 21, "h": 63 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 7, "y": 37, "w": 19, "h": 61 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_north (pixels) 1.ase",
+    "frame": { "x": 90, "y": 0, "w": 21, "h": 62 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 7, "y": 38, "w": 19, "h": 60 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_south (pixels) 0.ase",
+    "frame": { "x": 69, "y": 0, "w": 21, "h": 63 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 7, "y": 37, "w": 19, "h": 61 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_south (pixels) 1.ase",
+    "frame": { "x": 0, "y": 62, "w": 21, "h": 62 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 7, "y": 38, "w": 19, "h": 60 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_west (pixels) 0.ase",
+    "frame": { "x": 90, "y": 62, "w": 19, "h": 63 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 8, "y": 37, "w": 17, "h": 61 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   },
+   {
+    "filename": "walking_west (pixels) 1.ase",
+    "frame": { "x": 24, "y": 0, "w": 24, "h": 62 },
+    "rotated": false,
+    "trimmed": true,
+    "spriteSourceSize": { "x": 3, "y": 38, "w": 22, "h": 60 },
+    "sourceSize": { "w": 32, "h": 100 },
+    "duration": 100
+   }
+ ],
+ "meta": {
+  "app": "http://www.aseprite.org/",
+  "version": "1.2-dev",
+  "image": "gen/pixel_bodies.png",
+  "format": "RGBA8888",
+  "size": { "w": 128, "h": 128 },
+  "scale": "1",
+  "layers": [
+   { "name": "pixels", "group": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "head", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "body", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "body", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "body", "opacity": 255, "blendMode": "normal" },
+   { "name": "pixels", "group": "body", "opacity": 255, "blendMode": "normal" }
+  ]
+ }
+}

@@ -54,6 +54,19 @@ gamelibrary-linux:
 	${CC} ${DEBUGFLAG} $(OPTIMIZE)  -DLINUX   -shared -o $(LIBRARY_NAME) level.o game.o random.o renderer.o memory.o pathfind.o -lGL  -lGLEW   $(SDL_LFLAGS)
 	mv *.o $(OBJDIR)
 
+
+blocks:
+	@echo "Lets use the block_ase_files to create block data"
+	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/block_ase_files/* --trim --sheet gen/all_generated_blocks.png  --sheet-pack --inner-padding 1 --data gen/all_generated_blocks.json
+	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/block_ase_files/* --trim --sheet gen/pixel_blocks.png --sheet-pack --inner-padding 1 --data gen/pixel_blocks.json
+	@tools/pivot_planner/pivot-planner "blocks" gen/pixel_blocks.json gen/all_generated_blocks.json
+
+bodies:
+	@echo "Lets use the body_ase_files to create block data"
+	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/body_ase_files/* --trim --sheet gen/all_generated_bodies.png  --sheet-pack --inner-padding 1 --data gen/all_generated_bodies.json
+	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/body_ase_files/* --trim --sheet gen/pixel_bodies.png --sheet-pack --inner-padding 1 --data gen/pixel_bodies.json
+	@tools/pivot_planner/pivot-planner "bodies" gen/pixel_bodies.json gen/all_generated_bodies.json
+
 texture-atlas-blocks:
 	@echo "This will convert some .js output from shoebox into a blocks.h file"
 	@tools/pivot_planner/pivot-planner resources/sprites.js

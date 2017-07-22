@@ -36,6 +36,7 @@ typedef struct {
 
 
 internal void initialize_SDL(RenderState *renderer) {
+
     int error = SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO | SDL_INIT_TIMER);
     if (error < 0) {
         printf("%d %s\n", error, SDL_GetError());
@@ -73,8 +74,9 @@ internal void initialize_SDL(RenderState *renderer) {
     SDL_ASSERT(renderer->context != NULL);
 
 #ifndef IOS
-    //SetSDLIcon(renderer->window);
     SDL_ASSERT(SDL_GL_SetSwapInterval(0) >= 0);
+    // DISABLE BELOW TO SET VSYNC
+    //SDL_ASSERT(SDL_GL_SetSwapInterval(1) >= 0);
 #endif
 }
 
