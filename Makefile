@@ -66,6 +66,9 @@ bodies:
 	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/body_ase_files/* --trim --sheet gen/all_generated_bodies.png  --sheet-pack --inner-padding 1 --data gen/all_generated_bodies.json
 	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/body_ase_files/* --trim --sheet gen/pixel_bodies.png --sheet-pack --inner-padding 1 --data gen/pixel_bodies.json
 	@tools/pivot_planner/pivot-planner "bodies" gen/pixel_bodies.json gen/all_generated_bodies.json
+	@mv bodies.txt src/body.h
+	@mv gen/pixel_bodies.png resources/textures/body.png
+
 
 texture-atlas-blocks:
 	@echo "This will convert some .js output from shoebox into a blocks.h file"

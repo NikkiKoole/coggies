@@ -9,7 +9,7 @@
 #include "data_structures.h"
 
 #include "blocks.h"
-#include "body2.h"
+#include "body.h"
 #include "my_math.h"
 #include <math.h>
 
