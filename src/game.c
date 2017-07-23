@@ -72,6 +72,7 @@ internal int get_node16_freelist_length(Node16Arena * arena) {
     return count;
 }
 
+
 void game_update_and_render(Memory* memory,  RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e);
 
 internal int sort_static_blocks_back_front (const void * a, const void * b)
@@ -204,6 +205,8 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
     result.y_off          = yOff;
     result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
     result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
+    result.ssH            = frame.ssH;
+    result.ssW            = frame.ssW;
     result.pivotX         = frame.pivotX;
     result.pivotY         = frame.pivotY;
 

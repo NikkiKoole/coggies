@@ -80,8 +80,8 @@ internal inline Rect2 get_verts(float viewportWidth,
                                 float pivotY) {
     Rect2 result;
     result.tl.x = x - ((pivotX * 2) * (width / viewportWidth) * scaleX);
-    result.tl.y = y - ((2 - pivotY * 2) * (height / viewportHeight) * scaleY);
-    result.br.x = x + ((2 - pivotX * 2) * (width / viewportWidth) * scaleX);
+    result.tl.y = y - ((2.0f - pivotY * 2) * (height / viewportHeight) * scaleY);
+    result.br.x = x + ((2.0f - pivotX * 2) * (width / viewportWidth) * scaleX);
     result.br.y = y + ((pivotY * 2) * (height / viewportHeight) * scaleY);
     return result;
 }
@@ -662,8 +662,15 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 float wallX = data.frame.x_pos;// * 24;
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
-                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
-                const float pivotY = 1.0f;//(float)data.frame.pivotY / (float)data.frame.height;
+
+                ///
+                /// WHAT: Why has this one the need for ssW and ssH all of a sudden?
+                ///
+
+                const float pivotX = (float)data.frame.pivotX / (float)data.frame.ssW;
+                //const float pivotY =1.0f - ( 1.0f -  (float)data.frame.pivotY / (float)data.frame.height);
+                const float pivotY =( (float)data.frame.pivotY / (float)data.frame.ssH);
+                //printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.ssH);
                 float wallHeight = data.frame.height;
 
                 float tempX = data.x;
