@@ -8,6 +8,7 @@ typedef struct {
     int frameX, frameY, frameW, frameH;
     int sssX, sssY, sssW, sssH;
     int ssW, ssH;
+    int pivotX, pivotY;
 } SimpleFrame;
 
 typedef struct {
@@ -15,9 +16,8 @@ typedef struct {
     int sssX, sssY, sssW, sssH;
     int ssW, ssH;
     int pivotX, pivotY;
-    // @TODO support multiple anchors?
     int anchorX, anchorY;
-} ComplexFrame;
+} FrameWithPivotAnchor;
 
 
 typedef struct {
@@ -41,6 +41,9 @@ typedef struct {
 
     int x_off; // used for offsetting sprite in world (think stairblocks at various heights)
     int y_off; // "
+
+    int pivotX;
+    int pivotY;
 } BlockTextureAtlasPosition;
 
 typedef struct {
@@ -124,7 +127,7 @@ typedef struct {
     //ActorPath path;
     //ActorAnimData anim;
     //ActorSteerData steer;
-    ComplexFrame *complex;
+     FrameWithPivotAnchor *complex;
     u32 _frame;
     r32 _palette_index;
     u32 index;

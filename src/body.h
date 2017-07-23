@@ -14,17 +14,17 @@ enum BodyParts {
     BP_walking_west_body_001 = 11,
     BP_TOTAL = 12
 };
-internal void fill_generated_complex_values(ComplexFrame* generated_frames ) {
-    generated_frames[BP_facing_east_head_000] = (ComplexFrame){111, 0, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
-    generated_frames[BP_facing_north_head_000] = (ComplexFrame){111, 17, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
-    generated_frames[BP_facing_south_head_000] = (ComplexFrame){111, 34, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
-    generated_frames[BP_facing_west_head_000] = (ComplexFrame){111, 51, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
-    generated_frames[BP_walking_east_body_000] = (ComplexFrame){21, 62, 19, 63,8, 37, 17, 61, 32, 100, 16, 97, 16, 37};
-    generated_frames[BP_walking_east_body_001] = (ComplexFrame){0, 0, 24, 62,8, 38, 22, 60, 32, 100, 16, 97, 16, 38};
-    generated_frames[BP_walking_north_body_000] = (ComplexFrame){48, 0, 21, 63,7, 37, 19, 61, 32, 100, 16, 97, 16, 37};
-    generated_frames[BP_walking_north_body_001] = (ComplexFrame){90, 0, 21, 62,7, 38, 19, 60, 32, 100, 16, 97, 16, 38};
-    generated_frames[BP_walking_south_body_000] = (ComplexFrame){69, 0, 21, 63,7, 37, 19, 61, 32, 100, 16, 97, 16, 37};
-    generated_frames[BP_walking_south_body_001] = (ComplexFrame){0, 62, 21, 62,7, 38, 19, 60, 32, 100, 16, 97, 16, 38};
-    generated_frames[BP_walking_west_body_000] = (ComplexFrame){90, 62, 19, 63,8, 37, 17, 61, 32, 100, 16, 97, 16, 37};
-    generated_frames[BP_walking_west_body_001] = (ComplexFrame){24, 0, 24, 62,3, 38, 22, 60, 32, 100, 16, 97, 16, 38};
+internal void fill_generated_complex_values(FrameWithPivotAnchor* generated_frames ) {
+    generated_frames[BP_facing_east_head_000] = (FrameWithPivotAnchor){111, 0, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
+    generated_frames[BP_facing_north_head_000] = (FrameWithPivotAnchor){111, 17, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
+    generated_frames[BP_facing_south_head_000] = (FrameWithPivotAnchor){111, 34, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
+    generated_frames[BP_facing_west_head_000] = (FrameWithPivotAnchor){111, 51, 11, 17,2, 2, 9, 15, 13, 19, 6, 17, 6, 2};
+    generated_frames[BP_walking_east_body_000] = (FrameWithPivotAnchor){21, 62, 19, 63,8, 37, 17, 61, 32, 100, 16, 97, 16, 37};
+    generated_frames[BP_walking_east_body_001] = (FrameWithPivotAnchor){0, 0, 24, 62,8, 38, 22, 60, 32, 100, 16, 97, 16, 38};
+    generated_frames[BP_walking_north_body_000] = (FrameWithPivotAnchor){48, 0, 21, 63,7, 37, 19, 61, 32, 100, 16, 97, 16, 37};
+    generated_frames[BP_walking_north_body_001] = (FrameWithPivotAnchor){90, 0, 21, 62,7, 38, 19, 60, 32, 100, 16, 97, 16, 38};
+    generated_frames[BP_walking_south_body_000] = (FrameWithPivotAnchor){69, 0, 21, 63,7, 37, 19, 61, 32, 100, 16, 97, 16, 37};
+    generated_frames[BP_walking_south_body_001] = (FrameWithPivotAnchor){0, 62, 21, 62,7, 38, 19, 60, 32, 100, 16, 97, 16, 38};
+    generated_frames[BP_walking_west_body_000] = (FrameWithPivotAnchor){90, 62, 19, 63,8, 37, 17, 61, 32, 100, 16, 97, 16, 37};
+    generated_frames[BP_walking_west_body_001] = (FrameWithPivotAnchor){24, 0, 24, 62,3, 38, 22, 60, 32, 100, 16, 97, 16, 38};
 };

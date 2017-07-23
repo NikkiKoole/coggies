@@ -33,7 +33,8 @@ typedef enum {
 
 FacingSide facing_side = Front;
 
-
+global_value SimpleFrame generated_frames[BL_TOTAL];
+global_value FrameWithPivotAnchor generated_body_frames[BP_TOTAL];
 
 internal Vector3 seek_return(ActorSteerData *actor, Vector3 target) {
     Vector3 desired = Vector3Subtract(target, actor->location);
@@ -203,12 +204,14 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
     result.y_off          = yOff;
     result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
     result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
+    result.pivotX         = frame.pivotX;
+    result.pivotY         = frame.pivotY;
+
     if (result.y_internal_off > 0) printf("result: %d\n", result.y_internal_off);
     return result;
 }
 
-global_value SimpleFrame generated_frames[TOTAL];
-global_value ComplexFrame generated_body_frames[BP_TOTAL];
+
 
 
 internal void add_static_block(int x, int y, int z,PermanentState *permanent, int *used_block_count, BlockTextureAtlasPosition texture_atlas_data) {
@@ -392,33 +395,32 @@ internal void initialize_memory( PermanentState *permanent, Node16Arena *node16,
     fill_generated_values(generated_frames);
     fill_generated_complex_values(generated_body_frames);
 
-    texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor], 0, 0);
-    texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall], 0, 0);
-    texture_atlas_data[WindowBlock]  = convertSimpleFrameToBlockTexturePos(generated_frames[BL_window], 0, 0);
+    texture_atlas_data[Floor]        = convertSimpleFrameToBlockTexturePos(generated_frames[BL_floor_000], 0, 0);
+    texture_atlas_data[WallBlock]    = convertSimpleFrameToBlockTexturePos(generated_frames[BL_wall_000], 0, 0);
+    texture_atlas_data[WindowBlock]  = convertSimpleFrameToBlockTexturePos(generated_frames[BL_window_000], 0, 0);
+    texture_atlas_data[LadderUp]     = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_000], 0, 0);
+    texture_atlas_data[LadderUpDown] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down_000], 0, 0);
+    texture_atlas_data[LadderDown]   = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down_000], 0, 0);
 
-    texture_atlas_data[LadderUp]     = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up], 0, 0);
-    texture_atlas_data[LadderUpDown] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_up_down], 0, 0);
-    texture_atlas_data[LadderDown]   = convertSimpleFrameToBlockTexturePos(generated_frames[BL_ladder_down], 0, 0);
+    texture_atlas_data[EscalatorDown1S] = texture_atlas_data[EscalatorUp1S] = texture_atlas_data[Stairs1S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_000], 0, 0);
+    texture_atlas_data[EscalatorDown2S] = texture_atlas_data[EscalatorUp2S] = texture_atlas_data[Stairs2S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_000], 0, 24);
+    texture_atlas_data[EscalatorDown3S] = texture_atlas_data[EscalatorUp3S] = texture_atlas_data[Stairs3S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_000], 0, 48);
+    texture_atlas_data[EscalatorDown4S] = texture_atlas_data[EscalatorUp4S] = texture_atlas_data[Stairs4S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_000], 0, 72);
 
-    texture_atlas_data[EscalatorDown1S] = texture_atlas_data[EscalatorUp1S] = texture_atlas_data[Stairs1S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 0);
-    texture_atlas_data[EscalatorDown2S] = texture_atlas_data[EscalatorUp2S] = texture_atlas_data[Stairs2S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 24);
-    texture_atlas_data[EscalatorDown3S] = texture_atlas_data[EscalatorUp3S] = texture_atlas_data[Stairs3S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 48);
-    texture_atlas_data[EscalatorDown4S] = texture_atlas_data[EscalatorUp4S] = texture_atlas_data[Stairs4S] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_south_up_01], 0, 72);
+    texture_atlas_data[EscalatorDown1N] = texture_atlas_data[EscalatorUp1N] = texture_atlas_data[Stairs1N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_000], 0, 0);
+    texture_atlas_data[EscalatorDown2N] = texture_atlas_data[EscalatorUp2N] = texture_atlas_data[Stairs2N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_000], 0, 24);
+    texture_atlas_data[EscalatorDown3N] = texture_atlas_data[EscalatorUp3N] = texture_atlas_data[Stairs3N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_000], 0, 48);
+    texture_atlas_data[EscalatorDown4N] = texture_atlas_data[EscalatorUp4N] = texture_atlas_data[Stairs4N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_000], 0, 72);
 
-    texture_atlas_data[EscalatorDown1N] = texture_atlas_data[EscalatorUp1N] = texture_atlas_data[Stairs1N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 0);
-    texture_atlas_data[EscalatorDown2N] = texture_atlas_data[EscalatorUp2N] = texture_atlas_data[Stairs2N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 24);
-    texture_atlas_data[EscalatorDown3N] = texture_atlas_data[EscalatorUp3N] = texture_atlas_data[Stairs3N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 48);
-    texture_atlas_data[EscalatorDown4N] = texture_atlas_data[EscalatorUp4N] = texture_atlas_data[Stairs4N] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_north_up_01], 0, 72);
+    texture_atlas_data[EscalatorDown1W] = texture_atlas_data[EscalatorUp1W] = texture_atlas_data[Stairs1W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_000], 0, 0);
+    texture_atlas_data[EscalatorDown2W] = texture_atlas_data[EscalatorUp2W] = texture_atlas_data[Stairs2W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_000], 0, 24);
+    texture_atlas_data[EscalatorDown3W] = texture_atlas_data[EscalatorUp3W] = texture_atlas_data[Stairs3W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_000], 0, 48);
+    texture_atlas_data[EscalatorDown4W] = texture_atlas_data[EscalatorUp4W] = texture_atlas_data[Stairs4W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_000], 0, 72);
 
-    texture_atlas_data[EscalatorDown1W] = texture_atlas_data[EscalatorUp1W] = texture_atlas_data[Stairs1W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 0);
-    texture_atlas_data[EscalatorDown2W] = texture_atlas_data[EscalatorUp2W] = texture_atlas_data[Stairs2W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 24);
-    texture_atlas_data[EscalatorDown3W] = texture_atlas_data[EscalatorUp3W] = texture_atlas_data[Stairs3W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 48);
-    texture_atlas_data[EscalatorDown4W] = texture_atlas_data[EscalatorUp4W] = texture_atlas_data[Stairs4W] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_west_up_01], 0, 72);
-
-    texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 0  );
-    texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 24 );
-    texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 48 );
-    texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_01], 0, 72 );
+    texture_atlas_data[EscalatorDown1E] = texture_atlas_data[EscalatorUp1E] = texture_atlas_data[Stairs1E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_000], 0, 0  );
+    texture_atlas_data[EscalatorDown2E] = texture_atlas_data[EscalatorUp2E] = texture_atlas_data[Stairs2E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_000], 0, 24 );
+    texture_atlas_data[EscalatorDown3E] = texture_atlas_data[EscalatorUp3E] = texture_atlas_data[Stairs3E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_000], 0, 48 );
+    texture_atlas_data[EscalatorDown4E] = texture_atlas_data[EscalatorUp4E] = texture_atlas_data[Stairs4E] = convertSimpleFrameToBlockTexturePos(generated_frames[BL_escalator_east_up_000], 0, 72 );
 
     int used_static_block_count = 0;
     int used_dynamic_block_count = 0;
@@ -462,42 +464,42 @@ internal void initialize_memory( PermanentState *permanent, Node16Arena *node16,
 
                 case EscalatorUp1N: case EscalatorUp2N: case EscalatorUp3N: case EscalatorUp4N:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 1);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_000, BL_escalator_north_up_011, 0.5f/12, 1);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorDown1N: case EscalatorDown2N: case EscalatorDown3N: case EscalatorDown4N:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_01, BL_escalator_north_up_12, 0.5f/12, 0);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_north_up_000, BL_escalator_north_up_011, 0.5f/12, 0);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorUp1E: case EscalatorUp2E: case EscalatorUp3E: case EscalatorUp4E:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_east_up_01, BL_escalator_east_up_08, 0.5f/8, 1);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_east_up_000, BL_escalator_east_up_007, 0.5f/8, 1);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorDown1E: case EscalatorDown2E: case EscalatorDown3E: case EscalatorDown4E:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block],  BL_escalator_east_up_01,  BL_escalator_east_up_08, 0.5f/8, 0);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block],  BL_escalator_east_up_000,  BL_escalator_east_up_007, 0.5f/8, 0);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorUp1W: case EscalatorUp2W: case EscalatorUp3W: case EscalatorUp4W:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 1);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_000, BL_escalator_west_up_007, 0.5f/8, 1);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorDown1W: case EscalatorDown2W: case EscalatorDown3W: case EscalatorDown4W:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_01, BL_escalator_west_up_08, 0.5f/8, 0);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_west_up_000, BL_escalator_west_up_007, 0.5f/8, 0);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorUp1S: case EscalatorUp2S: case EscalatorUp3S: case EscalatorUp4S:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 1);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_000, BL_escalator_south_up_007, 0.5f/8, 1);
                     used_dynamic_block_count++;
                     break;
                 case EscalatorDown1S: case EscalatorDown2S: case EscalatorDown3S: case EscalatorDown4S:
                     permanent->dynamic_blocks[used_dynamic_block_count].is_floor = 1;
-                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_01, BL_escalator_south_up_08, 0.5f/8, 0);
+                    add_dynamic_block(x_, y_, z, permanent, &used_dynamic_block_count, texture_atlas_data[block], BL_escalator_south_up_000, BL_escalator_south_up_007, 0.5f/8, 0);
                     used_dynamic_block_count++;
                     break;
                 case Grass:

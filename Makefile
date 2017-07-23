@@ -60,6 +60,8 @@ blocks:
 	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/block_ase_files/* --trim --sheet gen/all_generated_blocks.png  --sheet-pack --inner-padding 1 --data gen/all_generated_blocks.json
 	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/block_ase_files/* --trim --sheet gen/pixel_blocks.png --sheet-pack --inner-padding 1 --data gen/pixel_blocks.json
 	@tools/pivot_planner/pivot-planner "blocks" gen/pixel_blocks.json gen/all_generated_blocks.json
+	@mv blocks.txt src/blocks.h
+	@mv gen/pixel_blocks.png resources/textures/blocks.png
 
 bodies:
 	@echo "Lets use the body_ase_files to create block data"

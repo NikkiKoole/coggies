@@ -86,13 +86,13 @@ typedef struct {
 
 
 TextureAtlasLayerValues all_data;
-TextureAtlasLayerValues shoe_data;
+//TextureAtlasLayerValues shoe_data;
 TextureAtlasLayerValues pixel_layer;
 CombinedSets combined;
 TextureAtlasSingles singles;
 
 jsmntok_t all_tokens[1024 * 256];
-jsmntok_t shoe_tokens[1024 * 256];
+//jsmntok_t shoe_tokens[1024 * 256];
 jsmntok_t pixel_tokens[1024 * 256];
 
 
@@ -420,8 +420,9 @@ int has_layer_with_name(TextureAtlasGroupOrSolo thing, const char* str) {
 TextureAtlasItem* get_pixel_layer(TextureAtlasLayerValues *pixel_layer,  char * file_name, char * group_name, char * layer_name) {
     int i = 0;
     for (i = 0; i < pixel_layer->total;i++) {
+        //printf("%s, %s\n", pixel_layer->data[i].name, group_name);
         if (strcmp(pixel_layer->data[i].name, group_name) == 0) {
-            if (strcmp(pixel_layer->data[i].children[0].frames[0].name, file_name) == 0) {
+               if (strcmp(pixel_layer->data[i].children[0].frames[0].name, file_name) == 0) {
                 if (strcmp(pixel_layer->data[i].children[0].name, layer_name) == 0 ){
                     return &(pixel_layer->data[i].children[0]);
                 }
@@ -431,9 +432,21 @@ TextureAtlasItem* get_pixel_layer(TextureAtlasLayerValues *pixel_layer,  char * 
     return NULL;
 }
 
+TextureAtlasItem* get_pixel_layer_simpler(TextureAtlasLayerValues *pixel_layer,  char * file_name, char * group_name) {
+    int i = 0;
+    for (i = 0; i < pixel_layer->total;i++) {
+        if ( strcmp(pixel_layer->data[i].name, group_name)==0 && strcmp(pixel_layer->data[i].own_data.frames[0].name, file_name) == 0) {
+            return &(pixel_layer->data[i].own_data);
+        }
+
+    }
+    return NULL;
+}
+
 TextureAtlasItem* get_layer_with_name(TextureAtlasGroupOrSolo *thing, const char* str) {
     int j;
     for(j =0; j< thing->child_count; j++) {
+        printf("child name: %s,\n",thing->children[j].name);
         if (strcmp( thing->children[j].name, str) == 0) {
             return &(thing->children[j]);
         }
@@ -452,6 +465,8 @@ void combine_blocks(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
     fprintf(fptr, "enum BlockParts {\n");
 
     int counter = 0;
+
+    int item_count = 0;
     for (i = 0; i< all_data->total;i++){
         assert(all_data->data != NULL);
         assert(all_data->data[i].own_data.frames[0].name != NULL);
@@ -459,13 +474,19 @@ void combine_blocks(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
 
         CombinedItem * item = &(combined->items[i/2]);
         Frame * frame = NULL;
-        assert(item);
         item->file_name  = strdup(all_data->data[i].own_data.frames[0].name);
         item->frame_count = all_data->data[i].own_data.frame_count;
-        //printf("%s\n", item->file_name);
+
+
+
         if ( strcmp(all_data->data[i].name,"pixels")==0 ) {
-            for (j = 0; j < all_data->data[i].own_data.frame_count; j++) {
-                frame = &all_data->data[i].own_data.frames[j];
+            TextureAtlasItem* pixel = get_pixel_layer_simpler(pixel_layer,
+                                                              all_data->data[i].own_data.frames[0].name,
+                                                              all_data->data[i].name);
+            assert(pixel);
+
+            for (j =0; j< pixel->frame_count; j++) {
+                frame= &pixel->frames[j];
                 item->frames[j].frame.x            = frame->frame.x;
                 item->frames[j].frame.y            = frame->frame.y;
                 item->frames[j].frame.w            = frame->frame.w;
@@ -476,19 +497,16 @@ void combine_blocks(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
                 item->frames[j].spriteSourceSize.h = frame->spriteSourceSize.h;
                 item->frames[j].sourceSize.w       = frame->sourceSize.w;
                 item->frames[j].sourceSize.h       = frame->sourceSize.h;
-                //printf("pixels %d, %d\n", item->frames[j].frame.x, item->frames[j].frame.y);
             }
-
-
-        } else if (strcmp(all_data->data[i].name,"pivot")==0) {
+        }
+        if (strcmp(all_data->data[i].name,"pivot")==0) {
             for (j = 0; j < all_data->data[i].own_data.frame_count; j++) {
                 frame = &all_data->data[i].own_data.frames[j];
                 item->frames[j].pivot.x            = frame->spriteSourceSize.x;
                 item->frames[j].pivot.y            = frame->spriteSourceSize.y;
-                //printf("pivot %d, %d\n", item->frames[j].pivot.x, item->frames[j].pivot.y);
             }
-        } else {
-            printf("NEITHER PIXELS nor PIVOT was found\n");
+
+
         }
     }
     counter = 0;
@@ -505,12 +523,13 @@ void combine_blocks(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
     }
     fprintf(fptr, "    %s_TOTAL = %d\n", prefix, counter);
     fprintf(fptr, "};\n");
-    fprintf(fptr, "internal void fill_generated_complex_values(FrameWithPixelAndPivot* generated_frames ) {\n");
+    fprintf(fptr, "internal void fill_generated_values(SimpleFrame* generated_frames ) {\n");
 
     for ( i = 0; i<all_data->total/2; i++) {
         CombinedItem * item = &(combined->items[i]);
         for (j = 0; j < item->frame_count; j++) {
-            fprintf(fptr, "    generated_frames[%s_%s_%03d] = (FrameWithPixelAndPivot){%d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d};",
+            //printf("%s)  xy) (%d, %d) \n", trimwhitespace(item->file_name), item->frames[j].frame.x, item->frames[j].frame.y);
+            fprintf(fptr, "    generated_frames[%s_%s_%03d] = (SimpleFrame){%d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d};",
                     prefix,
                     trimwhitespace(item->file_name),
                     j,
@@ -588,7 +607,7 @@ void combine_bodies(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
     }
     fprintf(fptr, "    %s_TOTAL = %d\n", prefix, counter);
     fprintf(fptr, "};\n");
-    fprintf(fptr, "internal void fill_generated_complex_values(ComplexFrame* generated_frames ) {\n");
+    fprintf(fptr, "internal void fill_generated_complex_values(FrameWithPivotAnchor* generated_frames ) {\n");
 
     for (i = 0; i< all_data->total;i++) {
         if (all_data->data[i].child_count > 0) {
@@ -630,7 +649,7 @@ void combine_bodies(TextureAtlasLayerValues *pixel_layer, TextureAtlasLayerValue
                     item->frames[j].anchor_1.x         = anchor_1->frames[j].spriteSourceSize.x;
                     item->frames[j].anchor_1.y         = anchor_1->frames[j].spriteSourceSize.y;
 
-                    fprintf(fptr, "    generated_frames[%s_%s_%s_%03d] = (ComplexFrame){%d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d, %d, %d};",
+                    fprintf(fptr, "    generated_frames[%s_%s_%s_%03d] = (FrameWithPivotAnchor){%d, %d, %d, %d,%d, %d, %d, %d, %d, %d, %d, %d, %d, %d};",
                             prefix,
                             trimwhitespace(item->file_name),
                             trimwhitespace(item->group_name),

@@ -258,7 +258,9 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float wallX = data.frame.x_pos;// * 24;
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
-                float pivotY = 1.0f;
+                //float pivotY = 1.0f;
+                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
+                const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
                 float tempX = data.x;
                 float tempY = (data.z) - (data.y) / 2;
@@ -272,7 +274,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, 0.5, pivotY);
+                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
                 //printf("%d\n",i);
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
@@ -343,7 +345,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float wallX = data.frame.x_pos;// * 24;
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
-                float pivotY = 1.0f;
+                // float pivotY = 1.0f;
+                //float pivotX = 0.5f;
+                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
+                const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
                 float tempX = data.x;
                 float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
@@ -357,7 +362,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, 0.5, pivotY);
+                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
                 //printf("%d\n",i);
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
@@ -499,7 +504,7 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             prepare_index += (actor_batch_index * 2048);
             Actor data = permanent->actors[prepare_index];
 
-            ComplexFrame complex = *data.complex;
+            FrameWithPivotAnchor complex = *data.complex;
 
             const float scale = 1.0f;
             const float guyFrameX = complex.frameX;
@@ -657,13 +662,13 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 float wallX = data.frame.x_pos;// * 24;
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
-                float pivotY = 1.0f;
-
+                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
+                const float pivotY = 1.0f;//(float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
 
                 float tempX = data.x;
                 float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
-
+                //printf("(%f , %f)\n", pivotX, pivotY);
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
                     wallDepth = data.y - 20;
@@ -671,10 +676,8 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                     //tempY -= 12;
                 }
 
-
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
-                //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, 0.5, pivotY);
+                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
 
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
