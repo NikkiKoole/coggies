@@ -262,8 +262,20 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
                 const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
-                float tempX = data.x;
-                float tempY = (data.z) - (data.y) / 2;
+
+
+                float y_internal_off = data.frame.x_internal_off;
+                float x_internal_off = data.frame.y_internal_off;
+
+            //const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
+            //const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
+
+
+                float tempX = data.x + x_internal_off;
+                float tempY = (data.z - y_internal_off) - (data.y) / 2;
+
+
+
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
                     wallDepth = data.y - 20;
@@ -667,14 +679,19 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 /// WHAT: Why has this one the need for ssW and ssH all of a sudden?
                 ///
 
-                const float pivotX = (float)data.frame.pivotX / (float)data.frame.ssW;
+                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
                 //const float pivotY =1.0f - ( 1.0f -  (float)data.frame.pivotY / (float)data.frame.height);
-                const float pivotY =( (float)data.frame.pivotY / (float)data.frame.ssH);
-                //printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.ssH);
+                const float pivotY =( (float)data.frame.pivotY / (float)data.frame.height);
+                printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.height);
                 float wallHeight = data.frame.height;
 
-                float tempX = data.x;
-                float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
+                float tempX = data.x + data.frame.x_internal_off;
+                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
+                float tempY =  ((data.z  -  data.y / 2) +  ( data.frame.y_internal_off + wallHeight) + data.frame.y_off  -wallHeight) ;//-  data.frame.y_internal_off) + data.frame.y_off ;
+                //const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
+                //const float y2 = round((data.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
+
+
                 //printf("(%f , %f)\n", pivotX, pivotY);
                 if (data.is_floor) {
                     // TODO this offset is still bugging me

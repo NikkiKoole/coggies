@@ -44,7 +44,7 @@ typedef struct {
 
     int pivotX;
     int pivotY;
-    int ssW, ssH;
+    //int ssW, ssH;
 } BlockTextureAtlasPosition;
 
 typedef struct {

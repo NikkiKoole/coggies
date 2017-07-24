@@ -205,8 +205,6 @@ internal BlockTextureAtlasPosition convertSimpleFrameToBlockTexturePos(SimpleFra
     result.y_off          = yOff;
     result.y_internal_off = frame.ssH - (frame.sssY + frame.frameH);
     result.x_internal_off = frame.ssW - (frame.sssX + frame.frameW);
-    result.ssH            = frame.ssH;
-    result.ssW            = frame.ssW;
     result.pivotX         = frame.pivotX;
     result.pivotY         = frame.pivotY;
 
