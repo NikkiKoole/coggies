@@ -681,29 +681,20 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
             {
                 int prepare_index = i / renderer->walls_layout.values_per_thing;
                 prepare_index += (wall_batch_index * 2048);
+
                 DynamicBlock data = permanent->dynamic_blocks[prepare_index];
                 float scale = 1.0f;
                 float wallX = data.frame.x_pos;// * 24;
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
-
                 const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
                 const float pivotY =( (float)data.frame.pivotY / (float)data.frame.height);
                 float wallHeight = data.frame.height;
                 float tempX = data.x + data.frame.x_internal_off;
-                //printf("%d, %d, %d, %d, %d\n", data.frame.height, data.frame.ssH, data.frame.sssY,  data.frame.pivotY, data.frame.y_internal_off);
-                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off ) -  (data.y) / 2;
-
-                float tempY =  (data.z  -  data.y/2 + data.frame.y_off) +  data.frame.y_internal_off + data.frame.height;
-                //float tempY = (data.z + data.frame.y_off)  - (data.y / 2)  ;
-                //float tempY = (data.z + data.frame.y_off) + data.frame.y_internal_off -   (data.y) / 2;
-                //float y_internal_off = complex.sssY;
-                //float x_internal_off = complex.sssX;
-                //const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
-
-
+                float tempY =  (data.z  - data.y/2 + data.frame.y_off) +  data.frame.y_internal_off + data.frame.height - data.frame.ssH;
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
                 Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
+
 
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
