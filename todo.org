@@ -8,6 +8,7 @@
 
  - bug in block pivots and it using ssW ssH in its render_dynamic_blocks routine in renderer.c
  - internal_offsets (specifxally for dynamicblocks) might be wrong
+ - factor out rendering code, as it stands, walls, dynamicblocks and actors could use exactly the same routine now.
 
 - get 'camera' orientation working, there seem to be some weird offsets of characters
 - make a few walking animations, walking, standing still, ascending, descending, in 4 cardinal directions.

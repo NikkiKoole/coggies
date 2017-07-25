@@ -42,9 +42,12 @@ typedef struct {
     int x_off; // used for offsetting sprite in world (think stairblocks at various heights)
     int y_off; // "
 
+
+    int ssW, ssH;
+    int sssX, sssY;
+
     int pivotX;
     int pivotY;
-    //int ssW, ssH;
 } BlockTextureAtlasPosition;
 
 typedef struct {

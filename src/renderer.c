@@ -266,15 +266,9 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 
                 float y_internal_off = data.frame.x_internal_off;
                 float x_internal_off = data.frame.y_internal_off;
-
-            //const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
-            //const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
-
-
                 float tempX = data.x + x_internal_off;
-                float tempY = (data.z - y_internal_off) - (data.y) / 2;
-
-
+                //float tempY = (data.z - y_internal_off) - (data.y) / 2 ;
+                 float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
 
                 if (data.is_floor) {
                     // TODO this offset is still bugging me
@@ -316,7 +310,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->vertices[i + 18] = uvs.tl.x;
                 batch->vertices[i + 19] = uvs.br.y;
                 //batch->vertices[i + 23] = paletteIndex;
-                //printf("TRANSPARENT uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
+
             }
 
         //ASSERT(batch->count * 6 < 2048 * 6);
@@ -363,19 +357,23 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
                 float tempX = data.x;
-                float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
-                if (data.is_floor) {
-                    // TODO this offset is still bugging me
-                    wallDepth = data.y  - 20;
-                    //pivotY = (108.0f) /(108.0f - 12.0f);
-                    //tempY -= 12;
-                }
+                float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
+
+                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off)  - (data.y) / 2;
+
+
+                /* if (data.is_floor) { */
+                /*     // TODO this offset is still bugging me */
+                /*     wallDepth = data.y  - 20; */
+                /*     //pivotY = (108.0f) /(108.0f - 12.0f); */
+                /*     //tempY -= 12; */
+                /* } */
 
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
                 Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
-                //printf("%d\n",i);
+
                 // bottomright
                 batch->vertices[i + 0] = verts.br.x;
                 batch->vertices[i + 1] = verts.br.y;
@@ -404,7 +402,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->vertices[i + 18] = uvs.tl.x;
                 batch->vertices[i + 19] = uvs.br.y;
                 //batch->vertices[i + 23] = paletteIndex;
-                //printf("STATIC uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
+
             }
 
         //ASSERT(batch->count * 6 < 2048 * 6);
@@ -447,7 +445,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         make_buffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
     }
-    //printf("fonts \n");
+
 
     // prepare buffers for FONT drawing
     {
@@ -471,7 +469,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 #endif
         }
     }
-    //printf("lines \n");
+
 
 
     // prepare buffers for LINE drawing
@@ -544,7 +542,7 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
             const float UV_BR_X = (guyFrameX + guyFrameWidth) / actor_texture_width;
             const float UV_BR_Y = guyFrameY / actor_texture_height;
 
-            //printf("%d) internal offsets: %f, %f. pivots: %f, %f\n", data._frame, x_internal_off, y_internal_off, pivotX, pivotY);
+
             Rect2 verts = get_verts_mvp(x2, y2, guyFrameWidth, guyFrameHeight, scale, scale, pivotX, pivotY);
 
 
@@ -601,7 +599,7 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
 #endif
         END_PERFORMANCE_COUNTER(render_actors_buffers);
     }
-    //printf("largestZ = %f, smallestZ = %f\n",smallestZ, largestZ);
+
 }
 
 
@@ -632,6 +630,26 @@ internal void render_actors(PermanentState *permanent, RenderState *renderer, De
 
 
 
+internal void general_drawloop(u32 batch_count, u32 batch_index, u32 batch_size, u32 values_per_thing) {
+    for (u32 i = 0; i < batch_count * values_per_thing; i+= values_per_thing) {
+        int prepare_index = i / values_per_thing;
+        prepare_index += (batch_index * batch_size);
+        // float x_pos;
+        // float y_pos;
+        // float z_pos;
+        // float frame_width;
+        // float frame_height;
+        // float depth;
+        //
+        // float pivot_x;
+        // float pivot_y
+
+    }
+
+
+}
+
+
 
 internal void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
     UNUSED(permanent);
@@ -651,18 +669,20 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
     //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
     //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
 
-    //printf("\nused wall batches: %d\n",renderer->used_wall_batches);
+
 
     int texture_size = renderer->assets.blocks.width;
     int number_to_do = renderer->walls_layout.values_per_thing;
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_dynamic_block_batches; wall_batch_index++) {
-        //printf("\nindex used wall batch: %d\n",wall_batch_index);
+
 
         DrawBuffer *batch = &renderer->dynamic_blocks[wall_batch_index];
-
-
         u32 count = batch->count; //permanent->actor_count;
+
+
+        general_drawloop(batch->count, wall_batch_index, 2048, renderer->walls_layout.values_per_thing);
+
         for (u32 i = 0;
              i < count * renderer->walls_layout.values_per_thing;
              i += renderer->walls_layout.values_per_thing)
@@ -682,12 +702,15 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
                 //const float pivotY =1.0f - ( 1.0f -  (float)data.frame.pivotY / (float)data.frame.height);
                 const float pivotY =( (float)data.frame.pivotY / (float)data.frame.height);
-                printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.height);
+                //printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.height);
                 float wallHeight = data.frame.height;
 
                 float tempX = data.x + data.frame.x_internal_off;
                 //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
-                float tempY =  ((data.z  -  data.y / 2) +  ( data.frame.y_internal_off + wallHeight) + data.frame.y_off  -wallHeight) ;//-  data.frame.y_internal_off) + data.frame.y_off ;
+                //printf("%d\n",data.frame.y_internal_off);
+                //float tempY =  ((data.z  -  data.y / 2) +  ( data.frame.y_internal_off ) + data.frame.y_off ) ;//-  data.frame.y_internal_off) + data.frame.y_off ;
+
+                float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
                 //const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
                 //const float y2 = round((data.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
 
