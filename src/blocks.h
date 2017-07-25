@@ -45,7 +45,7 @@ enum BlockParts {
     BL_TOTAL = 42
 };
 internal void fill_generated_values(SimpleFrame* generated_frames ) {
-    generated_frames[BL_escalator_east_up_000] = (SimpleFrame){26, 109, 26, 38,0, 36, 24, 36, 24, 96, 0, 71};
+    generated_frames[BL_escalator_east_up_000] = (SimpleFrame){0, 110, 26, 38,0, 36, 24, 36, 24, 96, 0, 71};
     generated_frames[BL_escalator_east_up_001] = (SimpleFrame){102, 0, 26, 46,0, 35, 24, 44, 24, 96, 0, 71};
     generated_frames[BL_escalator_east_up_002] = (SimpleFrame){128, 0, 26, 46,0, 34, 24, 44, 24, 96, 0, 71};
     generated_frames[BL_escalator_east_up_003] = (SimpleFrame){154, 0, 26, 46,0, 33, 24, 44, 24, 96, 0, 71};
@@ -55,8 +55,8 @@ internal void fill_generated_values(SimpleFrame* generated_frames ) {
     generated_frames[BL_escalator_east_up_007] = (SimpleFrame){128, 46, 26, 46,0, 29, 24, 44, 24, 96, 0, 71};
     generated_frames[BL_escalator_north_up_000] = (SimpleFrame){208, 168, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
     generated_frames[BL_escalator_north_up_001] = (SimpleFrame){182, 168, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
-    generated_frames[BL_escalator_north_up_002] = (SimpleFrame){0, 148, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
-    generated_frames[BL_escalator_north_up_003] = (SimpleFrame){26, 147, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
+    generated_frames[BL_escalator_north_up_002] = (SimpleFrame){26, 148, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
+    generated_frames[BL_escalator_north_up_003] = (SimpleFrame){0, 148, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
     generated_frames[BL_escalator_north_up_004] = (SimpleFrame){52, 143, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
     generated_frames[BL_escalator_north_up_005] = (SimpleFrame){156, 138, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
     generated_frames[BL_escalator_north_up_006] = (SimpleFrame){130, 138, 26, 38,0, 0, 24, 36, 24, 36, 0, 35};
@@ -68,15 +68,15 @@ internal void fill_generated_values(SimpleFrame* generated_frames ) {
     generated_frames[BL_escalator_south_up_000] = (SimpleFrame){78, 176, 26, 18,0, 8, 24, 16, 24, 24, 0, 23};
     generated_frames[BL_escalator_south_up_001] = (SimpleFrame){130, 176, 26, 17,0, 9, 24, 15, 24, 24, 0, 23};
     generated_frames[BL_escalator_south_up_002] = (SimpleFrame){156, 176, 26, 16,0, 10, 24, 14, 24, 24, 0, 23};
-    generated_frames[BL_escalator_south_up_003] = (SimpleFrame){26, 185, 26, 15,0, 11, 24, 13, 24, 24, 0, 23};
+    generated_frames[BL_escalator_south_up_003] = (SimpleFrame){0, 186, 26, 15,0, 11, 24, 13, 24, 24, 0, 23};
     generated_frames[BL_escalator_south_up_004] = (SimpleFrame){104, 193, 26, 14,0, 12, 24, 12, 24, 24, 0, 23};
-    generated_frames[BL_escalator_south_up_005] = (SimpleFrame){0, 186, 26, 15,0, 11, 24, 13, 24, 24, 0, 23};
+    generated_frames[BL_escalator_south_up_005] = (SimpleFrame){26, 186, 26, 15,0, 11, 24, 13, 24, 24, 0, 23};
     generated_frames[BL_escalator_south_up_006] = (SimpleFrame){52, 181, 26, 16,0, 10, 24, 14, 24, 24, 0, 23};
     generated_frames[BL_escalator_south_up_007] = (SimpleFrame){104, 176, 26, 17,0, 9, 24, 15, 24, 24, 0, 23};
-    generated_frames[BL_escalator_west_up_000] = (SimpleFrame){0, 110, 26, 38,0, 7, 24, 36, 24, 52, 0, 42};
+    generated_frames[BL_escalator_west_up_000] = (SimpleFrame){26, 110, 26, 38,0, 7, 24, 36, 24, 52, 0, 42};
     generated_frames[BL_escalator_west_up_001] = (SimpleFrame){180, 92, 26, 46,0, 6, 24, 44, 24, 52, 0, 42};
     generated_frames[BL_escalator_west_up_002] = (SimpleFrame){154, 92, 26, 46,0, 5, 24, 44, 24, 52, 0, 42};
-    generated_frames[BL_escalator_west_up_003] = (SimpleFrame){128, 92, 26, 46,0, 4, 24, 44, 24, 52, 0, 42};
+    generated_frames[BL_escalator_west_up_003] = (SimpleFrame){128, 92, 26, 46,0, 4, 24, 44, 24, 52, 0, 32};
     generated_frames[BL_escalator_west_up_004] = (SimpleFrame){102, 92, 26, 46,0, 3, 24, 44, 24, 52, 0, 42};
     generated_frames[BL_escalator_west_up_005] = (SimpleFrame){206, 46, 26, 46,0, 2, 24, 44, 24, 52, 0, 42};
     generated_frames[BL_escalator_west_up_006] = (SimpleFrame){180, 46, 26, 46,0, 1, 24, 44, 24, 52, 0, 42};
@@ -85,6 +85,6 @@ internal void fill_generated_values(SimpleFrame* generated_frames ) {
     generated_frames[BL_ladder_down_000] = (SimpleFrame){232, 0, 24, 28,0, 0, 22, 26, 22, 26, 0, 25};
     generated_frames[BL_ladder_up_000] = (SimpleFrame){52, 0, 26, 105,0, 0, 24, 103, 24, 103, 0, 100};
     generated_frames[BL_ladder_up_down_000] = (SimpleFrame){78, 0, 24, 100,0, 0, 22, 98, 22, 98, 0, 97};
-    generated_frames[BL_wall_000] = (SimpleFrame){26, 0, 26, 109,0, 1, 24, 107, 24, 108, 0, 107};
+    generated_frames[BL_wall_000] = (SimpleFrame){26, 0, 26, 110,0, 0, 24, 108, 24, 108, 0, 107};
     generated_frames[BL_window_000] = (SimpleFrame){0, 0, 26, 110,0, 0, 24, 108, 24, 108, 0, 107};
 };

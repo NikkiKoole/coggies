@@ -145,7 +145,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 0.ase",
-    "frame": { "x": 0, "y": 148, "w": 26, "h": 38 },
+    "frame": { "x": 26, "y": 148, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -154,7 +154,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 1.ase",
-    "frame": { "x": 26, "y": 147, "w": 26, "h": 38 },
+    "frame": { "x": 0, "y": 148, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -181,7 +181,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 4.ase",
-    "frame": { "x": 26, "y": 109, "w": 26, "h": 38 },
+    "frame": { "x": 0, "y": 110, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -190,7 +190,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 5.ase",
-    "frame": { "x": 0, "y": 110, "w": 26, "h": 38 },
+    "frame": { "x": 26, "y": 110, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -406,7 +406,7 @@
    },
    {
     "filename": "escalator_south_up (pixels) 5.ase",
-    "frame": { "x": 0, "y": 186, "w": 26, "h": 15 },
+    "frame": { "x": 26, "y": 186, "w": 26, "h": 15 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 11, "w": 24, "h": 13 },
@@ -607,7 +607,7 @@
     "frame": { "x": 235, "y": 37, "w": 3, "h": 3 },
     "rotated": false,
     "trimmed": true,
-    "spriteSourceSize": { "x": 0, "y": 42, "w": 1, "h": 1 },
+    "spriteSourceSize": { "x": 0, "y": 32, "w": 1, "h": 1 },
     "sourceSize": { "w": 24, "h": 52 },
     "duration": 100
    },
@@ -649,7 +649,7 @@
    },
    {
     "filename": "floor (pixels).ase",
-    "frame": { "x": 26, "y": 185, "w": 26, "h": 15 },
+    "frame": { "x": 0, "y": 186, "w": 26, "h": 15 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 1, "w": 24, "h": 13 },
@@ -721,10 +721,10 @@
    },
    {
     "filename": "wall (pixels).ase",
-    "frame": { "x": 26, "y": 0, "w": 26, "h": 109 },
+    "frame": { "x": 26, "y": 0, "w": 26, "h": 110 },
     "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 0, "y": 1, "w": 24, "h": 107 },
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 108 },
     "sourceSize": { "w": 24, "h": 108 },
     "duration": 100
    },

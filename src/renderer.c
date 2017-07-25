@@ -244,6 +244,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
 #endif
     }
     {
+        // TRANSPARANT BLOCKS
     for (int wall_batch_index = 0; wall_batch_index < TRANSPARENT_BLOCK_BATCH_COUNT; wall_batch_index++) {
         DrawBuffer *batch = &renderer->transparent_blocks[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
@@ -264,18 +265,20 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 float wallHeight = data.frame.height;
 
 
-                float y_internal_off = data.frame.x_internal_off;
-                float x_internal_off = data.frame.y_internal_off;
-                float tempX = data.x + x_internal_off;
+                float x_internal_off = data.frame.x_internal_off;
+                float y_internal_off = data.frame.y_internal_off;
+                //float tempX = data.x + x_internal_off;
+                float tempX = data.x + x_internal_off;//data.frame.sssX;
+
                 //float tempY = (data.z - y_internal_off) - (data.y) / 2 ;
                  float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
 
-                if (data.is_floor) {
+                 //if (data.is_floor) {
                     // TODO this offset is still bugging me
-                    wallDepth = data.y - 20;
+                    //wallDepth = data.y - 20;
                     //pivotY = (108.0f) /(108.0f - 12.0f);
                     //tempY -= 12;
-                }
+                 //}
 
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
@@ -335,7 +338,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     }
 
 
-
+    // STATIC BLOCKS
     for (int wall_batch_index = 0; wall_batch_index < STATIC_BLOCK_BATCH_COUNT; wall_batch_index++) {
         DrawBuffer *batch = &renderer->static_blocks[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
@@ -356,19 +359,8 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
                 const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
                 float wallHeight = data.frame.height;
-                float tempX = data.x;
+                float tempX = data.x + data.frame.x_internal_off;//data.frame.sssX;
                 float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
-
-                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off)  - (data.y) / 2;
-
-
-                /* if (data.is_floor) { */
-                /*     // TODO this offset is still bugging me */
-                /*     wallDepth = data.y  - 20; */
-                /*     //pivotY = (108.0f) /(108.0f - 12.0f); */
-                /*     //tempY -= 12; */
-                /* } */
-
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
                 //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
@@ -695,33 +687,20 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 float wallY = data.frame.y_pos;// * 108;
                 float wallDepth = data.y;
 
-                ///
-                /// WHAT: Why has this one the need for ssW and ssH all of a sudden?
-                ///
-
                 const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
-                //const float pivotY =1.0f - ( 1.0f -  (float)data.frame.pivotY / (float)data.frame.height);
                 const float pivotY =( (float)data.frame.pivotY / (float)data.frame.height);
-                //printf("%d ??? %f  height: %d\n", data.frame.pivotY, pivotY, data.frame.height);
                 float wallHeight = data.frame.height;
-
                 float tempX = data.x + data.frame.x_internal_off;
-                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off) - (data.y) / 2;
-                //printf("%d\n",data.frame.y_internal_off);
-                //float tempY =  ((data.z  -  data.y / 2) +  ( data.frame.y_internal_off ) + data.frame.y_off ) ;//-  data.frame.y_internal_off) + data.frame.y_off ;
+                //printf("%d, %d, %d, %d, %d\n", data.frame.height, data.frame.ssH, data.frame.sssY,  data.frame.pivotY, data.frame.y_internal_off);
+                //float tempY = (data.z + data.frame.y_off + data.frame.y_internal_off ) -  (data.y) / 2;
 
-                float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
-                //const float x2 = round(location.x ) + x_internal_off - 12.f + data.x_off;
-                //const float y2 = round((data.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
+                float tempY =  (data.z  -  data.y/2 + data.frame.y_off) +  data.frame.y_internal_off + data.frame.height;
+                //float tempY = (data.z + data.frame.y_off)  - (data.y / 2)  ;
+                //float tempY = (data.z + data.frame.y_off) + data.frame.y_internal_off -   (data.y) / 2;
+                //float y_internal_off = complex.sssY;
+                //float x_internal_off = complex.sssX;
+                //const float y2 = round((location.z - y_internal_off) - (location.y) / 2.0f) + 12.f + data.y_off;
 
-
-                //printf("(%f , %f)\n", pivotX, pivotY);
-                if (data.is_floor) {
-                    // TODO this offset is still bugging me
-                    wallDepth = data.y - 20;
-                    //pivotY = (108.0f) /(108.0f - 12.0f);
-                    //tempY -= 12;
-                }
 
                 Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
                 Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);

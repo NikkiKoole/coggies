@@ -1,7 +1,7 @@
 { "frames": [
    {
     "filename": "escalator_east_up (pixels) 0.ase",
-    "frame": { "x": 26, "y": 109, "w": 26, "h": 38 },
+    "frame": { "x": 0, "y": 110, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 36, "w": 24, "h": 36 },
@@ -91,7 +91,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 2.ase",
-    "frame": { "x": 0, "y": 148, "w": 26, "h": 38 },
+    "frame": { "x": 26, "y": 148, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -100,7 +100,7 @@
    },
    {
     "filename": "escalator_north_up (pixels) 3.ase",
-    "frame": { "x": 26, "y": 147, "w": 26, "h": 38 },
+    "frame": { "x": 0, "y": 148, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": false,
     "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 36 },
@@ -208,7 +208,7 @@
    },
    {
     "filename": "escalator_south_up (pixels) 3.ase",
-    "frame": { "x": 26, "y": 185, "w": 26, "h": 15 },
+    "frame": { "x": 0, "y": 186, "w": 26, "h": 15 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 11, "w": 24, "h": 13 },
@@ -226,7 +226,7 @@
    },
    {
     "filename": "escalator_south_up (pixels) 5.ase",
-    "frame": { "x": 0, "y": 186, "w": 26, "h": 15 },
+    "frame": { "x": 26, "y": 186, "w": 26, "h": 15 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 11, "w": 24, "h": 13 },
@@ -253,7 +253,7 @@
    },
    {
     "filename": "escalator_west_up (pixels) 0.ase",
-    "frame": { "x": 0, "y": 110, "w": 26, "h": 38 },
+    "frame": { "x": 26, "y": 110, "w": 26, "h": 38 },
     "rotated": false,
     "trimmed": true,
     "spriteSourceSize": { "x": 0, "y": 7, "w": 24, "h": 36 },
@@ -361,10 +361,10 @@
    },
    {
     "filename": "wall (pixels).ase",
-    "frame": { "x": 26, "y": 0, "w": 26, "h": 109 },
+    "frame": { "x": 26, "y": 0, "w": 26, "h": 110 },
     "rotated": false,
-    "trimmed": true,
-    "spriteSourceSize": { "x": 0, "y": 1, "w": 24, "h": 107 },
+    "trimmed": false,
+    "spriteSourceSize": { "x": 0, "y": 0, "w": 24, "h": 108 },
     "sourceSize": { "w": 24, "h": 108 },
     "duration": 100
    },
