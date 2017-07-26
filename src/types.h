@@ -7,6 +7,7 @@
 #include <stdio.h>
 
 #define PI 3.14159265359
+
 #define MAX(a, b) (((a) > (b)) ? (a) : (b))
 #define MIN(a, b) (((a) < (b)) ? (a) : (b))
 #define CLAMP(x, lo, hi) MIN((hi), MAX((lo), (x)))

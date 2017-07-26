@@ -99,7 +99,7 @@ internal int event_filter(void *userData, SDL_Event *event) {
 
 
 internal void load_resources(PermanentState *permanent, RenderState *renderer) {
-    resource_level(permanent, &permanent->level, "levels/15.txt"); //two_floors.txt
+    resource_level(permanent, &permanent->level, "levels/16.txt"); //two_floors.txt
     resource_sprite_atlas("out.sho");
     resource_font(&renderer->assets.menlo_font, "fonts/osaka.fnt");
     resource_png(&renderer->assets.menlo, "fonts/osaka.png");
@@ -157,17 +157,17 @@ internal void set_actor_batch_sizes(PermanentState *permanent, RenderState *rend
 
 
 internal void set_glyph_batch_sizes(PermanentState *permanent, RenderState *renderer) {
-    u32 used_batches = ceil(permanent->glyph_count / 2048.0f);
+    u32 used_batches = ceil(permanent->glyph_count / (MAX_IN_BUFFER*1.0f));
     renderer->used_glyph_batches = used_batches;
 
     if (used_batches == 1) {
         renderer->glyphs[0].count = permanent->glyph_count;
     } else if (used_batches > 1) {
         for (u32 i = 0; i < used_batches - 1; i++) {
-            renderer->glyphs[i].count = 2048;
+            renderer->glyphs[i].count = MAX_IN_BUFFER;
         }
         printf("%d array out bounds glyphs\n", used_batches - 1);
-        renderer->glyphs[used_batches - 1].count = permanent->glyph_count % 2048;
+        renderer->glyphs[used_batches - 1].count = permanent->glyph_count % MAX_IN_BUFFER;
     } else {
         renderer->used_glyph_batches = 0;
     }
@@ -189,15 +189,10 @@ u32 debug_text_x = 5;
 u32 debug_text_y = 5;
 
 internal u32 draw_text(char *str, u32 x, u32 y, BM_Font *font, PermanentState *permanent) {
-    UNUSED(str);
-    UNUSED(x);
-    UNUSED(y);
-    UNUSED(font);
-
     u32 currentY = y;
     u32 currentX = x;
-
     u32 drawn = 0;
+
     for (u32 i = 0; i < strlen(str); i++) {
         if (str[i] == 10) { // newline
             currentY += font->line_height;
@@ -470,7 +465,7 @@ int main(int argc, char **argv) {
             }
             if (keys[SDL_SCANCODE_Z]) {
                 for (u32 j = 0; j < ACTOR_BATCH; j++) {
-                    if (permanent->actor_count < (2048 * 32) - ACTOR_BATCH) {
+                    if (permanent->actor_count < (MAX_IN_BUFFER * 32) - ACTOR_BATCH) {
                         actor_add(permanent);
                         u32 i = permanent->actor_count;
                         grid_node * Start  = get_random_walkable_node(permanent->grid);

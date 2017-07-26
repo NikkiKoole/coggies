@@ -27,8 +27,6 @@ internal b32 exists(const char *fname) {
 }
 
 internal void make_font(BM_Font *font, const char *path) {
-    UNUSED(font);
-    //    printf("%s\n", path);
     if (exists(path)) {
         //ok the bmf file will be in binary, thats a lot easier actually for me.
         //http://www.angelcode.com/products/bmfont/doc/file_format.html
@@ -249,13 +247,8 @@ internal void make_texture(Texture *t, const char *path, int type) {
 }
 
 void resource_png(Texture *t, const char *path) {
-    UNUSED(t);UNUSED(path);
     char buffer[256];
     make_texture(t, resource(path, buffer), 1);
-    //if (image == NULL) {
-    //    printf("failed loading image: %s\n", path);
-    //}
-    //printf("%d, %d, %d\n", w, h, comp);
 }
 
 void resource_tga(Texture *t, const char *path) {

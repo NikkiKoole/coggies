@@ -1,7 +1,7 @@
 #ifndef STATES_H
 #define STATES_H
+
 #include "memory.h"
-//#include "Math.h"
 #include "my_math.h"
 
 typedef struct {
@@ -49,9 +49,6 @@ typedef struct {
     u8 pivotY;
 } BlockTextureAtlasPosition;
 
-
-
-
 typedef struct {
     u16 x;
     u16 y;
@@ -67,31 +64,6 @@ typedef struct {
     u8 first_frame;
     u8 last_frame;
 } StaticBlock; //64
-
-typedef struct {
-    u16 x;
-    u16 y;
-    u16 z;
-    BlockTextureAtlasPosition frame;
-    u8 is_floor;
-
-    u8 total_frames;
-    u8 current_frame;
-    r32 duration_per_frame;
-    r32 frame_duration_left;
-    u8 plays_forward;
-    u8 first_frame;
-    u8 last_frame;
-} DynamicBlock; //64
-
-typedef struct {
-    u8 type;
-    union {
-        StaticBlock b1;
-        DynamicBlock b2;
-    } data;
-} GeneralBlock;
-
 
 typedef struct FoundPathNode {
     Vector3 node;
@@ -116,7 +88,6 @@ typedef struct Node16
 typedef struct {
     MemoryArena arena;
     Node16 *Free;
-    //Node16 *Sentinel;
 } Node16Arena;
 
 
@@ -145,18 +116,12 @@ typedef struct {
 
 typedef struct {
     Vector3 _location;
-    //ActorPath path;
-    //ActorAnimData anim;
-    //ActorSteerData steer;
-     FrameWithPivotAnchor *complex;
+    FrameWithPivotAnchor *complex;
     u32 _frame;
     r32 _palette_index;
     u32 index;
     r32 x_off, y_off;
-} Actor; //176
-
-
-
+} Actor;
 
 typedef struct {
     u16 x;
@@ -229,7 +194,6 @@ typedef struct grid_node {
     float g;
     float f;
     float h;
-    //float cost;
     u8 opened;
     u8 closed;
     struct grid_node *parent; //used for backtracking
@@ -252,11 +216,10 @@ typedef struct {
     MemoryArena arena;
     LevelData level;
 
-
     StaticBlock *static_blocks;//[16384];
     u32 static_block_count;
 
-    DynamicBlock *dynamic_blocks;//[16384];
+    StaticBlock *dynamic_blocks;//[16384];
     u32 dynamic_block_count;
 
     StaticBlock *transparent_blocks;//[16384];
@@ -264,34 +227,24 @@ typedef struct {
 
     Actor *actors;//[16384*4];
     u32 actor_count;
-
     ActorPath *paths; //
-    // doesnt need a count because it will be the same as actor
     ActorSteerData *steer_data;
     ActorAnimData *anim_data;
-
-
 
     Glyph *glyphs;//[16384];
     u32 glyph_count;
 
     ColoredLine *colored_lines;//[16384];
     u32 colored_line_count;
-
     ///
     s32 x_view_offset;
     s32 y_view_offset;
-
-
     /////
     WorldDims dims;
     WorldDims block_size;
     ////
     Grid *grid;
     //
-
-
-
 } PermanentState;
 
 void actor_remove(PermanentState *state, u32 index);

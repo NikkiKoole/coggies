@@ -18,8 +18,16 @@
 
 #define VERTEX_FLOAT_TYPE GLfloat
 #define GL_FLOAT_TYPE GL_FLOAT
+//4
+#define STATIC_BLOCK_BATCH_COUNT 1
+#define DYNAMIC_BLOCK_BATCH_COUNT 1
+#define TRANSPARENT_BLOCK_BATCH_COUNT 1
+//16
+#define ACTOR_BATCH_COUNT 1
+#define GLYPH_BATCH_COUNT 2
+#define LINE_BATCH_COUNT 2
 
-
+#define MAX_IN_BUFFER 2048
 
 /* #ifdef USES_HALF_FLOAT */
 /* #define VERTEX_FLOAT_TYPE __fp16 */
@@ -45,8 +53,6 @@
 
 /* #endif */
 
-
-
 typedef struct {
     int amount;
     GLenum type;
@@ -61,13 +67,11 @@ typedef struct {
     int values_per_thing;
 } ShaderLayout;
 
-
 typedef struct {
     Texture character;
     Texture blocks;
     Texture palette;
     Texture menlo;
-    //LevelData level;
 
     GLuint xyz_uv_palette;
     GLuint xyz_rgb;
@@ -85,9 +89,6 @@ typedef struct {
     u16 height;
 } ViewPort;
 
-
-#define MAX_IN_BUFFER 2048
-
 typedef struct DrawBuffer {
     u32 max_amount;
     u32 used_count;
@@ -100,16 +101,7 @@ typedef struct DrawBuffer {
     VERTEX_FLOAT_TYPE vertices[MAX_IN_BUFFER * 24];
 } DrawBuffer;
 
-#define STATIC_BLOCK_BATCH_COUNT 4
-#define DYNAMIC_BLOCK_BATCH_COUNT 1
-#define TRANSPARENT_BLOCK_BATCH_COUNT 1
-#define ACTOR_BATCH_COUNT 16
-#define GLYPH_BATCH_COUNT 2
-#define LINE_BATCH_COUNT 2
-
-
 typedef struct RenderState {
-//float tx, ty, rotation;
     Matrix4 mvp;
     ViewPort view;
     SDL_Window *window;

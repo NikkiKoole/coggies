@@ -22,8 +22,6 @@
 #include <SDL_opengles2.h>
 #endif
 
-
-
 #if (!defined(OSX) && !defined(RPI) && !defined(LINUX))
 #include <GL/glew.h>
 #include <SDL_opengl.h>

@@ -17,7 +17,7 @@ typedef struct {
     V2 br;
 } Rect2;
 
-float last_frame = 999;
+//float last_frame = 999;
 
 #define CHECK()                                                         \
     {                                                                   \
@@ -27,7 +27,6 @@ float last_frame = 999;
             exit(0);                                                    \
         }                                                               \
     }
-
 
 
 void setup_shader_layouts(RenderState *renderer) {
@@ -105,7 +104,6 @@ internal inline Rect2 get_verts_mvp(float x,
 
 #ifdef GLES
 internal void make_buffer_RPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VBO, GLuint *EBO, GLenum usage, ShaderLayout *layout) {
-    UNUSED(layout);
     glGenBuffers(1, VBO);
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(vertices[0]) * size * layout->values_per_thing, vertices, usage);
@@ -119,8 +117,6 @@ internal void make_buffer_RPI(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], 
 
 
 internal void bind_buffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayout *layout) {
-    UNUSED(layout);
-
     glBindBuffer(GL_ARRAY_BUFFER, *VBO);
     int stride = 0;
     for (int i = 0; i < layout->element_count; i++) {
@@ -139,9 +135,6 @@ internal void bind_buffer(GLuint *VBO, GLuint *EBO, GLuint *program,  ShaderLayo
 #ifdef GL3
 
 internal void make_buffer(VERTEX_FLOAT_TYPE vertices[], GLushort indices[], int size, GLuint *VAO, GLuint *VBO, GLuint *EBO, GLenum usage, ShaderLayout *layout) {
-
-
-    UNUSED(layout);
     glGenVertexArrays(1, VAO);
     glGenBuffers(1, VBO);
     glGenBuffers(1, EBO);
@@ -274,13 +267,13 @@ internal void general_drawloop(DrawBuffer *batch, u32 batch_count, u32 batch_ind
 
 
 void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
-    //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
+    //ASSERT(renderer->walls.count * VALUES_PER_ELEM < MAX_IN_BUFFER * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
 
     for (int dynamic_block_batch_index = 0; dynamic_block_batch_index < DYNAMIC_BLOCK_BATCH_COUNT; dynamic_block_batch_index++) {
         DrawBuffer *batch = &renderer->dynamic_blocks[dynamic_block_batch_index];
 
-        for (u32 i = 0; i < 2048 * 6; i += 6) {
+        for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
@@ -290,10 +283,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
             batch->indices[i + 5] = j + 3;
         }
 #ifdef GLES
-        make_buffer_RPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->walls_layout);
+        make_buffer_RPI(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->walls_layout);
 #endif
 #ifdef GL3
-        make_buffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->walls_layout);
+        make_buffer(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->walls_layout);
 #endif
     }
     {
@@ -305,7 +298,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         general_drawloop(batch, batch->count, wall_batch_index, TRANSPARENT_BLOCK_BATCH_COUNT, renderer->walls_layout.values_per_thing, permanent->transparent_blocks,
                          renderer->assets.blocks.width, renderer->assets.blocks.height);
 
-        for (u32 i = 0; i < batch->count * 6; i += 6) {
+        for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
@@ -334,7 +327,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         general_drawloop(batch, batch->count, wall_batch_index, STATIC_BLOCK_BATCH_COUNT, renderer->walls_layout.values_per_thing, permanent->static_blocks,
                          renderer->assets.blocks.width, renderer->assets.blocks.height);
 
-        for (u32 i = 0; i < batch->count * 6; i += 6) {
+        for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
@@ -357,7 +350,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     for (int actor_batch_index = 0; actor_batch_index < ACTOR_BATCH_COUNT; actor_batch_index++) {
         DrawBuffer *batch = &renderer->actors[actor_batch_index];
 
-        for (u32 i = 0; i < 2048 * 6; i += 6) {
+        for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
             batch->indices[i + 1] = j + 1;
@@ -367,10 +360,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
             batch->indices[i + 5] = j + 3;
         }
 #ifdef GLES
-        make_buffer_RPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
+        make_buffer_RPI(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
 #ifdef GL3
-        make_buffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
+        make_buffer(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->actors_layout);
 #endif
     }
 
@@ -380,7 +373,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         for (int glyph_batch_index = 0; glyph_batch_index < GLYPH_BATCH_COUNT; glyph_batch_index++) {
             DrawBuffer *batch = &renderer->glyphs[glyph_batch_index];
 
-            for (u32 i = 0; i < 2048 * 6; i += 6) {
+            for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
                 int j = (i / 6) * 4;
                 batch->indices[i + 0] = j + 0;
                 batch->indices[i + 1] = j + 1;
@@ -390,10 +383,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->indices[i + 5] = j + 3;
             }
 #ifdef GLES
-            make_buffer_RPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
+            make_buffer_RPI(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
 #endif
 #ifdef GL3
-            make_buffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
+            make_buffer(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->debug_text_layout);
 #endif
         }
     }
@@ -404,7 +397,7 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     {
         for (int line_batch_index = 0; line_batch_index < LINE_BATCH_COUNT; line_batch_index++) {
             DrawBuffer *batch = &renderer->colored_lines[line_batch_index];
-            for (u32 i = 0; i < 2048 * 6; i += 6) {
+            for (u32 i = 0; i < MAX_IN_BUFFER * 6; i += 6) {
                 int j = (i / 6) * 4;
                 batch->indices[i + 0] = j + 0;
                 batch->indices[i + 1] = j + 1;
@@ -414,10 +407,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
                 batch->indices[i + 5] = j + 5;
             }
 #ifdef GLES
-            make_buffer_RPI(batch->vertices, batch->indices, 2048, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->colored_lines_layout);
+            make_buffer_RPI(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->colored_lines_layout);
 #endif
 #ifdef GL3
-            make_buffer(batch->vertices, batch->indices, 2048, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->colored_lines_layout);
+            make_buffer(batch->vertices, batch->indices, MAX_IN_BUFFER, &batch->VAO, &batch->VBO, &batch->EBO, GL_DYNAMIC_DRAW, &renderer->colored_lines_layout);
 #endif
         }
     }
@@ -439,7 +432,7 @@ internal void update_and_draw_actor_vertices(PermanentState *permanent, RenderSt
         for (int i = 0; i < count * number_to_do; i += number_to_do) {
             BEGIN_PERFORMANCE_COUNTER(render_actors_batches);
             int prepare_index = i / number_to_do;
-            prepare_index += (actor_batch_index * 2048);
+            prepare_index += (actor_batch_index * MAX_IN_BUFFER);
             Actor data = permanent->actors[prepare_index];
 
             FrameWithPivotAnchor complex = *data.complex;
@@ -557,13 +550,7 @@ internal void render_actors(PermanentState *permanent, RenderState *renderer, De
 }
 
 
-
-
-
-
 internal void render_dynamic_blocks(PermanentState *permanent, RenderState *renderer) {
-    UNUSED(permanent);
-
     glUseProgram(renderer->assets.xyz_uv);
 
     GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv, "MVP");
@@ -575,83 +562,16 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
     glBindTexture(GL_TEXTURE_2D, renderer->assets.blocks.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
 
-    //glActiveTexture(GL_TEXTURE1);
-    //glBindTexture(GL_TEXTURE_2D, renderer->assets.palette.id);
-    //glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv_palette, "palette16x16"), 1);
-
-
-
     int texture_size = renderer->assets.blocks.width;
     int number_to_do = renderer->walls_layout.values_per_thing;
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_dynamic_block_batches; wall_batch_index++) {
-
-
         DrawBuffer *batch = &renderer->dynamic_blocks[wall_batch_index];
-        u32 count = batch->count; //permanent->actor_count;
+        u32 count = batch->count;
 
+        general_drawloop(batch, batch->count, wall_batch_index, DYNAMIC_BLOCK_BATCH_COUNT, renderer->walls_layout.values_per_thing, permanent->dynamic_blocks,
+                         renderer->assets.blocks.width, renderer->assets.blocks.height);
 
-        //general_drawloop(batch->count, wall_batch_index, 2048, renderer->walls_layout.values_per_thing, permanent);
-
-        for (u32 i = 0;
-             i < count * renderer->walls_layout.values_per_thing;
-             i += renderer->walls_layout.values_per_thing)
-            {
-                int prepare_index = i / renderer->walls_layout.values_per_thing;
-                prepare_index += (wall_batch_index * 2048);
-
-                DynamicBlock data = permanent->dynamic_blocks[prepare_index];
-                BlockTextureAtlasPosition frame = data.frame;
-
-                float scale = 1.0f;
-                float wallX = frame.x_pos;// * 24;
-                float wallY = frame.y_pos;// * 108;
-                float wallDepth = data.y;
-                const float pivotX = (float)frame.pivotX / (float)frame.width;
-                const float pivotY =( (float)frame.pivotY / (float)frame.height);
-                float wallHeight = frame.height;
-                float tempX = data.x + frame.x_internal_off;
-                float tempY =  (data.z  - data.y/2 + frame.y_off) +  frame.y_internal_off + frame.height - frame.ssH;
-                Rect2 uvs = get_uvs(texture_size, wallX, wallY, frame.width, wallHeight);
-                Rect2 verts = get_verts_mvp(tempX, tempY, frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
-
-
-                // bottomright
-                batch->vertices[i + 0] = verts.br.x;
-                batch->vertices[i + 1] = verts.br.y;
-                batch->vertices[i + 2] = wallDepth;
-                batch->vertices[i + 3] = uvs.br.x;
-                batch->vertices[i + 4] = uvs.br.y;
-                //batch->vertices[i + 5] = paletteIndex;
-                //topright
-                batch->vertices[i + 5] = verts.br.x;
-                batch->vertices[i + 6] = verts.tl.y;
-                batch->vertices[i + 7] = wallDepth;
-                batch->vertices[i + 8] = uvs.br.x;
-                batch->vertices[i + 9] = uvs.tl.y;
-                //batch->vertices[i + 11] = paletteIndex;
-                // top left
-                batch->vertices[i + 10] = verts.tl.x;
-                batch->vertices[i + 11] = verts.tl.y;
-                batch->vertices[i + 12] = wallDepth;
-                batch->vertices[i + 13] = uvs.tl.x;
-                batch->vertices[i + 14] = uvs.tl.y;
-                // batch->vertices[i + 17] = paletteIndex;
-                // bottomleft
-                batch->vertices[i + 15] = verts.tl.x;
-                batch->vertices[i + 16] = verts.br.y;
-                batch->vertices[i + 17] = wallDepth;
-                batch->vertices[i + 18] = uvs.tl.x;
-                batch->vertices[i + 19] = uvs.br.y;
-                //batch->vertices[i + 23] = paletteIndex;
-                //printf("uv xy: %f,%f  %f,%f  %f,%f  %f,%f\n",batch->vertices[i + 3],batch->vertices[i + 4], batch->vertices[i + 8], batch->vertices[i + 9], batch->vertices[i + 13],batch->vertices[i + 14], batch->vertices[i + 18],batch->vertices[i + 19]);
-            }
-
-
-
-
-
-        UNUSED(batch);
 
 #ifdef GLES
         bind_buffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv_palette, &renderer->actors_layout);
@@ -677,16 +597,13 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
 
 
 
-internal void render_walls(PermanentState *permanent, RenderState *renderer) {
-    UNUSED(permanent);
-
+internal void render_walls(RenderState *renderer) {
     glUseProgram(renderer->assets.xyz_uv);
 
     GLint MatrixID = glGetUniformLocation(renderer->assets.xyz_uv, "MVP");
     ASSERT(MatrixID >= 0);
     glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &renderer->mvp.m[0]);
 
-    // Bind Textures using texture units
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_2D, renderer->assets.blocks.id);
     glUniform1i(glGetUniformLocation(renderer->assets.xyz_uv, "sprite_atlas"), 0);
@@ -694,7 +611,6 @@ internal void render_walls(PermanentState *permanent, RenderState *renderer) {
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_static_block_batches; wall_batch_index++) {
         DrawBuffer *batch = &renderer->static_blocks[wall_batch_index];
-        UNUSED(batch);
 
 #ifdef GLES
         bind_buffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv, &renderer->walls_layout );
@@ -713,8 +629,7 @@ internal void render_walls(PermanentState *permanent, RenderState *renderer) {
 }
 
 
-internal void render_transparent_blocks(PermanentState *permanent, RenderState *renderer) {
-    UNUSED(permanent);
+internal void render_transparent_blocks(RenderState *renderer) {
 
     glUseProgram(renderer->assets.xyz_uv);
 
@@ -730,7 +645,6 @@ internal void render_transparent_blocks(PermanentState *permanent, RenderState *
 
     for (int wall_batch_index = 0; wall_batch_index < renderer->used_transparent_block_batches; wall_batch_index++) {
         DrawBuffer *batch = &renderer->transparent_blocks[wall_batch_index];
-        UNUSED(batch);
 
 #ifdef GLES
         bind_buffer(&batch->VBO, &batch->EBO, &renderer->assets.xyz_uv, &renderer->walls_layout );
@@ -778,7 +692,7 @@ internal void render_text(PermanentState *permanent, RenderState *renderer) {
 
             for (int i = 0; i < count * number_to_do; i += number_to_do) {
                 int prepare_index = i / number_to_do;
-                prepare_index += (glyph_batch_index * 2048);
+                prepare_index += (glyph_batch_index * MAX_IN_BUFFER);
                 Glyph data = permanent->glyphs[prepare_index];
                 r32 scale = 1.0f;
                 //float x = -1.0f + (((float)(data.x) / (float)renderer->view.width) * 2.0f);
@@ -850,7 +764,7 @@ internal void render_lines(PermanentState *permanent, RenderState *renderer) {
 
         for (int i = 0; i < count * number_to_do; i += number_to_do) {
             int prepare_index = i / number_to_do;
-            prepare_index += (line_batch_index * 2048);
+            prepare_index += (line_batch_index * MAX_IN_BUFFER);
             ColoredLine data = permanent->colored_lines[prepare_index];
 
             const float tempX1 = round(data.x1);
@@ -928,12 +842,12 @@ void render(PermanentState *permanent, RenderState *renderer, DebugState *debug)
 
 
     render_actors(permanent, renderer, debug);
-    render_walls(permanent, renderer);
+    render_walls(renderer);
     render_dynamic_blocks(permanent, renderer);
 
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    render_transparent_blocks(permanent, renderer);
+    render_transparent_blocks(renderer);
     glDisable(GL_DEPTH_TEST);
 
     render_lines(permanent, renderer);

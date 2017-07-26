@@ -251,7 +251,6 @@ internal void add_dynamic_block(int x, int y, int z,PermanentState *permanent, i
 
 internal Block getRotatedBlock(Block input, FacingSide side) {
     // you get a front facing block and a side you want to see.
-    UNUSED(input);
     if (input != Nothing) {
         if (side == Left) {
             switch(input) {
@@ -354,7 +353,6 @@ internal float getRotatedYFloat(float x, float y, FacingSide side, WorldDims dim
     return y;
 }
 internal Vector3 getRotatedVec3(Vector3 pos, FacingSide side, WorldDims dims, WorldDims sizes) {
-    UNUSED(dims); UNUSED(sizes);
     if (side == Front) {
     } else if (side == Left){
         return Vector3Make(pos.y, (dims.x * sizes.x) - pos.x, pos.z);
@@ -366,7 +364,7 @@ internal Vector3 getRotatedVec3(Vector3 pos, FacingSide side, WorldDims dims, Wo
 
 
 internal void initialize_memory( PermanentState *permanent, Node16Arena *node16, RenderState *renderer, Memory* memory) {
-    permanent->dynamic_blocks     = (DynamicBlock*) PUSH_ARRAY(&permanent->arena, (16384), DynamicBlock);
+    permanent->dynamic_blocks     = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
     permanent->static_blocks      = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
     permanent->transparent_blocks = (StaticBlock*) PUSH_ARRAY(&permanent->arena, (16384), StaticBlock);
     permanent->actors             = (Actor*) PUSH_ARRAY(&permanent->arena, (16384*4), Actor);
@@ -555,7 +553,6 @@ internal void initialize_memory( PermanentState *permanent, Node16Arena *node16,
 extern void game_update_and_render(Memory* memory, RenderState *renderer, float last_frame_time_seconds, const u8 *keys, SDL_Event e) {
     UNUSED(keys);
     UNUSED(e);
-    UNUSED(last_frame_time_seconds);
     ASSERT(sizeof(PermanentState) <= memory->permanent_size);
     PermanentState *permanent = (PermanentState *)memory->permanent;
     ASSERT(sizeof(ScratchState) <= memory->scratch_size);

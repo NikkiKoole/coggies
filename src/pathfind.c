@@ -515,8 +515,6 @@ internal path_list * backtrack_path(grid_node * Original, MemoryArena *Arena) {
 }
 
 #define SET_ALLOWED(travelling) allowed = travelling; allowedSize = sizeof(travelling)/sizeof(allowed[0]);
-
-
 #define IS_CARDINAL(direction) (direction == north || direction == south || direction == west || direction == east || direction == up || direction == down)
 
 

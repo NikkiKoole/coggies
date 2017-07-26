@@ -6,11 +6,6 @@
 // Generic single linked list, double linked list, binary heap, double linked list with freelist, pool
 
 
-
-
-
-
-
 #define NEW_SLIST(List, Arena, Type)    {                   \
         Type *Sentinel = (Type *) PUSH_STRUCT(Arena, Type); \
         (List)->Sentinel = Sentinel;                        \
@@ -71,9 +66,6 @@
         List->Sentinel->Next = List->Sentinel;          \
         List->Sentinel->Prev = List->Sentinel;          \
     }                                                   \
-
-
-
 
 #define DLIST_INSERTBEFORE(List, Node, Before)  \
     Node->Next = Before;                        \

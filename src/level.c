@@ -3,6 +3,12 @@
 
 #define BUF_SIZE 1024
 
+typedef struct {
+    int line_counter;
+    int height_counter;
+} LevelCounters;
+
+
 internal b32 exists(const char *fname) {
     FILE *f;
     if ((f = fopen(fname, "r"))) {
@@ -58,11 +64,6 @@ internal World_Size validate_and_get_dimensions(const char * path){
     return result;
 }
 
-
-typedef struct {
-    int line_counter;
-    int height_counter;
-} LevelCounters;
 
 
 internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Size dimensions, LevelData * level,  char * str) {
@@ -145,9 +146,6 @@ internal void read_level_line(LevelCounters * c, int LINES_BEFORE_DATA, World_Si
 }
 
 void read_level_str(PermanentState * permanent, LevelData * level, World_Size dimensions, char *str) {
-    UNUSED(level);
-    UNUSED(dimensions);
-
     level->x = dimensions.x;
     level->y = dimensions.y;
     level->z_level = dimensions.z_level;
@@ -184,10 +182,6 @@ void read_level_str(PermanentState * permanent, LevelData * level, World_Size di
 }
 
 internal void read_level(PermanentState * permanent, LevelData * level, World_Size dimensions, const char *path) {
-    UNUSED(level);
-    UNUSED(path);
-    UNUSED(dimensions);
-
     level->x = dimensions.x;
     level->y = dimensions.y;
     level->z_level = dimensions.z_level;
