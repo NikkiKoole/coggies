@@ -214,15 +214,68 @@ void initialize_GL(void) {
     }
 }
 
+internal void general_drawloop(DrawBuffer *batch, u32 batch_count, u32 batch_index, u32 batch_size, u32 values_per_thing, StaticBlock *buf, float texWidth, float texHeight) {
+    float actor_texture_width = texWidth;
+    float actor_texture_height = texHeight;
+
+    for (u32 i = 0; i < batch_count * values_per_thing; i+= values_per_thing) {
+        int prepare_index = i / values_per_thing;
+        prepare_index += (batch_index * batch_size);
+        StaticBlock data = buf[prepare_index];
+        BlockTextureAtlasPosition frame = data.frame;
+
+        float scale = 1.0f;
+        float wallX = data.frame.x_pos;
+        float wallY = data.frame.y_pos;
+        float wallDepth = data.y;
+        const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
+        const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
+        float wallHeight = data.frame.height;
+        float tempX = data.x + data.frame.x_internal_off;
+        float tempY =  (data.z  - data.y/2 + data.frame.y_off) +  data.frame.y_internal_off + data.frame.height - data.frame.ssH;
+        const float UV_TL_X = wallX / actor_texture_width;
+        const float UV_TL_Y = (wallY + data.frame.height) / actor_texture_height;
+        const float UV_BR_X = (wallX + data.frame.width) / actor_texture_width;
+        const float UV_BR_Y = wallY / actor_texture_height;
+
+        //Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
+        Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
+
+        // bottomright
+        batch->vertices[i + 0] = verts.br.x;
+        batch->vertices[i + 1] = verts.br.y;
+        batch->vertices[i + 2] = wallDepth;
+        batch->vertices[i + 3] = UV_BR_X;
+        batch->vertices[i + 4] = UV_BR_Y;
+        //batch->vertices[i + 5] = paletteIndex;
+        //topright
+        batch->vertices[i + 5] = verts.br.x;
+        batch->vertices[i + 6] = verts.tl.y;
+        batch->vertices[i + 7] = wallDepth;
+        batch->vertices[i + 8] = UV_BR_X;
+        batch->vertices[i + 9] = UV_TL_Y;
+        //batch->vertices[i + 11] = paletteIndex;
+        // top left
+        batch->vertices[i + 10] = verts.tl.x;
+        batch->vertices[i + 11] = verts.tl.y;
+        batch->vertices[i + 12] = wallDepth;
+        batch->vertices[i + 13] = UV_TL_X;
+        batch->vertices[i + 14] = UV_TL_Y;
+        // batch->vertices[i + 17] = paletteIndex;
+        // bottomleft
+        batch->vertices[i + 15] = verts.tl.x;
+        batch->vertices[i + 16] = verts.br.y;
+        batch->vertices[i + 17] = wallDepth;
+        batch->vertices[i + 18] = UV_TL_X;
+        batch->vertices[i + 19] = UV_BR_Y;
+    }
+}
 
 
 
 void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     //ASSERT(renderer->walls.count * VALUES_PER_ELEM < 2048 * 24);
     glViewport(0, 0, renderer->view.width, renderer->view.height);
-
-    int texture_size = renderer->assets.blocks.width;
-
 
     for (int dynamic_block_batch_index = 0; dynamic_block_batch_index < DYNAMIC_BLOCK_BATCH_COUNT; dynamic_block_batch_index++) {
         DrawBuffer *batch = &renderer->dynamic_blocks[dynamic_block_batch_index];
@@ -248,75 +301,10 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
     for (int wall_batch_index = 0; wall_batch_index < TRANSPARENT_BLOCK_BATCH_COUNT; wall_batch_index++) {
         DrawBuffer *batch = &renderer->transparent_blocks[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
-        for (u32 i = 0;
-             i < count * renderer->walls_layout.values_per_thing;
-             i += renderer->walls_layout.values_per_thing)
-            {
-                int prepare_index = i / renderer->walls_layout.values_per_thing;
-                prepare_index += (wall_batch_index * 2048);
-                StaticBlock data = permanent->transparent_blocks[prepare_index];
-                float scale = 1.0f;
-                float wallX = data.frame.x_pos;// * 24;
-                float wallY = data.frame.y_pos;// * 108;
-                float wallDepth = data.y;
-                //float pivotY = 1.0f;
-                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
-                const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
-                float wallHeight = data.frame.height;
 
+        general_drawloop(batch, batch->count, wall_batch_index, TRANSPARENT_BLOCK_BATCH_COUNT, renderer->walls_layout.values_per_thing, permanent->transparent_blocks,
+                         renderer->assets.blocks.width, renderer->assets.blocks.height);
 
-                float x_internal_off = data.frame.x_internal_off;
-                float y_internal_off = data.frame.y_internal_off;
-                //float tempX = data.x + x_internal_off;
-                float tempX = data.x + x_internal_off;//data.frame.sssX;
-
-                //float tempY = (data.z - y_internal_off) - (data.y) / 2 ;
-                 float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
-
-                 //if (data.is_floor) {
-                    // TODO this offset is still bugging me
-                    //wallDepth = data.y - 20;
-                    //pivotY = (108.0f) /(108.0f - 12.0f);
-                    //tempY -= 12;
-                 //}
-
-
-                Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
-                //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
-                //printf("%d\n",i);
-                // bottomright
-                batch->vertices[i + 0] = verts.br.x;
-                batch->vertices[i + 1] = verts.br.y;
-                batch->vertices[i + 2] = wallDepth;
-                batch->vertices[i + 3] = uvs.br.x;
-                batch->vertices[i + 4] = uvs.br.y;
-                //batch->vertices[i + 5] = paletteIndex;
-                //topright
-                batch->vertices[i + 5] = verts.br.x;
-                batch->vertices[i + 6] = verts.tl.y;
-                batch->vertices[i + 7] = wallDepth;
-                batch->vertices[i + 8] = uvs.br.x;
-                batch->vertices[i + 9] = uvs.tl.y;
-                //batch->vertices[i + 11] = paletteIndex;
-                // top left
-                batch->vertices[i + 10] = verts.tl.x;
-                batch->vertices[i + 11] = verts.tl.y;
-                batch->vertices[i + 12] = wallDepth;
-                batch->vertices[i + 13] = uvs.tl.x;
-                batch->vertices[i + 14] = uvs.tl.y;
-                // batch->vertices[i + 17] = paletteIndex;
-                // bottomleft
-                batch->vertices[i + 15] = verts.tl.x;
-                batch->vertices[i + 16] = verts.br.y;
-                batch->vertices[i + 17] = wallDepth;
-                batch->vertices[i + 18] = uvs.tl.x;
-                batch->vertices[i + 19] = uvs.br.y;
-                //batch->vertices[i + 23] = paletteIndex;
-
-            }
-
-        //ASSERT(batch->count * 6 < 2048 * 6);
         for (u32 i = 0; i < batch->count * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
@@ -343,61 +331,9 @@ void prepare_renderer(PermanentState *permanent, RenderState *renderer) {
         DrawBuffer *batch = &renderer->static_blocks[wall_batch_index];
         u32 count = batch->count; //permanent->actor_count;
 
-        for (u32 i = 0;
-             i < count * renderer->walls_layout.values_per_thing;
-             i += renderer->walls_layout.values_per_thing)
-            {
-                int prepare_index = i / renderer->walls_layout.values_per_thing;
-                prepare_index += (wall_batch_index * 2048);
-                StaticBlock data = permanent->static_blocks[prepare_index];
-                float scale = 1.0f;
-                float wallX = data.frame.x_pos;// * 24;
-                float wallY = data.frame.y_pos;// * 108;
-                float wallDepth = data.y;
-                // float pivotY = 1.0f;
-                //float pivotX = 0.5f;
-                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
-                const float pivotY = (float)data.frame.pivotY / (float)data.frame.height;
-                float wallHeight = data.frame.height;
-                float tempX = data.x + data.frame.x_internal_off;//data.frame.sssX;
-                float tempY = (data.z + data.frame.y_off - data.frame.sssY)  - (data.y) / 2;
+        general_drawloop(batch, batch->count, wall_batch_index, STATIC_BLOCK_BATCH_COUNT, renderer->walls_layout.values_per_thing, permanent->static_blocks,
+                         renderer->assets.blocks.width, renderer->assets.blocks.height);
 
-                Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width*1.0f, wallHeight);
-                //Rect2 verts = get_verts(renderer->view.width, renderer->view.height, x, y, 24.0f, wallHeight, scale, scale, 0.5, 1.0f);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
-
-                // bottomright
-                batch->vertices[i + 0] = verts.br.x;
-                batch->vertices[i + 1] = verts.br.y;
-                batch->vertices[i + 2] = wallDepth;
-                batch->vertices[i + 3] = uvs.br.x;
-                batch->vertices[i + 4] = uvs.br.y;
-                //batch->vertices[i + 5] = paletteIndex;
-                //topright
-                batch->vertices[i + 5] = verts.br.x;
-                batch->vertices[i + 6] = verts.tl.y;
-                batch->vertices[i + 7] = wallDepth;
-                batch->vertices[i + 8] = uvs.br.x;
-                batch->vertices[i + 9] = uvs.tl.y;
-                //batch->vertices[i + 11] = paletteIndex;
-                // top left
-                batch->vertices[i + 10] = verts.tl.x;
-                batch->vertices[i + 11] = verts.tl.y;
-                batch->vertices[i + 12] = wallDepth;
-                batch->vertices[i + 13] = uvs.tl.x;
-                batch->vertices[i + 14] = uvs.tl.y;
-                // batch->vertices[i + 17] = paletteIndex;
-                // bottomleft
-                batch->vertices[i + 15] = verts.tl.x;
-                batch->vertices[i + 16] = verts.br.y;
-                batch->vertices[i + 17] = wallDepth;
-                batch->vertices[i + 18] = uvs.tl.x;
-                batch->vertices[i + 19] = uvs.br.y;
-                //batch->vertices[i + 23] = paletteIndex;
-
-            }
-
-        //ASSERT(batch->count * 6 < 2048 * 6);
         for (u32 i = 0; i < batch->count * 6; i += 6) {
             int j = (i / 6) * 4;
             batch->indices[i + 0] = j + 0;
@@ -622,24 +558,6 @@ internal void render_actors(PermanentState *permanent, RenderState *renderer, De
 
 
 
-internal void general_drawloop(u32 batch_count, u32 batch_index, u32 batch_size, u32 values_per_thing) {
-    for (u32 i = 0; i < batch_count * values_per_thing; i+= values_per_thing) {
-        int prepare_index = i / values_per_thing;
-        prepare_index += (batch_index * batch_size);
-        // float x_pos;
-        // float y_pos;
-        // float z_pos;
-        // float frame_width;
-        // float frame_height;
-        // float depth;
-        //
-        // float pivot_x;
-        // float pivot_y
-
-    }
-
-
-}
 
 
 
@@ -673,7 +591,7 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
         u32 count = batch->count; //permanent->actor_count;
 
 
-        general_drawloop(batch->count, wall_batch_index, 2048, renderer->walls_layout.values_per_thing);
+        //general_drawloop(batch->count, wall_batch_index, 2048, renderer->walls_layout.values_per_thing, permanent);
 
         for (u32 i = 0;
              i < count * renderer->walls_layout.values_per_thing;
@@ -683,17 +601,19 @@ internal void render_dynamic_blocks(PermanentState *permanent, RenderState *rend
                 prepare_index += (wall_batch_index * 2048);
 
                 DynamicBlock data = permanent->dynamic_blocks[prepare_index];
+                BlockTextureAtlasPosition frame = data.frame;
+
                 float scale = 1.0f;
-                float wallX = data.frame.x_pos;// * 24;
-                float wallY = data.frame.y_pos;// * 108;
+                float wallX = frame.x_pos;// * 24;
+                float wallY = frame.y_pos;// * 108;
                 float wallDepth = data.y;
-                const float pivotX = (float)data.frame.pivotX / (float)data.frame.width;
-                const float pivotY =( (float)data.frame.pivotY / (float)data.frame.height);
-                float wallHeight = data.frame.height;
-                float tempX = data.x + data.frame.x_internal_off;
-                float tempY =  (data.z  - data.y/2 + data.frame.y_off) +  data.frame.y_internal_off + data.frame.height - data.frame.ssH;
-                Rect2 uvs = get_uvs(texture_size, wallX, wallY, data.frame.width, wallHeight);
-                Rect2 verts = get_verts_mvp(tempX, tempY, data.frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
+                const float pivotX = (float)frame.pivotX / (float)frame.width;
+                const float pivotY =( (float)frame.pivotY / (float)frame.height);
+                float wallHeight = frame.height;
+                float tempX = data.x + frame.x_internal_off;
+                float tempY =  (data.z  - data.y/2 + frame.y_off) +  frame.y_internal_off + frame.height - frame.ssH;
+                Rect2 uvs = get_uvs(texture_size, wallX, wallY, frame.width, wallHeight);
+                Rect2 verts = get_verts_mvp(tempX, tempY, frame.width*1.0f, wallHeight, scale, scale, pivotX, pivotY);
 
 
                 // bottomright

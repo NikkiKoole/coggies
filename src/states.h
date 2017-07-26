@@ -31,24 +31,26 @@ typedef struct {
 } DebugState;
 
 typedef struct {
-    int x_pos;
-    int y_pos;
-    int width;
-    int height;
+    u16 x_pos;
+    u16 y_pos;
+    u8 width;
+    u8 height;
 
-    int x_internal_off; // coming from cropping of sprites in texture
-    int y_internal_off; // "
+    s8 x_internal_off; // coming from cropping of sprites in texture
+    s8 y_internal_off; // "
 
-    int x_off; // used for offsetting sprite in world (think stairblocks at various heights)
-    int y_off; // "
+    s8 x_off; // used for offsetting sprite in world (think stairblocks at various heights)
+    s8 y_off; // "
 
+    u8 ssW, ssH;
+    u8 sssX, sssY;
 
-    int ssW, ssH;
-    int sssX, sssY;
-
-    int pivotX;
-    int pivotY;
+    u8 pivotX;
+    u8 pivotY;
 } BlockTextureAtlasPosition;
+
+
+
 
 typedef struct {
     u16 x;
@@ -56,6 +58,14 @@ typedef struct {
     u16 z;
     BlockTextureAtlasPosition frame;
     u8 is_floor;
+
+    u8 total_frames;
+    u8 current_frame;
+    r32 duration_per_frame;
+    r32 frame_duration_left;
+    u8 plays_forward;
+    u8 first_frame;
+    u8 last_frame;
 } StaticBlock; //64
 
 typedef struct {
@@ -64,16 +74,23 @@ typedef struct {
     u16 z;
     BlockTextureAtlasPosition frame;
     u8 is_floor;
+
     u8 total_frames;
     u8 current_frame;
-    u16 start_frame_x;
     r32 duration_per_frame;
     r32 frame_duration_left;
     u8 plays_forward;
-    int first_frame;
-    int last_frame;
+    u8 first_frame;
+    u8 last_frame;
 } DynamicBlock; //64
 
+typedef struct {
+    u8 type;
+    union {
+        StaticBlock b1;
+        DynamicBlock b2;
+    } data;
+} GeneralBlock;
 
 
 typedef struct FoundPathNode {

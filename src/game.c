@@ -239,7 +239,6 @@ internal void add_dynamic_block(int x, int y, int z,PermanentState *permanent, i
     permanent->dynamic_blocks[*used_block_count].y                  = (y * permanent->block_size.y) ;
     permanent->dynamic_blocks[*used_block_count].z                  = z * permanent->block_size.z_level;
     permanent->dynamic_blocks[*used_block_count].frame              = texture_atlas_data;
-    permanent->dynamic_blocks[*used_block_count].start_frame_x      = texture_atlas_data.x_pos;
     permanent->dynamic_blocks[*used_block_count].first_frame        = first;
     permanent->dynamic_blocks[*used_block_count].last_frame         = last;
     permanent->dynamic_blocks[*used_block_count].current_frame      = first;
