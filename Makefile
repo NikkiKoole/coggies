@@ -19,6 +19,7 @@ LIBRARY_NAME := gamelibrary.so
 PROGRAM_NAME := coggies.out
 CHK_SOURCES := src/main.c
 
+ASEPRITE := ../aseprite-beta/aseprite/build/bin/aseprite
 
 DEBUG:= #-g3 -fsanitize=address -fno-omit-frame-pointer
 
@@ -57,16 +58,16 @@ gamelibrary-linux:
 
 blocks:
 	@echo "Lets use the block_ase_files to create block data"
-	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/block_ase_files/* --trim --sheet gen/all_generated_blocks.png  --sheet-pack --inner-padding 1 --data gen/all_generated_blocks.json
-	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/block_ase_files/* --trim --sheet gen/pixel_blocks.png --sheet-pack --inner-padding 1 --data gen/pixel_blocks.json
+	@${ASEPRITE}  -b --format json-array --list-layers  --split-layers resources/block_ase_files/* --trim --sheet gen/all_generated_blocks.png  --sheet-pack --inner-padding 1 --data gen/all_generated_blocks.json
+	@${ASEPRITE} -b --format json-array --list-layers --split-layers  --layer "pixels" resources/block_ase_files/* --trim --sheet gen/pixel_blocks.png --sheet-pack --inner-padding 1 --data gen/pixel_blocks.json
 	@tools/pivot_planner/pivot-planner "blocks" gen/pixel_blocks.json gen/all_generated_blocks.json
 	@mv blocks.txt src/blocks.h
 	@mv gen/pixel_blocks.png resources/textures/blocks.png
 
 bodies:
 	@echo "Lets use the body_ase_files to create block data"
-	@../../aseprite-beta/aseprite/build/bin/aseprite  -b --format json-array --list-layers  --split-layers resources/body_ase_files/* --trim --sheet gen/all_generated_bodies.png  --sheet-pack --inner-padding 1 --data gen/all_generated_bodies.json
-	@../../aseprite-beta/aseprite/build/bin/aseprite -b --format json-array --list-layers --split-layers  --layer "pixels" resources/body_ase_files/* --trim --sheet gen/pixel_bodies.png --sheet-pack --inner-padding 1 --data gen/pixel_bodies.json
+	@${ASEPRITE}  -b --format json-array --list-layers  --split-layers resources/body_ase_files/* --trim --sheet gen/all_generated_bodies.png  --sheet-pack --inner-padding 1 --data gen/all_generated_bodies.json
+	@${ASEPRITE} -b --format json-array --list-layers --split-layers  --layer "pixels" resources/body_ase_files/* --trim --sheet gen/pixel_bodies.png --sheet-pack --inner-padding 1 --data gen/pixel_bodies.json
 	@tools/pivot_planner/pivot-planner "bodies" gen/pixel_bodies.json gen/all_generated_bodies.json
 	@mv bodies.txt src/body.h
 	@mv gen/pixel_bodies.png resources/textures/body.png
