@@ -82,9 +82,9 @@ internal void fill_generated_values(SimpleFrame* generated_frames ) {
     generated_frames[BL_escalator_west_up_006] = (SimpleFrame){154, 0, 26, 46,0, 1, 24, 44, 24, 84, 12, 36};
     generated_frames[BL_escalator_west_up_007] = (SimpleFrame){128, 0, 26, 46,0, 0, 24, 44, 24, 84, 12, 36};
     generated_frames[BL_floor_000] = (SimpleFrame){26, 186, 26, 15,0, 1, 24, 13, 24, 14, 12, 5};
-    generated_frames[BL_ladder_down_000] = (SimpleFrame){232, 0, 24, 28,0, 0, 22, 26, 22, 26, 0, 25};
-    generated_frames[BL_ladder_up_000] = (SimpleFrame){52, 0, 26, 105,0, 0, 24, 103, 24, 103, 0, 100};
-    generated_frames[BL_ladder_up_down_000] = (SimpleFrame){78, 0, 24, 100,0, 0, 22, 98, 22, 98, 0, 97};
-    generated_frames[BL_wall_000] = (SimpleFrame){26, 0, 26, 110,0, 0, 24, 108, 24, 108, 12, 96};
-    generated_frames[BL_window_000] = (SimpleFrame){0, 0, 26, 110,0, 0, 24, 108, 24, 108, 12, 96};
+    generated_frames[BL_ladder_down_000] = (SimpleFrame){232, 0, 24, 28,1, 0, 22, 26, 24, 26, 12, 12};
+    generated_frames[BL_ladder_up_000] = (SimpleFrame){52, 0, 26, 105,0, 0, 24, 103, 24, 103, 12, 96};
+    generated_frames[BL_ladder_up_down_000] = (SimpleFrame){78, 0, 24, 100,1, 0, 22, 98, 24, 98, 12, 84};
+    generated_frames[BL_wall_000] = (SimpleFrame){26, 0, 26, 110,0, 0, 24, 108, 24, 108, 12, 102};
+    generated_frames[BL_window_000] = (SimpleFrame){0, 0, 24, 108,0, 0, 24, 108, 24, 108, 12, 102};
 };

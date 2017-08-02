@@ -602,6 +602,7 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
     }
 
 
+        permanent->colored_line_count = 0;
 
 #if 1
     {
@@ -713,7 +714,8 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
             path_list *Path = NULL;
 
             if (PathRaw) {
-                Path = smooth_path(PathRaw,  &scratch->arena, permanent->grid);
+                //Path = smooth_path(PathRaw,  &scratch->arena, permanent->grid);
+                Path = PathRaw;
 
                 if (Path) {
                     path_node * done= Path->Sentinel->Prev;
@@ -734,21 +736,26 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         // TODO iam not sure about this, is this the right way to center all positions in the path nodes?
                         // should it be done somewhere else instead?
                         // TODO and why o why does it need something extra when facing Front and not under other circumstances.
-                        float xMult = facing_side == Front ? 1 :  facing_side == Left ?  -0.5 : 0.5;
-                        float yMult = facing_side == Front ? 0.5 : 1;
-                        N->path.node.x =(permanent->block_size.x/2) * xMult + done->X * permanent->block_size.x;
-                        N->path.node.y =(permanent->block_size.y/2) * yMult + done->Y * permanent->block_size.y;
+                        float xMult = 0;//facing_side == Front ? 1 :  facing_side == Left ?  -0.5 : 0.5;
+                        float yMult = 0;//facing_side == Front ? 0.5 : 1;
+                        N->path.node.x =(permanent->block_size.x/2) + done->X * permanent->block_size.x;
+                        N->path.node.y =(permanent->block_size.y/2)/2 + done->Y * permanent->block_size.y;
                         N->path.node.z = done->Z * permanent->block_size.z_level;
 			// if this is part of a stair move going up east/west
 
 
 
                         // TODO: this routine patches some issues which, IMO would better be solved at the root, dunno how wnad where though./
-#if 1 // pathing movemenst going up on east/west stairs
+#if 0 // pathing movemenst going up on east/west stairs
 
+
+
+
+                        
+                        
                         if (facing_side == Front) {
 
-                            if (done->Prev != Path->Sentinel) {
+                             if (done->Prev != Path->Sentinel) {
                                 // going up
                                 if (done->Z > done->Prev->Z) {
                                     if (done->X < done->Prev->X){
