@@ -630,7 +630,7 @@ internal grid_node * get_node_given_dir_and_dist(grid_node * Current, jump_direc
         }
         break;
     case down:
-        //stair_offset = 5;
+        //stair_offset = 3;
         one_down = get_node_at(Grid,x, y, z - 1);
         if (one_down->type == Stairs4S || one_down->type == EscalatorDown4S) {
             Result = get_node_at(Grid,x, y-stair_offset, z-distance);
@@ -683,6 +683,11 @@ path_list * find_path(grid_node * startNode, grid_node * endNode, Grid * Grid, M
     jump_direction travelling_southWest[] = {west, sw, south, up, down};
     jump_direction travelling_up[] = {north, nw, west, sw, south, se, east, ne, up};
     jump_direction travelling_down[] = {north, nw, west, sw, south, se, east, ne, down};
+
+    //jump_direction travelling_up[] = {up};
+    //jump_direction travelling_down[] = {down};
+
+
     jump_direction travelling_all[] = {north, nw, west, sw, south, se, east, ne, up, down};
 
     //TODO: this heap, maybe it should be put outside this function, and be reused.
@@ -741,7 +746,7 @@ path_list * find_path(grid_node * startNode, grid_node * endNode, Grid * Grid, M
                     SET_ALLOWED(travelling_southEast);
                 }
                 //cardinal
-            } else if (dx || dy) {
+            } else if ((dx || dy)) {
                 if (dy > 0) {
                     SET_ALLOWED(travelling_south);
                 } else if (dy < 0) {
@@ -932,6 +937,11 @@ path_list * smooth_path(path_list *compressed, MemoryArena * Arena, Grid * pg) {
                     blocked = 1;
                     break;
                 }
+                // SO I DONT SMOOTH AROUND STAIRS
+                if (n->type >= StairsMeta && n->type <= EscalatorDown4W) {
+                    blocked = 1;
+                    break;
+                }
                 c = c->Next;
             }
             FREE_DLIST(interpolated);
@@ -945,6 +955,7 @@ path_list * smooth_path(path_list *compressed, MemoryArena * Arena, Grid * pg) {
             }
         } else { //different z, just push both points
             if(sx == ex && sy == ey) {
+                printf("ladder right?\n");
                 //ladder
                 sz = Node->Z;
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);
@@ -957,10 +968,11 @@ path_list * smooth_path(path_list *compressed, MemoryArena * Arena, Grid * pg) {
             } else {
                 //stairs;
                 sz = Node->Z;
+                printf("yeah alright\n");
                 path_node * Point1 = PUSH_STRUCT(Arena, path_node);
                 setXYZinStruct(Node->Prev->X, Node->Prev->Y, Node->Prev->Z, Point1);
                 DLIST_ADDLAST(Result, Point1);
-
+                
                 path_node * Point2 = PUSH_STRUCT(Arena, path_node);
                 setXYZinStruct( Node->X,Node->Y,Node->Z, Point2);
                 DLIST_ADDLAST(Result, Point2);

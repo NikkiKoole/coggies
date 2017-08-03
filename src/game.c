@@ -667,6 +667,10 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 Node16 * d= permanent->paths[i].Sentinel->Next;
                 u32 c = permanent->colored_line_count;
                 while (d->Next != permanent->paths[i].Sentinel){
+
+                    //if (d->path.node.z != d->Next->path.node.z) {
+                    //    printf("going from %f,%f,[%f] to %f,%f,[%f]\n", d->path.node.x, d->path.node.y, d->path.node.z, d->Next->path.node.x, d->Next->path.node.y, d->Next->path.node.z);
+                    //}
                     permanent->colored_lines[c].x1 = getRotatedXFloat(d->path.node.x, d->path.node.y, facing_side, permanent->dims);
                     permanent->colored_lines[c].y1 = getRotatedYFloat(d->path.node.x, d->path.node.y, facing_side, permanent->dims);
                     permanent->colored_lines[c].z1 = d->path.node.z;
@@ -736,11 +740,36 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                         // TODO iam not sure about this, is this the right way to center all positions in the path nodes?
                         // should it be done somewhere else instead?
                         // TODO and why o why does it need something extra when facing Front and not under other circumstances.
-                        float xMult = 0;//facing_side == Front ? 1 :  facing_side == Left ?  -0.5 : 0.5;
-                        float yMult = 0;//facing_side == Front ? 0.5 : 1;
-                        N->path.node.x =(permanent->block_size.x/2) + done->X * permanent->block_size.x;
-                        N->path.node.y =(permanent->block_size.y/2)/2 + done->Y * permanent->block_size.y;
+                        //float xMult = 0;//facing_side == Front ? 1 :  facing_side == Left ?  -0.5 : 0.5;
+                        //float yMult = 0;//facing_side == Front ? 0.5 : 1;
+                        N->path.node.x =  (permanent->block_size.x/2) + done->X * permanent->block_size.x;
+                        N->path.node.y = (permanent->block_size.y/2) + done->Y * permanent->block_size.y;
                         N->path.node.z = done->Z * permanent->block_size.z_level;
+
+
+                        
+                        /* if (done->Prev != Path->Sentinel) { */
+                        /*         // going up */
+                        /*         if (done->Z > done->Prev->Z) { */
+                        /*             printf("going up\n"); */
+                        /*             printf("%d,%d,%d     %d,%d,%d\n", done->X,done->Y,done->Z, done->Prev->X, done->Prev->Y, done->Prev->Z); */
+                        /*         } */
+                        /*         if (done->Z < done->Prev->Z) { */
+                        /*             printf("going down 222\n"); */
+                        /*             printf("%d,%d,%d     %d,%d,%d\n", done->X,done->Y,done->Z, done->Prev->X, done->Prev->Y, done->Prev->Z); */
+                        /*         } */
+                        /* } */
+                        /* if (done->Next != Path->Sentinel) { */
+                        /*         // going down */
+                        /*         if (done->Z < done->Next->Z) { */
+                        /*             printf("going down\n"); */
+                        /*             printf("%d,%d,%d     %d,%d,%d\n", done->X,done->Y,done->Z, done->Next->X, done->Next->Y, done->Next->Z); */
+
+
+                        /*         } */
+                        /* } */
+
+                        
 			// if this is part of a stair move going up east/west
 
 

@@ -6,6 +6,12 @@
 
 * Currently doing / Next up
 
+GET RID OF PATHFINDING< I dont need it atm.
+for the stairs i dont need it at all
+
+
+
+
 - get 'camera' orientation working, there seem to be some weird offsets of characters
 - make a few walking animations, walking, standing still, ascending, descending, in 4 cardinal directions.
 - make pathfinding code opt-in, eaiser for debugging too btw.
