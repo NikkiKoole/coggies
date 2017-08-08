@@ -1,7 +1,9 @@
+
 * Project I am working towards: Escalator Simulator
   People ought to keep left on the escalator, so other people can overtake them whilst walking.
   Some people dont keep left, the ones in a hurry get annoyed.
   All types of people take the escalator.
+
 
 
 * Currently doing / Next up
@@ -22,7 +24,7 @@ for the stairs i dont need it at all
 
 * known bugs
 - bug: shadow gets in way of stairs below
-
+  
 
 * Todo
 - [ ] move the renderstate into permament memory (I ran into stack overflow issues, the thing is just getting too big (> 8MB))
@@ -191,7 +193,7 @@ for the stairs i dont need it at all
   - [X] loading of a lib
   - [X] memory sheme
   - [X] filesystem watcher
-- [X] do all memory usage by pushstrcut et all (no predefined arrays no more in permanent)
+- [X] do all memory usage by pushstuct et all (no predefined arrays no more in permanent)
 - [X] use permanent for the grid (using scratch now, dont know why it doenst work)
 - [X] clean up path finder grid after path is found (dirty list)
   Instead of the dirty list i can also just clear the whole grid arrays (f,g,h closed,opened,Next)
@@ -328,7 +330,7 @@ for the stairs i dont need it at all
     make -j 4
     make install
 
-
+    
 * Tools
 - http://renderhjs.net/shoebox/ for generating texture atlasses
   sadly I cannot really get that AIR thing working on *nux, damn adobe

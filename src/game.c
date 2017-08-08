@@ -581,10 +581,12 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
 
                 if (permanent->dynamic_blocks[i].plays_forward == 1) {
                     frame_index +=1;
-                    if (frame_index > permanent->dynamic_blocks[i].last_frame) frame_index = permanent->dynamic_blocks[i].first_frame;
+                    if (frame_index > permanent->dynamic_blocks[i].last_frame)
+                        frame_index = permanent->dynamic_blocks[i].first_frame;
                 } else {
                     frame_index -= 1;
-                    if (frame_index < permanent->dynamic_blocks[i].first_frame) frame_index = permanent->dynamic_blocks[i].last_frame;
+                    if (frame_index < permanent->dynamic_blocks[i].first_frame)
+                        frame_index = permanent->dynamic_blocks[i].last_frame;
                 }
 
                 permanent->dynamic_blocks[i].current_frame        = frame_index;
@@ -627,7 +629,6 @@ extern void game_update_and_render(Memory* memory, RenderState *renderer, float 
                 Vector3 seek_force  = seek_return(&permanent->steer_data[i], permanent->paths[i].Sentinel->Next->path.node);
                 seek_force = Vector3MultiplyScalar(seek_force, 1);
                 actor_apply_force(&permanent->steer_data[i], seek_force);
-
 
                 permanent->steer_data[i].velocity = Vector3Add(permanent->steer_data[i].velocity, permanent->steer_data[i].acceleration);
                 permanent->steer_data[i].velocity = Vector3Limit(permanent->steer_data[i].velocity, permanent->steer_data[i].max_speed);
